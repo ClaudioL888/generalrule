@@ -1,0 +1,43 @@
+name: CI Governance Template
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  governance-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Codex capability gate
+        run: bash scripts/ci/check-codex-capabilities.sh
+
+      - name: Prepare governance metadata
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          mkdir -p .ci
+          printf '%s\n' "$PR_BODY" > .ci/pr_body.md
+
+      - name: Collect changed files
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > .ci/changed_files.txt
+
+      - name: Run governance gate
+        env:
+          PR_BODY_FILE: .ci/pr_body.md
+        run: |
+          if [ -s .ci/changed_files.txt ]; then
+            export CHANGED_FILES="$(cat .ci/changed_files.txt)"
+          fi
+          # current-task path defaults to docs/status/current-task.md.
+          # Override via TASK_STATE_LINK in PR metadata or CURRENT_TASK_FILE env.
+          bash scripts/ci/validate-governance.sh
+
+      - name: Run doc link gate
+        run: bash scripts/ci/validate-doc-links.sh

@@ -1,0 +1,23 @@
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+allow_login_shell = false
+project_doc_max_bytes = 65536
+project_doc_fallback_filenames = ["AGENTS.override.md"]
+
+[sandbox_workspace_write]
+network_access = false
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false
+
+[profiles.strict]
+approval_policy = "untrusted"
+sandbox_mode = "read-only"
+allow_login_shell = false
+
+[profiles.release]
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+allow_login_shell = false
+
+[profiles.release.sandbox_workspace_write]
+network_access = false

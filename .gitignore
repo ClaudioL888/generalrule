@@ -1,0 +1,8 @@
+.DS_Store
+.worktrees/
+worktrees/
+node_modules/
+coverage/
+.cache/
+dist/
+out/

@@ -1,0 +1,31 @@
+description = "Default exec policy for generalrule repo"
+
+# Allow read-only inspection and review commands.
+# Rationale: safe introspection with no side effects.
+prefix_rule(pattern = ["rg"], decision = "allow", justification = "Read-only repository search.")
+prefix_rule(pattern = ["ls"], decision = "allow", justification = "Read-only directory listing.")
+prefix_rule(pattern = ["cat"], decision = "allow", justification = "Read-only file content inspection.")
+prefix_rule(pattern = ["sed"], decision = "allow", justification = "Read-only text inspection.")
+prefix_rule(pattern = ["find"], decision = "allow", justification = "Read-only file discovery.")
+prefix_rule(pattern = ["git", "status"], decision = "allow", justification = "Read-only git workspace inspection.")
+prefix_rule(pattern = ["git", "diff"], decision = "allow", justification = "Read-only git change review.")
+
+# Prompt before high-impact environment or deployment actions.
+# Rationale: dependency and infra changes need explicit approval.
+prefix_rule(pattern = ["npm", "install"], decision = "prompt", justification = "Dependency changes require explicit approval.")
+prefix_rule(pattern = ["pnpm", "add"], decision = "prompt", justification = "Dependency changes require explicit approval.")
+prefix_rule(pattern = ["yarn", "add"], decision = "prompt", justification = "Dependency changes require explicit approval.")
+prefix_rule(pattern = ["pip", "install"], decision = "prompt", justification = "Dependency changes require explicit approval.")
+prefix_rule(pattern = ["uv", "pip", "install"], decision = "prompt", justification = "Dependency changes require explicit approval.")
+prefix_rule(pattern = ["docker", "build"], decision = "prompt", justification = "Build actions can change release artifacts.")
+prefix_rule(pattern = ["docker", "push"], decision = "prompt", justification = "Push actions affect remote registries.")
+prefix_rule(pattern = ["kubectl", "apply"], decision = "prompt", justification = "Cluster mutations require explicit approval.")
+prefix_rule(pattern = ["gh", "workflow", "run"], decision = "prompt", justification = "Workflow dispatch can trigger privileged automation.")
+
+# Forbid destructive or remote-download execution chains.
+# Alternative: use reviewed artifacts and non-destructive git workflows.
+prefix_rule(pattern = ["git", "reset", "--hard"], decision = "forbidden", justification = "Destructive history rewrite is blocked.")
+prefix_rule(pattern = ["git", "checkout", "--"], decision = "forbidden", justification = "Destructive working-tree overwrite is blocked.")
+prefix_rule(pattern = ["rm", "-rf", "/"], decision = "forbidden", justification = "Destructive filesystem removal is blocked.")
+prefix_rule(pattern = ["curl"], decision = "forbidden", justification = "Direct remote download/execute chain is blocked.")
+prefix_rule(pattern = ["wget"], decision = "forbidden", justification = "Direct remote download/execute chain is blocked.")
