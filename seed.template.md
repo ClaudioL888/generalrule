@@ -33,8 +33,8 @@
 - next_action: handoff to QA
 
 ### L2_FULL_REQUIRED（仅 work_type=full 时启用）
-# 兼容模式（默认）：缺失会告警，但不阻断
-# 严格模式（STRICT_SEED=1 或 --strict-seed）：缺失即失败
+# 严格模式（默认）：缺失即失败
+# 兼容模式（STRICT_SEED=0）：缺失会告警，但不阻断
 - chosen_stack: typescript-node-postgresql
 - api_contract: OpenAPI 3.1 + versioned REST
 - entity_definitions: user/order/session 三个核心实体
@@ -65,14 +65,15 @@
 
 - `L1_BASE_REQUIRED`：始终必填，缺失直接失败。
 - `L2_FULL_REQUIRED`：
-  - 默认兼容模式：`work_type=full` 且缺失时仅告警。
-  - 严格模式：`work_type=full` 且缺失时失败，报错 `missing full-strict seed key: <key>`。
+  - 默认严格模式：`work_type=full` 且缺失时失败，报错 `missing full-strict seed key: <key>`。
+  - 兼容模式（`STRICT_SEED=0`）：`work_type=full` 且缺失时仅告警。
 - `L3_OPTIONAL`：缺失不会失败，生成器用 `TODO(key)` 回填。
 
-严格模式开启方式（二选一）：
+严格模式（默认）说明：
 
-- `STRICT_SEED=1 bash scripts/init-project.sh ...`
-- `bash scripts/init-project.sh ... --strict-seed`
+- 默认无需额外参数，已启用 strict。
+- `--strict-seed` 可用于显式声明 strict（与默认一致）。
+- 如需迁移期兼容模式，使用 `STRICT_SEED=0`。
 
 ## 3. L1 必填字段表
 
@@ -135,7 +136,7 @@
 
 ## 6. 初始化命令示例
 
-兼容模式（默认）：
+默认严格模式：
 
 ```bash
 bash scripts/init-project.sh \
@@ -143,15 +144,15 @@ bash scripts/init-project.sh \
   --seed ./seed.template.md
 ```
 
-严格模式（推荐用于正式 full 项目）：
+兼容模式（迁移期可用）：
 
 ```bash
-STRICT_SEED=1 bash scripts/init-project.sh \
+STRICT_SEED=0 bash scripts/init-project.sh \
   --output /absolute/path/to/new-project \
   --seed ./seed.template.md
 ```
 
-或：
+显式声明严格模式（与默认一致）：
 
 ```bash
 bash scripts/init-project.sh \

@@ -10,12 +10,13 @@ Options:
   --output <dir>       Target project directory (required)
   --seed <file>        Markdown seed file with machine-readable key section (required)
   --project-name <n>   Optional override for project_name
-  --strict-seed        Enable strict seed validation (enforce L2 keys for full work_type)
+  --strict-seed        Force strict seed validation (default behavior)
   --force              Allow overwriting non-empty target directory
   -h, --help           Show this help
 
 Environment:
-  STRICT_SEED=1        Equivalent to --strict-seed
+  STRICT_SEED=1        Strict validation (default)
+  STRICT_SEED=0        Compatibility mode (allow missing L2 keys with warning)
 USAGE
 }
 
@@ -23,7 +24,7 @@ OUTPUT_DIR=""
 SEED_FILE=""
 FORCE=0
 PROJECT_NAME_OVERRIDE=""
-STRICT_SEED_MODE="${STRICT_SEED:-0}"
+STRICT_SEED_MODE="${STRICT_SEED:-1}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -68,6 +69,14 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ASSETS_DIR="$ROOT_DIR/bootstrap/assets"
+STEP_REPORT_HELPER="$ROOT_DIR/scripts/lib/step-report.sh"
+
+if [[ -f "$STEP_REPORT_HELPER" ]]; then
+  # shellcheck disable=SC1091
+  source "$STEP_REPORT_HELPER"
+else
+  emit_step_report() { return 0; }
+fi
 
 if [[ ! -d "$ASSETS_DIR" ]]; then
   echo "Missing assets directory: $ASSETS_DIR" >&2
@@ -308,3 +317,19 @@ if [[ "$STRICT_SEED_MODE" == "0" && "$work_type" == "full" && -s "$MISSING_FULL_
   echo "Compatibility mode warning: full work_type is missing advanced keys (strict mode would fail):"
   sort -u "$MISSING_FULL_FILE" | sed 's/^/  - /'
 fi
+
+report_status="pass"
+if [[ "$STRICT_SEED_MODE" == "0" && "$work_type" == "full" && -s "$MISSING_FULL_FILE" ]]; then
+  report_status="warn"
+fi
+
+emit_step_report \
+  "init-project" \
+  "project baseline initialization" \
+  "复制官方基线并替换 seed 占位符" \
+  "$OUTPUT_DIR" \
+  "none" \
+  "scripts/init-project.sh --output ${OUTPUT_DIR} --seed ${SEED_FILE}" \
+  "$report_status" \
+  "项目基线生成完成" \
+  "进入目标项目执行 scripts/dev/install-hooks.sh"

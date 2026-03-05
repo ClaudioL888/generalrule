@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [[ -f "$ROOT_DIR/scripts/lib/step-report.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT_DIR/scripts/lib/step-report.sh"
+else
+  emit_step_report() { return 0; }
+fi
+
 fail() {
-  echo "[observability-gate] $1" >&2
+  local msg="$1"
+  echo "[observability-gate] $msg" >&2
+  emit_step_report \
+    "validate-observability-gate" \
+    "observability gate" \
+    "校验维护记录与 DORA/AARRR 初始化" \
+    "none" \
+    "none" \
+    "validate-observability-gate.sh" \
+    "fail" \
+    "$msg" \
+    "补齐观测维护文档后重试"
   exit 1
 }
 
@@ -42,6 +61,16 @@ fi
 
 if [[ "${#issues[@]}" -eq 0 ]]; then
   echo "[observability-gate] PASS"
+  emit_step_report \
+    "validate-observability-gate" \
+    "observability gate" \
+    "校验维护记录与 DORA/AARRR 初始化" \
+    "none" \
+    "none" \
+    "validate-observability-gate.sh" \
+    "pass" \
+    "观测门禁通过" \
+    "继续执行后续门禁"
   exit 0
 fi
 
@@ -56,3 +85,13 @@ for item in "${issues[@]}"; do
 done
 
 echo "[observability-gate] PASS (warn mode)"
+emit_step_report \
+  "validate-observability-gate" \
+  "observability gate" \
+  "校验维护记录与 DORA/AARRR 初始化" \
+  "none" \
+  "none" \
+  "validate-observability-gate.sh" \
+  "warn" \
+  "观测门禁告警（warn 模式）" \
+  "补齐周/月维护记录并考虑切 strict"

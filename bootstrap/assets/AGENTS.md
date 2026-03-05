@@ -11,14 +11,16 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 
 1. 人类唯一必填输入：`开始任务：<一句话目标>`。
 2. 人类仅在关键节点批准：`批准 Gate 0`、`批准 Gate 2`、`批准 Gate 3`、`批准发布`。
-3. AI 必须每阶段输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
-4. 推荐使用 `bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh` 执行半自动流程。
+3. 启动必须按两阶段执行：`prepare`（只读预检）-> `approve Gate 0`（记录批准）-> `start`（才允许写入任务包）。
+4. AI 必须每阶段输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
+5. 推荐使用 `bash .agents/skills/vibe-hub/scripts/run.sh start --goal "<一句话目标>" ...` 执行单入口半自动流程。
+6. 关键脚本必须输出结构化执行回报：`[step-report]`（见 `docs/governance/STEP_REPORTING.md`）。
 
 ## Skill 调用提醒（强制）
 
-1. `vibe-governance` 作为默认主流程 skill，允许隐式触发（自动进入规范流程）。
-2. `vibe-task-pack` 与 `vibe-quality-gates` 保持显式触发，避免误触发重型检查。
-3. 每次收到新任务时，AI 必须先说明当前将走 `vibe-governance` 主流程，并给出可选显式命令。
+1. `vibe-hub` 作为默认主流程 skill，允许隐式触发（自动进入规范流程）。
+2. `vibe-governance`、`vibe-task-pack` 与 `vibe-quality-gates` 保持显式触发，避免误触发重型检查。
+3. 每次收到新任务时，AI 必须先说明当前将走 `vibe-hub` 主流程，并给出可选显式命令。
 4. 用户明确回复“跳过 skill”后，AI 才可继续，但必须提示风险（可能偏离标准流程或漏掉门禁）。
 
 ## 强制规则
@@ -28,6 +30,10 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 3. 必须运行并报告测试结果，不接受“我觉得可以”。
 4. 任何改动必须更新对应文档与发布说明。
 5. 执行命令、依赖安装、权限变更必须进入 approval。
+6. 任何写操作前必须通过 preflight：`check-codex-capabilities + APPROVAL_GATE_0=approved`。
+7. 对话回复必须复述：做了什么 + 涉及文件 + 结果 + 下一步。
+8. 遇到失败必须给出可执行修复动作，不允许只给抽象描述。
+9. 每次任务完成后必须明确告知用户“下一步做什么”；禁止只报完成不报后续动作。
 
 ## Codex 运行时配置约束
 
@@ -51,9 +57,10 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 ## Skills 优先建议
 
 1. 推荐优先使用 `.agents/skills` 进行流程编排：
+   - `$vibe-hub`：单入口路由（推荐）
+   - `$vibe-governance`：执行完整治理循环
    - `$vibe-task-pack`：建立/更新任务包
    - `$vibe-quality-gates`：执行本地门禁链路
-   - `$vibe-governance`：执行完整循环
 2. skills 用于前置执行一致性，不能替代 CI/PR 硬门禁。
 
 ## 官方运行时能力门槛

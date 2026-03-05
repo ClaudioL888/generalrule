@@ -32,3 +32,5 @@ description: 执行本地治理门禁链路并输出阻断项，确保提交前�
 ```bash
 bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh
 ```
+
+每个 gate 步骤和最终汇总都会输出 `[step-report]`。

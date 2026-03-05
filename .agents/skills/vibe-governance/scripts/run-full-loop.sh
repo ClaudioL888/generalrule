@@ -56,6 +56,10 @@ fi
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$ROOT_DIR"
 
+if [[ -x "scripts/ci/validate-preflight-gate.sh" ]]; then
+  bash scripts/ci/validate-preflight-gate.sh
+fi
+
 spec_file="docs/specs/${SPEC_ID}.md"
 map_file="docs/contracts/${SPEC_ID}-api-frontend-map.md"
 

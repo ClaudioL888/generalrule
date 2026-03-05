@@ -4,21 +4,29 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  run-blackbox-flow.sh start --goal <single-line-goal> [--task-type <feature|bugfix|refactor|ops|content>] [--work-type <full|mini|fast-track>] [--spec-id <SPEC-...>]
-  run-blackbox-flow.sh approve --gate <Gate 0|Gate 2|Gate 3|发布|release> [--decision <approved|rejected>]
+  run-blackbox-flow.sh prepare --goal <single-line-goal> [--task-type <feature|bugfix|refactor|ops|content>] [--work-type <full|mini|fast-track>] [--spec-id <SPEC-...>]
+  run-blackbox-flow.sh approve --gate <Gate 0|Gate 2|Gate 3|发布|release> [--decision <approved|rejected>] [--goal <...>] [--task-type <...>] [--work-type <...>] [--spec-id <...>]
+  run-blackbox-flow.sh start [--goal <...>] [--task-type <...>] [--work-type <...>] [--spec-id <...>]
   run-blackbox-flow.sh status
 
 Examples:
-  run-blackbox-flow.sh start --goal "做一个让新用户 10 分钟内完成首次发布的流程"
-  run-blackbox-flow.sh approve --gate "Gate 0"
-  run-blackbox-flow.sh approve --gate "Gate 2"
-  run-blackbox-flow.sh approve --gate "Gate 3"
-  run-blackbox-flow.sh approve --gate "发布"
+  run-blackbox-flow.sh prepare --goal "做一个让新用户 10 分钟内完成首次发布的流程"
+  run-blackbox-flow.sh approve --gate "Gate 0" --goal "做一个让新用户 10 分钟内完成首次发布的流程" --task-type feature --work-type full --spec-id SPEC-20260305-core-flow
+  run-blackbox-flow.sh start
 USAGE
 }
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$ROOT_DIR"
+
+STEP_REPORT_HARD=1
+if [[ -f "scripts/lib/step-report.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "scripts/lib/step-report.sh"
+else
+  echo "missing step report helper: scripts/lib/step-report.sh" >&2
+  exit 1
+fi
 
 SESSION_FILE="${SESSION_FILE:-docs/status/blackbox-session.md}"
 CURRENT_TASK_FILE="${CURRENT_TASK_FILE:-docs/status/current-task.md}"
@@ -26,6 +34,8 @@ HANDOFF_TEMPLATE="docs/status/TEMPLATE-role-handoff.md"
 SESSION_TEMPLATE="docs/status/TEMPLATE-blackbox-session.md"
 TASK_PACK_SCRIPT=".agents/skills/vibe-task-pack/scripts/new-task-pack.sh"
 QUALITY_GATES_SCRIPT=".agents/skills/vibe-quality-gates/scripts/run-local-gates.sh"
+PREFLIGHT_SCRIPT="scripts/ci/validate-preflight-gate.sh"
+CAPABILITY_SCRIPT="scripts/ci/check-codex-capabilities.sh"
 
 now_utc() {
   date -u +"%Y-%m-%dT%H:%M:%SZ"
@@ -111,6 +121,16 @@ validate_work_type() {
       exit 1
       ;;
   esac
+}
+
+run_capability_gate() {
+  [[ -x "$CAPABILITY_SCRIPT" ]] || { echo "missing capability script: $CAPABILITY_SCRIPT" >&2; exit 1; }
+  bash "$CAPABILITY_SCRIPT"
+}
+
+run_preflight_gate() {
+  [[ -x "$PREFLIGHT_SCRIPT" ]] || { echo "missing preflight script: $PREFLIGHT_SCRIPT" >&2; exit 1; }
+  bash "$PREFLIGHT_SCRIPT"
 }
 
 transition_for_stage() {
@@ -413,7 +433,7 @@ run_task_pack() {
     --next-role "$next_role"
 }
 
-cmd_start() {
+cmd_prepare() {
   local goal=""
   local task_type="feature"
   local work_type="full"
@@ -442,6 +462,75 @@ cmd_start() {
         exit 0
         ;;
       *)
+        echo "unknown argument for prepare: $1" >&2
+        usage >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  [[ -n "$goal" ]] || { echo "--goal is required" >&2; exit 1; }
+  validate_task_type "$task_type"
+  validate_work_type "$work_type"
+  run_capability_gate
+
+  if [[ -z "$spec_id" ]]; then
+    spec_id="$(derive_spec_id "$goal")"
+  fi
+
+  print_card \
+    "只读预检（不写入项目文件）" \
+    "能力门槛通过；建议 SPEC_ID=${spec_id}; TASK_TYPE=${task_type}; WORK_TYPE=${work_type}" \
+    "Gate 0 待批准" \
+    "批准 Gate 0" \
+    "执行 approve Gate 0 后再运行 start"
+
+  emit_step_report \
+    "blackbox-prepare" \
+    "blackbox prepare" \
+    "执行只读预检并生成建议参数" \
+    "none" \
+    "none" \
+    "scripts/ci/check-codex-capabilities.sh" \
+    "pass" \
+    "预检通过，等待 Gate 0 批准" \
+    "执行 approve --gate Gate 0"
+
+  cat <<NEXT
+[next-command]
+bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0" --goal "${goal}" --task-type "${task_type}" --work-type "${work_type}" --spec-id "${spec_id}"
+NEXT
+}
+
+cmd_start() {
+  local goal_override=""
+  local task_type_override=""
+  local work_type_override=""
+  local spec_id_override=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --goal)
+        goal_override="${2:-}"
+        shift 2
+        ;;
+      --task-type)
+        task_type_override="${2:-}"
+        shift 2
+        ;;
+      --work-type)
+        work_type_override="${2:-}"
+        shift 2
+        ;;
+      --spec-id)
+        spec_id_override="${2:-}"
+        shift 2
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
         echo "unknown argument for start: $1" >&2
         usage >&2
         exit 1
@@ -449,53 +538,114 @@ cmd_start() {
     esac
   done
 
-  if [[ -z "$goal" ]]; then
-    echo "--goal is required" >&2
+  [[ -f "$SESSION_FILE" ]] || { echo "missing session file: $SESSION_FILE (run prepare + approve Gate 0 first)" >&2; exit 1; }
+
+  run_preflight_gate
+
+  local goal task_type work_type spec_id transition current_role next_role
+  goal="$(kv_get "$SESSION_FILE" "GOAL")"
+  task_type="$(kv_get "$SESSION_FILE" "TASK_TYPE")"
+  work_type="$(kv_get "$SESSION_FILE" "WORK_TYPE")"
+  spec_id="$(kv_get "$SESSION_FILE" "SPEC_ID")"
+
+  [[ -n "$goal" && -n "$task_type" && -n "$work_type" && -n "$spec_id" ]] || {
+    echo "session missing required fields (GOAL/TASK_TYPE/WORK_TYPE/SPEC_ID)" >&2
+    exit 1
+  }
+
+  if [[ -n "$goal_override" && "$goal_override" != "$goal" ]]; then
+    echo "start --goal does not match approved session GOAL" >&2
+    exit 1
+  fi
+  if [[ -n "$task_type_override" && "$task_type_override" != "$task_type" ]]; then
+    echo "start --task-type does not match approved session TASK_TYPE" >&2
+    exit 1
+  fi
+  if [[ -n "$work_type_override" && "$work_type_override" != "$work_type" ]]; then
+    echo "start --work-type does not match approved session WORK_TYPE" >&2
+    exit 1
+  fi
+  if [[ -n "$spec_id_override" && "$spec_id_override" != "$spec_id" ]]; then
+    echo "start --spec-id does not match approved session SPEC_ID" >&2
     exit 1
   fi
 
-  validate_task_type "$task_type"
-  validate_work_type "$work_type"
-
-  if [[ -z "$spec_id" ]]; then
-    spec_id="$(derive_spec_id "$goal")"
-  fi
-
-  local transition current_role next_role
-  transition="$(transition_for_stage "$task_type" gate0)"
+  transition="$(transition_for_stage "$task_type" gate2)"
   current_role="${transition%%|*}"
   next_role="${transition##*|}"
 
-  ensure_session_file
-  run_task_pack "$spec_id" "$task_type" "$current_role" "$next_role"
-  update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 0" "$current_role" "$next_role" "等待批准 Gate 0"
+  local start_spec_file start_map_file start_handoff_file
+  local spec_existed map_existed handoff_existed task_existed session_existed
+  start_spec_file="docs/specs/${spec_id}.md"
+  start_map_file="docs/contracts/${spec_id}-api-frontend-map.md"
+  start_handoff_file="$(handoff_file_for "$spec_id" "$current_role" "$next_role")"
+  spec_existed=0
+  map_existed=0
+  handoff_existed=0
+  task_existed=0
+  session_existed=0
+  [[ -f "$start_spec_file" ]] && spec_existed=1
+  [[ -f "$start_map_file" ]] && map_existed=1
+  [[ -f "$start_handoff_file" ]] && handoff_existed=1
+  [[ -f "$CURRENT_TASK_FILE" ]] && task_existed=1
+  [[ -f "$SESSION_FILE" ]] && session_existed=1
 
-  upsert_kv "$SESSION_FILE" "GOAL" "$goal"
-  upsert_kv "$SESSION_FILE" "SPEC_ID" "$spec_id"
-  upsert_kv "$SESSION_FILE" "TASK_TYPE" "$task_type"
-  upsert_kv "$SESSION_FILE" "WORK_TYPE" "$work_type"
-  upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 0"
+  run_task_pack "$spec_id" "$task_type" "$current_role" "$next_role"
+  update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 2" "$current_role" "$next_role" "等待批准 Gate 2"
+
+  upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 2"
   upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
   upsert_kv "$SESSION_FILE" "NEXT_ROLE" "$next_role"
-  upsert_kv "$SESSION_FILE" "APPROVAL_GATE_0" "pending"
   upsert_kv "$SESSION_FILE" "APPROVAL_GATE_2" "pending"
   upsert_kv "$SESSION_FILE" "APPROVAL_GATE_3" "pending"
   upsert_kv "$SESSION_FILE" "APPROVAL_RELEASE" "pending"
-  upsert_kv "$SESSION_FILE" "STATUS" "waiting_gate_0"
+  upsert_kv "$SESSION_FILE" "STATUS" "waiting_gate_2"
   upsert_kv "$SESSION_FILE" "LAST_ACTION" "start"
   upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
 
   print_card \
-    "绑定一句话目标并建立任务包" \
-    "已初始化 SPEC、契约映射、角色交接与 current-task" \
-    "Gate 0 待批准" \
-    "批准 Gate 0" \
-    "AI 自动推进 PM/Architect 草案并等待 Gate 2"
+    "Gate 0 已批准后启动可写流程" \
+    "已初始化任务包与 current-task，进入 Gate 2" \
+    "Gate 2 待批准" \
+    "批准 Gate 2" \
+    "AI 自动推进 Planner/Dev 阶段"
+
+  local created_files=()
+  local updated_files=()
+  if [[ "$spec_existed" -eq 0 ]]; then created_files+=("$start_spec_file"); else updated_files+=("$start_spec_file"); fi
+  if [[ "$map_existed" -eq 0 ]]; then created_files+=("$start_map_file"); else updated_files+=("$start_map_file"); fi
+  if [[ "$handoff_existed" -eq 0 ]]; then created_files+=("$start_handoff_file"); else updated_files+=("$start_handoff_file"); fi
+  if [[ "$task_existed" -eq 0 ]]; then created_files+=("$CURRENT_TASK_FILE"); else updated_files+=("$CURRENT_TASK_FILE"); fi
+  if [[ "$session_existed" -eq 0 ]]; then created_files+=("$SESSION_FILE"); else updated_files+=("$SESSION_FILE"); fi
+
+  local created_csv="none"
+  local updated_csv="none"
+  if [[ "${#created_files[@]}" -gt 0 ]]; then
+    created_csv="$(IFS=,; printf '%s' "${created_files[*]}")"
+  fi
+  if [[ "${#updated_files[@]}" -gt 0 ]]; then
+    updated_csv="$(IFS=,; printf '%s' "${updated_files[*]}")"
+  fi
+
+  emit_step_report \
+    "blackbox-start" \
+    "blackbox start" \
+    "初始化任务包并推进到 Gate 2" \
+    "$created_csv" \
+    "$updated_csv" \
+    "scripts/ci/validate-preflight-gate.sh ; new-task-pack.sh" \
+    "pass" \
+    "任务包与会话状态已更新" \
+    "批准 Gate 2"
 }
 
 cmd_approve() {
   local gate=""
   local decision="approved"
+  local goal_arg=""
+  local task_type_arg=""
+  local work_type_arg=""
+  local spec_id_arg=""
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -505,6 +655,22 @@ cmd_approve() {
         ;;
       --decision)
         decision="${2:-}"
+        shift 2
+        ;;
+      --goal)
+        goal_arg="${2:-}"
+        shift 2
+        ;;
+      --task-type)
+        task_type_arg="${2:-}"
+        shift 2
+        ;;
+      --work-type)
+        work_type_arg="${2:-}"
+        shift 2
+        ;;
+      --spec-id)
+        spec_id_arg="${2:-}"
         shift 2
         ;;
       -h|--help)
@@ -519,34 +685,102 @@ cmd_approve() {
     esac
   done
 
-  [[ -f "$SESSION_FILE" ]] || { echo "missing session file: $SESSION_FILE" >&2; exit 1; }
   [[ -n "$gate" ]] || { echo "--gate is required" >&2; exit 1; }
-
   local norm_gate
   norm_gate="$(normalize_gate "$gate")"
 
   local spec_id task_type work_type goal current_gate
+
+  if [[ "$norm_gate" == "gate0" && ! -f "$SESSION_FILE" ]]; then
+    [[ -n "$goal_arg" ]] || { echo "approve Gate 0 without session requires --goal" >&2; exit 1; }
+    task_type="${task_type_arg:-feature}"
+    work_type="${work_type_arg:-full}"
+    spec_id="${spec_id_arg:-$(derive_spec_id "$goal_arg")}" 
+    goal="$goal_arg"
+
+    validate_task_type "$task_type"
+    validate_work_type "$work_type"
+    run_capability_gate
+
+    ensure_session_file
+
+    local transition current_role next_role
+    transition="$(transition_for_stage "$task_type" gate0)"
+    current_role="${transition%%|*}"
+    next_role="${transition##*|}"
+
+    upsert_kv "$SESSION_FILE" "GOAL" "$goal"
+    upsert_kv "$SESSION_FILE" "SPEC_ID" "$spec_id"
+    upsert_kv "$SESSION_FILE" "TASK_TYPE" "$task_type"
+    upsert_kv "$SESSION_FILE" "WORK_TYPE" "$work_type"
+    upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 0"
+    upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
+    upsert_kv "$SESSION_FILE" "NEXT_ROLE" "$next_role"
+    upsert_kv "$SESSION_FILE" "APPROVAL_GATE_0" "approved"
+    upsert_kv "$SESSION_FILE" "APPROVAL_GATE_2" "pending"
+    upsert_kv "$SESSION_FILE" "APPROVAL_GATE_3" "pending"
+    upsert_kv "$SESSION_FILE" "APPROVAL_RELEASE" "pending"
+    upsert_kv "$SESSION_FILE" "STATUS" "gate0_approved"
+    upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:gate0"
+    upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
+
+    print_card \
+      "记录 Gate 0 批准（仍为预写阶段）" \
+      "会话已建立并标记 Gate 0 approved" \
+      "通过" \
+      "执行 start" \
+      "start 后进入 Gate 2 并创建任务包"
+
+    emit_step_report \
+      "blackbox-approve-gate0-bootstrap" \
+      "approve gate 0" \
+      "创建会话并记录 Gate 0 批准" \
+      "$SESSION_FILE" \
+      "none" \
+      "scripts/ci/check-codex-capabilities.sh ; run-blackbox-flow.sh approve --gate Gate 0" \
+      "pass" \
+      "Gate 0 已批准，等待 start" \
+      "执行 start"
+    exit 0
+  fi
+
+  [[ -f "$SESSION_FILE" ]] || { echo "missing session file: $SESSION_FILE" >&2; exit 1; }
+
   spec_id="$(kv_get "$SESSION_FILE" "SPEC_ID")"
   task_type="$(kv_get "$SESSION_FILE" "TASK_TYPE")"
   work_type="$(kv_get "$SESSION_FILE" "WORK_TYPE")"
   goal="$(kv_get "$SESSION_FILE" "GOAL")"
   current_gate="$(kv_get "$SESSION_FILE" "CURRENT_GATE")"
 
-  [[ -n "$spec_id" ]] || { echo "session SPEC_ID is empty" >&2; exit 1; }
-  [[ -n "$task_type" ]] || { echo "session TASK_TYPE is empty" >&2; exit 1; }
-  [[ -n "$work_type" ]] || { echo "session WORK_TYPE is empty" >&2; exit 1; }
+  [[ -n "$spec_id" && -n "$task_type" && -n "$work_type" ]] || {
+    echo "session missing required fields" >&2
+    exit 1
+  }
 
   if [[ "$decision" != "approved" ]]; then
     upsert_kv "$SESSION_FILE" "STATUS" "blocked"
     upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:${norm_gate}:${decision}"
     upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
-    upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "等待 Founder 决策"
+    if [[ -f "$CURRENT_TASK_FILE" ]]; then
+      upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "等待 Founder 决策"
+      upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
+    fi
     print_card \
       "关键 Gate 人工决策" \
       "已记录拒绝结果：${norm_gate}" \
       "阻断" \
       "给出新取舍（缩范围/延期/fast-track）" \
       "AI 等待你的决策后继续"
+    emit_step_report \
+      "blackbox-approve-${norm_gate}-rejected" \
+      "approve ${norm_gate}" \
+      "记录 Gate 拒绝并进入阻断状态" \
+      "none" \
+      "$SESSION_FILE,$CURRENT_TASK_FILE" \
+      "run-blackbox-flow.sh approve --gate ${norm_gate} --decision ${decision}" \
+      "fail" \
+      "Gate 被拒绝，流程阻断" \
+      "给出新取舍并重新批准"
     exit 1
   fi
 
@@ -555,25 +789,33 @@ cmd_approve() {
   case "$norm_gate" in
     gate0)
       [[ "$current_gate" == "Gate 0" ]] || { echo "Gate 0 approval is only valid when CURRENT_GATE=Gate 0 (current: $current_gate)" >&2; exit 1; }
-      transition="$(transition_for_stage "$task_type" gate2)"
+      transition="$(transition_for_stage "$task_type" gate0)"
       current_role="${transition%%|*}"
       next_role="${transition##*|}"
-      update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 2" "$current_role" "$next_role" "等待批准 Gate 2"
 
-      upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 2"
       upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
       upsert_kv "$SESSION_FILE" "NEXT_ROLE" "$next_role"
       upsert_kv "$SESSION_FILE" "APPROVAL_GATE_0" "approved"
-      upsert_kv "$SESSION_FILE" "STATUS" "waiting_gate_2"
+      upsert_kv "$SESSION_FILE" "STATUS" "gate0_approved"
       upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:gate0"
       upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
 
       print_card \
-        "完成需求/设计草案并进入架构确认" \
-        "已记录 Gate 0 批准，AI 推进到 Gate 2" \
-        "Gate 2 待批准" \
-        "批准 Gate 2" \
-        "AI 自动推进 Planner 拆解并等待 Gate 3"
+        "记录 Gate 0 批准（仍为预写阶段）" \
+        "会话已更新为 Gate 0 approved" \
+        "通过" \
+        "执行 start" \
+        "start 后进入 Gate 2 并创建任务包"
+      emit_step_report \
+        "blackbox-approve-gate0" \
+        "approve gate 0" \
+        "更新会话为 Gate 0 approved" \
+        "none" \
+        "$SESSION_FILE" \
+        "run-blackbox-flow.sh approve --gate Gate 0" \
+        "pass" \
+        "Gate 0 已批准" \
+        "执行 start"
       ;;
 
     gate2)
@@ -597,6 +839,16 @@ cmd_approve() {
         "Gate 3 待批准" \
         "批准 Gate 3" \
         "AI 自动执行实现/测试/观察修复并准备发布检查"
+      emit_step_report \
+        "blackbox-approve-gate2" \
+        "approve gate 2" \
+        "推进到 Gate 3 并更新角色与交接状态" \
+        "none" \
+        "$SESSION_FILE,$CURRENT_TASK_FILE" \
+        "run-blackbox-flow.sh approve --gate Gate 2" \
+        "pass" \
+        "Gate 2 已批准，等待 Gate 3" \
+        "批准 Gate 3"
       ;;
 
     gate3)
@@ -622,12 +874,24 @@ cmd_approve() {
           "通过" \
           "批准发布" \
           "AI 执行全量门禁并给出发布后复盘"
+        emit_step_report \
+          "blackbox-approve-gate3" \
+          "approve gate 3" \
+          "运行关键门禁并推进到发布候选" \
+          "none" \
+          "$SESSION_FILE,$CURRENT_TASK_FILE" \
+          "run-blackbox-flow.sh approve --gate Gate 3 ; partial gates" \
+          "pass" \
+          "关键门禁通过，等待发布批准" \
+          "批准发布"
       else
         upsert_kv "$SESSION_FILE" "STATUS" "repair_required"
         upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:gate3:repair-required"
         upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
-        upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "接受修复方案 A/B"
-        upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
+        if [[ -f "$CURRENT_TASK_FILE" ]]; then
+          upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "接受修复方案 A/B"
+          upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
+        fi
 
         print_card \
           "实现阶段门禁自检" \
@@ -635,6 +899,16 @@ cmd_approve() {
           "失败（阻断）" \
           "接受修复方案 A/B" \
           "AI 修复后重跑门禁并再次请求 Gate 3"
+        emit_step_report \
+          "blackbox-approve-gate3" \
+          "approve gate 3" \
+          "运行关键门禁并检测到阻断项" \
+          "none" \
+          "$SESSION_FILE,$CURRENT_TASK_FILE" \
+          "run-blackbox-flow.sh approve --gate Gate 3 ; partial gates" \
+          "fail" \
+          "关键门禁失败，进入修复循环" \
+          "接受修复方案 A/B"
         exit 1
       fi
       ;;
@@ -661,12 +935,24 @@ cmd_approve() {
           "通过" \
           "无（发布已完成）" \
           "AI 输出 DORA/AARRR 复盘并建议下一轮任务"
+        emit_step_report \
+          "blackbox-approve-release" \
+          "approve release" \
+          "运行全量门禁并完成发布状态更新" \
+          "none" \
+          "$SESSION_FILE,$CURRENT_TASK_FILE" \
+          "run-blackbox-flow.sh approve --gate 发布 ; release gates" \
+          "pass" \
+          "发布完成并进入复盘" \
+          "开始下一轮目标"
       else
         upsert_kv "$SESSION_FILE" "STATUS" "repair_required"
         upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:release:repair-required"
         upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
-        upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "接受修复方案 A/B"
-        upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
+        if [[ -f "$CURRENT_TASK_FILE" ]]; then
+          upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "接受修复方案 A/B"
+          upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
+        fi
 
         print_card \
           "发布前全量门禁" \
@@ -674,6 +960,16 @@ cmd_approve() {
           "失败（阻断）" \
           "接受修复方案 A/B" \
           "AI 修复后重跑门禁并再次请求批准发布"
+        emit_step_report \
+          "blackbox-approve-release" \
+          "approve release" \
+          "运行全量门禁并检测到阻断项" \
+          "none" \
+          "$SESSION_FILE,$CURRENT_TASK_FILE" \
+          "run-blackbox-flow.sh approve --gate 发布 ; release gates" \
+          "fail" \
+          "发布门禁失败，已阻断" \
+          "接受修复方案 A/B"
         exit 1
       fi
       ;;
@@ -698,13 +994,13 @@ cmd_status() {
   local next_step="继续按状态推进"
 
   case "$status" in
-    waiting_gate_0)
-      one_action="批准 Gate 0"
-      next_step="AI 推进 PM/Architect 草案"
+    gate0_approved)
+      one_action="执行 start"
+      next_step="AI 初始化任务包并进入 Gate 2"
       ;;
     waiting_gate_2)
       one_action="批准 Gate 2"
-      next_step="AI 推进 Planner 拆解"
+      next_step="AI 推进 Planner/Dev"
       ;;
     waiting_gate_3)
       one_action="批准 Gate 3"
@@ -730,6 +1026,16 @@ cmd_status() {
     "$status" \
     "$one_action" \
     "$next_step"
+  emit_step_report \
+    "blackbox-status" \
+    "blackbox status" \
+    "读取会话并输出当前阶段建议" \
+    "none" \
+    "none" \
+    "run-blackbox-flow.sh status" \
+    "skip" \
+    "当前状态: ${status}" \
+    "$one_action"
 }
 
 main() {
@@ -741,6 +1047,9 @@ main() {
   shift || true
 
   case "$command" in
+    prepare)
+      cmd_prepare "$@"
+      ;;
     start)
       cmd_start "$@"
       ;;

@@ -31,3 +31,5 @@ bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
   --current-role Dev \
   --next-role QA
 ```
+
+执行输出包含 `[step-report]`，用于回报任务包创建/更新详情。

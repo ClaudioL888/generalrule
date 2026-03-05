@@ -46,24 +46,23 @@ bash scripts/init-project.sh \
   --seed ./seed.my-project.md
 ```
 
-4. 正式 `full` 项目建议开启 strict seed 模式（强制 L2 进阶字段）：
-
-```bash
-STRICT_SEED=1 bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.my-project.md
-```
-
-或：
+4. 默认就是 strict seed 模式（`full` 项目强制 L2 进阶字段）：
 
 ```bash
 bash scripts/init-project.sh \
   --output /absolute/path/to/new-project \
-  --seed ./seed.my-project.md \
-  --strict-seed
+  --seed ./seed.my-project.md
 ```
 
-5. 如果目标目录已存在且非空，明确允许覆盖时使用：
+5. 迁移期如需兼容模式（临时放宽），显式降级：
+
+```bash
+STRICT_SEED=0 bash scripts/init-project.sh \
+  --output /absolute/path/to/new-project \
+  --seed ./seed.my-project.md
+```
+
+6. 如果目标目录已存在且非空，明确允许覆盖时使用：
 
 ```bash
 bash scripts/init-project.sh \
@@ -72,18 +71,19 @@ bash scripts/init-project.sh \
   --force
 ```
 
-6. 初始化后第一步安装本地 hooks（启用 pre-push 阻断）：
+7. 初始化后第一步安装本地 hooks（启用 pre-push 阻断）：
 
 ```bash
 cd /absolute/path/to/new-project
 bash scripts/dev/install-hooks.sh
 ```
 
-7. Skill 驱动策略（推荐）：
+8. Skill 驱动策略（推荐）：
 
 ```bash
-# 默认：vibe-governance 会隐式触发（主流程）
+# 默认：vibe-hub 会隐式触发（主流程）
 # 按需显式触发：
+$vibe-hub
 $vibe-task-pack
 $vibe-quality-gates
 $vibe-governance
@@ -95,6 +95,7 @@ $vibe-governance
 
 - `.codex/config.toml`
 - `.codex/rules/default.rules`
+- `.agents/skills/vibe-hub/*`
 - `.agents/skills/vibe-governance/*`
 - `.agents/skills/vibe-task-pack/*`
 - `.agents/skills/vibe-quality-gates/*`
@@ -110,6 +111,7 @@ $vibe-governance
 - `docs/adr/0001-initial-decision.md`
 - `docs/governance/BRANCH_PROTECTION.md`
 - `docs/governance/ROLE_ROUTING.md`
+- `docs/governance/STEP_REPORTING.md`
 - `docs/plans/0001-implementation-plan.md`
 - `docs/test-plan/0001-test-plan.md`
 - `docs/specs/TEMPLATE-feature-spec.md`
@@ -126,7 +128,10 @@ $vibe-governance
 - `docs/release/RELEASE_NOTES.md`
 - `docs/status/current-task.md`
 - `.githooks/pre-push`
+- `.githooks/pre-commit`
 - `scripts/ci/check-codex-capabilities.sh`
+- `scripts/ci/validate-preflight-gate.sh`
+- `scripts/lib/step-report.sh`
 - `scripts/ci/validate-spec-pack.sh`
 - `scripts/ci/validate-role-flow.sh`
 - `scripts/ci/validate-api-frontend-sync.sh`
@@ -142,15 +147,15 @@ $vibe-governance
 
 - `.codex/*`、CI 脚本等属于固定基线。
 - 文档中的 `{{token}}` 会由 seed 键填充；未提供的非关键键会写成 `TODO(key)`。
-- 默认是兼容模式：`work_type=full` 缺 L2 键会告警不阻断；strict 模式下会阻断。
+- 默认是严格模式：`work_type=full` 缺 L2 键会阻断；仅在 `STRICT_SEED=0` 时降级为告警不阻断。
 
 ## 4.1 Seed 严格模式与迁移建议
 
 迁移建议：
 
-1. 先用兼容模式跑通初始化，观察缺失的 L2 告警列表。
-2. 在你的 seed 中补齐技术、安全、可观测、发布四类 L2 字段。
-3. 切到 strict 模式并保持通过，作为正式项目默认流程。
+1. 先用默认 strict 运行初始化，拿到缺失键清单并补齐。
+2. 如历史项目字段不全，可临时用 `STRICT_SEED=0` 完成迁移。
+3. 迁移结束后恢复默认 strict，避免后续项目再回到弱约束。
 
 ## 5. 日常开发与门禁流程
 
@@ -169,11 +174,52 @@ bash scripts/ci/validate-observability-gate.sh
 bash scripts/ci/validate-doc-links.sh
 ```
 
+### 5.0 步骤回报（step-report）
+
+默认每一步都输出结构化执行回报：
+
+```text
+[step-report]
+- STEP_ID: <id>
+- STEP_NAME: <name>
+- ACTIONS: <做了什么>
+- FILES_CREATED: <path1,path2|none>
+- FILES_UPDATED: <path1,path2|none>
+- COMMANDS_RUN: <cmd1 ; cmd2|none>
+- GATE_STATUS: <pass|fail|warn|skip>
+- RESULT_SUMMARY: <一句话结果>
+- NEXT_ACTION: <下一步>
+```
+
+模式开关：
+
+- `STEP_REPORT_MODE=detailed`（默认）
+- `STEP_REPORT_MODE=minimal`
+- `STEP_REPORT_MODE=off`
+
+约束说明：
+
+- 硬约束脚本：`run-blackbox-flow.sh`、`new-task-pack.sh`、`run-local-gates.sh`  
+  在这些脚本中即使设置 `off`，也会自动降级成 `minimal` 并告警。
+- 软约束脚本：`init-project.sh` 与 `scripts/ci/validate-*.sh`  
+  可以关闭报告，但推荐保持开启用于对话可追踪。
+- 每次任务完成后，必须明确输出 `NEXT_ACTION`，告诉用户下一步具体做什么。
+
 ### 5.1 Skill 驱动开发（推荐）
 
 当你希望按固定流程执行时，优先调用：
 
 ```bash
+bash .agents/skills/vibe-hub/scripts/run.sh start \
+  --goal "做一个让新用户 10 分钟内完成首次发布的流程" \
+  --task-type feature \
+  --work-type full \
+  --spec-id SPEC-0001-core-flow
+
+bash .agents/skills/vibe-hub/scripts/run.sh status
+bash .agents/skills/vibe-hub/scripts/run.sh gates
+
+# 兼容：原子技能调用仍可直接使用
 bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
   --spec-id SPEC-0001-core-flow \
   --task-type feature \
@@ -204,12 +250,14 @@ bash .agents/skills/vibe-governance/scripts/run-full-loop.sh \
 当你希望“人类只输入一句话目标，AI 自动推进其余流程”时，使用：
 
 ```bash
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
+bash .agents/skills/vibe-hub/scripts/run.sh start \
   --goal "做一个让新用户 10 分钟内完成首次发布的流程" \
   --task-type feature \
-  --work-type full
+  --work-type full \
+  --spec-id SPEC-0001-core-flow
 
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
+bash .agents/skills/vibe-hub/scripts/run.sh status
+# 兼容：仍可直接使用 run-blackbox-flow approve --gate \"Gate 2|Gate 3|发布\"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 3"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "发布"
@@ -218,6 +266,7 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate 
 说明：
 
 - 你唯一任务入口是 `--goal`（一句话目标）。
+- 启动分两阶段：`prepare`（只读）-> `approve Gate 0`（记录批准）-> `start`（开始写入）。
 - 人类只在 `Gate 0/Gate 2/Gate 3/发布` 进行批准。
 - 每次执行会输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
 - 会话状态写入 `docs/status/blackbox-session.md`，任务状态写入 `docs/status/current-task.md`。
@@ -267,9 +316,9 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate 
 
 ### 6.5 `missing full-strict seed key: <key>`
 
-原因：你启用了 strict seed，且 `work_type=full` 时缺少 L2 进阶字段。
+原因：默认 strict seed 下，`work_type=full` 缺少 L2 进阶字段。
 
-修复：补齐 `seed.template.md` 的 L2_FULL_REQUIRED 字段，或暂时改回兼容模式。
+修复：优先补齐 `seed.template.md` 的 L2_FULL_REQUIRED 字段；仅在迁移期临时用 `STRICT_SEED=0`。
 
 ### 6.6 `CODEOWNERS missing required path rule pattern`
 
@@ -306,6 +355,16 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate 
 原因：批准指令与当前阶段不匹配（例如还在 `Gate 0` 却执行了 `批准发布`）。
 
 修复：先运行 `bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh status` 查看当前阶段，再按顺序批准。
+
+### 6.12 `APPROVAL_GATE_0 must be approved before write operations`
+
+原因：你在 `Gate 0` 未批准前触发了写入动作（如 `start` 或任务包生成）。
+
+修复：按顺序执行：
+
+1. `prepare`
+2. `approve --gate "Gate 0"`（带目标参数）
+3. `start`
 
 ## 7. 版本升级与回归验证
 

@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [[ -f "$ROOT_DIR/scripts/lib/step-report.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT_DIR/scripts/lib/step-report.sh"
+else
+  emit_step_report() { return 0; }
+fi
+
 fail() {
-  echo "[governance-check] $1" >&2
+  local msg="$1"
+  echo "[governance-check] $msg" >&2
+  emit_step_report \
+    "validate-governance" \
+    "governance gate" \
+    "校验 PR metadata、current-task 与发布文档同步" \
+    "none" \
+    "none" \
+    "validate-governance.sh" \
+    "fail" \
+    "$msg" \
+    "按报错修复文档/元数据后重试"
   exit 1
 }
 
@@ -260,3 +279,13 @@ if [[ "$LOCAL_MODE" != "1" ]]; then
 fi
 
 echo "[governance-check] PASS"
+emit_step_report \
+  "validate-governance" \
+  "governance gate" \
+  "校验 PR metadata、current-task 与发布文档同步" \
+  "none" \
+  "none" \
+  "validate-governance.sh" \
+  "pass" \
+  "治理门禁通过" \
+  "继续执行后续门禁"

@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [[ -f "$ROOT_DIR/scripts/lib/step-report.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT_DIR/scripts/lib/step-report.sh"
+else
+  emit_step_report() { return 0; }
+fi
+
 fail() {
-  echo "[api-frontend-sync] $1" >&2
+  local msg="$1"
+  echo "[api-frontend-sync] $msg" >&2
+  emit_step_report \
+    "validate-api-frontend-sync" \
+    "api frontend sync gate" \
+    "校验 API 与前端契约映射同步" \
+    "none" \
+    "none" \
+    "validate-api-frontend-sync.sh" \
+    "fail" \
+    "$msg" \
+    "更新 contracts 映射并设为 synced 后重试"
   exit 1
 }
 
@@ -166,3 +185,13 @@ if [[ "$src_changed" == "1" && "$contract_sync_status" != "synced" ]]; then
 fi
 
 echo "[api-frontend-sync] PASS"
+emit_step_report \
+  "validate-api-frontend-sync" \
+  "api frontend sync gate" \
+  "校验 API 与前端契约映射同步" \
+  "none" \
+  "none" \
+  "validate-api-frontend-sync.sh" \
+  "pass" \
+  "API/前端契约门禁通过" \
+  "继续执行后续门禁"

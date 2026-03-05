@@ -2,7 +2,7 @@ interface:
   display_name: Vibe Governance
   short_description: 执行任务级治理循环并串联任务包与本地门禁。
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 dependencies:
   tools:
     - bash

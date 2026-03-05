@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [[ -f "$ROOT_DIR/scripts/lib/step-report.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT_DIR/scripts/lib/step-report.sh"
+else
+  emit_step_report() { return 0; }
+fi
+
 fail() {
-  echo "[security-gate] $1" >&2
+  local msg="$1"
+  echo "[security-gate] $msg" >&2
+  emit_step_report \
+    "validate-security-gate" \
+    "security gate" \
+    "校验安全边界与发布说明联动" \
+    "none" \
+    "none" \
+    "validate-security-gate.sh" \
+    "fail" \
+    "$msg" \
+    "按提示补齐 ADR/runbook/release notes 后重试"
   exit 1
 }
 
@@ -49,3 +68,13 @@ if has_changed_prefix "src/"; then
 fi
 
 echo "[security-gate] PASS"
+emit_step_report \
+  "validate-security-gate" \
+  "security gate" \
+  "校验安全边界与发布说明联动" \
+  "none" \
+  "none" \
+  "validate-security-gate.sh" \
+  "pass" \
+  "安全门禁通过" \
+  "继续执行后续门禁"

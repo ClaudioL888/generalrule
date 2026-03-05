@@ -39,11 +39,39 @@ chmod +x "$mock_bin/codex"
 
 pushd "$work_dir" >/dev/null
 
-PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
+PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh prepare \
   --goal "做一个让新用户10分钟内完成首次发布的流程" \
   --task-type feature \
   --work-type full \
-  --spec-id SPEC-0099-blackbox > "$tmp_dir/start.out"
+  --spec-id SPEC-0099-blackbox > "$tmp_dir/prepare.out"
+
+[[ ! -f docs/status/blackbox-session.md ]] || { echo "prepare must not create blackbox-session.md"; exit 1; }
+
+grep -q '\[blackbox-card\]' "$tmp_dir/prepare.out" || {
+  echo "prepare output must contain blackbox card"
+  exit 1
+}
+grep -q '\[step-report\]' "$tmp_dir/prepare.out" || {
+  echo "prepare output must contain step-report"
+  exit 1
+}
+for field in STEP_ID STEP_NAME ACTIONS FILES_CREATED FILES_UPDATED COMMANDS_RUN GATE_STATUS RESULT_SUMMARY NEXT_ACTION; do
+  grep -q "^- ${field}: " "$tmp_dir/prepare.out" || {
+    echo "prepare step-report missing field: $field"
+    exit 1
+  }
+done
+
+PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0" \
+  --goal "做一个让新用户10分钟内完成首次发布的流程" \
+  --task-type feature \
+  --work-type full \
+  --spec-id SPEC-0099-blackbox > "$tmp_dir/approve-gate0.out"
+
+grep -q '\[step-report\]' "$tmp_dir/approve-gate0.out" || {
+  echo "approve Gate 0 output must contain step-report"
+  exit 1
+}
 
 [[ -f docs/status/blackbox-session.md ]] || { echo "missing blackbox-session.md"; exit 1; }
 
@@ -57,8 +85,20 @@ grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 0$' docs/status/blackbox-se
   exit 1
 }
 
-grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 0$' docs/status/current-task.md || {
-  echo "current-task CURRENT_GATE should be Gate 0 after start"
+grep -q '^-[[:space:]]*STATUS:[[:space:]]*gate0_approved$' docs/status/blackbox-session.md || {
+  echo "session should be gate0_approved after Gate 0 approval"
+  exit 1
+}
+
+if PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2" >/dev/null 2>&1; then
+  echo "Gate 2 should not be approvable before start"
+  exit 1
+fi
+
+PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start > "$tmp_dir/start.out"
+
+grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 2$' docs/status/current-task.md || {
+  echo "current-task CURRENT_GATE should be Gate 2 after start"
   exit 1
 }
 
@@ -66,10 +106,12 @@ grep -q '\[blackbox-card\]' "$tmp_dir/start.out" || {
   echo "start output must contain blackbox card"
   exit 1
 }
-
-PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
-grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 2$' docs/status/current-task.md || {
-  echo "current-task CURRENT_GATE should be Gate 2 after Gate 0 approval"
+grep -q '\[step-report\]' "$tmp_dir/start.out" || {
+  echo "start output must contain step-report"
+  exit 1
+}
+grep -q '^- FILES_CREATED: ' "$tmp_dir/start.out" || {
+  echo "start step-report must include FILES_CREATED"
   exit 1
 }
 
@@ -104,6 +146,10 @@ grep -q '^-[[:space:]]*APPROVAL_RELEASE:[[:space:]]*approved$' docs/status/black
 PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh status > "$tmp_dir/status.out"
 grep -q '\[blackbox-card\]' "$tmp_dir/status.out" || {
   echo "status output must contain blackbox card"
+  exit 1
+}
+grep -q '\[step-report\]' "$tmp_dir/status.out" || {
+  echo "status output must contain step-report"
   exit 1
 }
 

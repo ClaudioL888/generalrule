@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [[ -f "$ROOT_DIR/scripts/lib/step-report.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT_DIR/scripts/lib/step-report.sh"
+else
+  emit_step_report() { return 0; }
+fi
+
 fail() {
-  echo "[permissions-gate] $1" >&2
+  local msg="$1"
+  echo "[permissions-gate] $msg" >&2
+  emit_step_report \
+    "validate-permissions-gate" \
+    "permissions gate" \
+    "校验 CODEOWNERS 与审批元数据" \
+    "none" \
+    "none" \
+    "validate-permissions-gate.sh" \
+    "fail" \
+    "$msg" \
+    "补齐权限配置与审批字段后重试"
   exit 1
 }
 
@@ -57,3 +76,13 @@ if [[ "$LOCAL_MODE" != "1" ]]; then
 fi
 
 echo "[permissions-gate] PASS"
+emit_step_report \
+  "validate-permissions-gate" \
+  "permissions gate" \
+  "校验 CODEOWNERS 与审批元数据" \
+  "none" \
+  "none" \
+  "validate-permissions-gate.sh" \
+  "pass" \
+  "权限门禁通过" \
+  "继续执行后续门禁"

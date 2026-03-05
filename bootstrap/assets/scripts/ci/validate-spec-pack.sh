@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [[ -f "$ROOT_DIR/scripts/lib/step-report.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT_DIR/scripts/lib/step-report.sh"
+else
+  emit_step_report() { return 0; }
+fi
+
 fail() {
-  echo "[spec-pack] $1" >&2
+  local msg="$1"
+  echo "[spec-pack] $msg" >&2
+  emit_step_report \
+    "validate-spec-pack" \
+    "spec pack gate" \
+    "校验 spec/design/plan 与任务绑定一致性" \
+    "none" \
+    "none" \
+    "validate-spec-pack.sh" \
+    "fail" \
+    "$msg" \
+    "补齐 spec/design/plan 后重试"
   exit 1
 }
 
@@ -167,3 +186,13 @@ if [[ "$src_changed" == "1" ]]; then
 fi
 
 echo "[spec-pack] PASS"
+emit_step_report \
+  "validate-spec-pack" \
+  "spec pack gate" \
+  "校验 spec/design/plan 与任务绑定一致性" \
+  "none" \
+  "none" \
+  "validate-spec-pack.sh" \
+  "pass" \
+  "spec pack 门禁通过" \
+  "继续执行后续门禁"

@@ -1,0 +1,9 @@
+interface:
+  display_name: Vibe Hub
+  short_description: 单入口路由到治理主流程、任务包与本地门禁。
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - bash
+    - git

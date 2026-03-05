@@ -43,15 +43,43 @@ cat > "$seed_ok" <<'SEED'
 - test_commands: npm test && npm run lint
 - test_result: unit=pass;integration=pass;e2e=pass
 - next_action: handoff to QA
+- chosen_stack: typescript-node-postgresql
+- api_contract: OpenAPI 3.1
+- entity_definitions: user/order/session
+- io_schema: zod request-response
+- api_change_policy: backward-compatible-first
+- frontend_binding_policy: generated-types
+- contract_review_owner: architect-oncall
+- security_boundary: public-api/private-worker/admin-console
+- security_1: oauth2-rbac-least-privilege
+- observability_plan: logs-metrics-traces
+- alert_thresholds: error_rate>1%,p95_latency>400ms
+- release_owner: release-ops-oncall
+- rollback_strategy: blue-green-rollback
+- rollback_summary: db-compatible-rollback-path
 <!-- END_SEED_KV -->
 SEED
 
 output_dir="$tmp_dir/project"
-"$INIT_SCRIPT" --output "$output_dir" --seed "$seed_ok"
+init_output="$("$INIT_SCRIPT" --output "$output_dir" --seed "$seed_ok" 2>&1)"
+
+grep -q '\[step-report\]' <<<"$init_output" || {
+  echo "init-project output must contain step-report"
+  exit 1
+}
+for field in STEP_ID STEP_NAME ACTIONS FILES_CREATED FILES_UPDATED COMMANDS_RUN GATE_STATUS RESULT_SUMMARY NEXT_ACTION; do
+  grep -q "^- ${field}: " <<<"$init_output" || {
+    echo "init-project step-report missing field: $field"
+    exit 1
+  }
+done
 
 required_files=(
   ".codex/config.toml"
   ".codex/rules/default.rules"
+  ".agents/skills/vibe-hub/SKILL.md"
+  ".agents/skills/vibe-hub/agents/openai.yaml"
+  ".agents/skills/vibe-hub/scripts/run.sh"
   ".agents/skills/vibe-governance/SKILL.md"
   ".agents/skills/vibe-governance/agents/openai.yaml"
   ".agents/skills/vibe-governance/scripts/run-full-loop.sh"
@@ -68,6 +96,7 @@ required_files=(
   "docs/adr/0001-initial-decision.md"
   "docs/governance/BRANCH_PROTECTION.md"
   "docs/governance/ROLE_ROUTING.md"
+  "docs/governance/STEP_REPORTING.md"
   "docs/plans/0001-implementation-plan.md"
   "docs/test-plan/0001-test-plan.md"
   "docs/specs/TEMPLATE-feature-spec.md"
@@ -84,8 +113,11 @@ required_files=(
   "docs/release/RELEASE_NOTES.md"
   "docs/status/current-task.md"
   ".github/CODEOWNERS"
+  ".githooks/pre-commit"
   ".githooks/pre-push"
   "scripts/ci/check-codex-capabilities.sh"
+  "scripts/ci/validate-preflight-gate.sh"
+  "scripts/lib/step-report.sh"
   "scripts/ci/validate-spec-pack.sh"
   "scripts/ci/validate-role-flow.sh"
   "scripts/ci/validate-api-frontend-sync.sh"
@@ -111,7 +143,9 @@ for f in "${required_files[@]}"; do
 done
 
 for script_path in \
+  "scripts/lib/step-report.sh" \
   "scripts/ci/check-codex-capabilities.sh" \
+  "scripts/ci/validate-preflight-gate.sh" \
   "scripts/ci/validate-spec-pack.sh" \
   "scripts/ci/validate-role-flow.sh" \
   "scripts/ci/validate-api-frontend-sync.sh" \
@@ -122,6 +156,7 @@ for script_path in \
   "scripts/ci/validate-governance.sh" \
   "scripts/ci/validate-doc-links.sh" \
   "scripts/dev/install-hooks.sh" \
+  ".agents/skills/vibe-hub/scripts/run.sh" \
   ".agents/skills/vibe-governance/scripts/run-full-loop.sh" \
   ".agents/skills/vibe-governance/scripts/run-blackbox-flow.sh" \
   ".agents/skills/vibe-task-pack/scripts/new-task-pack.sh" \
@@ -134,6 +169,10 @@ done
 
 if [[ ! -x "$output_dir/.githooks/pre-push" ]]; then
   echo "generated hook is not executable: $output_dir/.githooks/pre-push"
+  exit 1
+fi
+if [[ ! -x "$output_dir/.githooks/pre-commit" ]]; then
+  echo "generated hook is not executable: $output_dir/.githooks/pre-commit"
   exit 1
 fi
 
@@ -195,7 +234,25 @@ fi
 exit 1
 MOCK
   chmod +x "$mock_codex_bin/codex"
+  cat > docs/status/blackbox-session.md <<'MD'
+# Blackbox Session
+- GOAL: test
+- SPEC_ID: SPEC-0001-core-flow
+- TASK_TYPE: feature
+- WORK_TYPE: full
+- CURRENT_GATE: Gate 0
+- CURRENT_ROLE: Founder
+- NEXT_ROLE: PM
+- APPROVAL_GATE_0: approved
+- APPROVAL_GATE_2: pending
+- APPROVAL_GATE_3: pending
+- APPROVAL_RELEASE: pending
+- STATUS: gate0_approved
+- LAST_ACTION: approve:gate0
+- LAST_UPDATED: 2026-03-05T00:00:00Z
+MD
   PATH="$mock_codex_bin:/usr/bin:/bin" bash scripts/ci/check-codex-capabilities.sh
+  PATH="$mock_codex_bin:/usr/bin:/bin" bash scripts/ci/validate-preflight-gate.sh
   CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-spec-pack.sh
   CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-role-flow.sh
   CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-api-frontend-sync.sh

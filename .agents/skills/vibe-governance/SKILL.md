@@ -38,7 +38,8 @@ description: 使用 Spec 驱动 + 角色路由 + 本地门禁执行完整 Vibe C
 
 1. 任务入口：一句话目标
 2. 人类只确认：`Gate 0`、`Gate 2`、`Gate 3`、`发布`
-3. 其余流程由 AI 自动推进并输出阶段卡片
+3. 启动分两阶段：`prepare`（只读）-> `approve Gate 0`（记录批准）-> `start`（开始写入任务包）
+4. 其余流程由 AI 自动推进并输出阶段卡片
 
 阶段卡片固定字段：
 
@@ -47,6 +48,10 @@ description: 使用 Spec 驱动 + 角色路由 + 本地门禁执行完整 Vibe C
 - `硬门禁状态`
 - `你只需做一件事`
 - `下一步`
+
+步骤回报：
+
+- 每个关键动作还会输出 `[step-report]`（文件变更、命令、结果、下一步）。
 
 ## Commands
 
@@ -64,12 +69,19 @@ bash .agents/skills/vibe-governance/scripts/run-full-loop.sh \
 黑盒半自动：
 
 ```bash
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
+bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh prepare \
   --goal "做一个让新用户 10 分钟内完成首次发布的流程" \
   --task-type feature \
-  --work-type full
+  --work-type full \
+  --spec-id SPEC-0001-core-flow
 
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
+bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0" \
+  --goal "做一个让新用户 10 分钟内完成首次发布的流程" \
+  --task-type feature \
+  --work-type full \
+  --spec-id SPEC-0001-core-flow
+
+bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 3"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "发布"

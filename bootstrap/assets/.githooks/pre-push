@@ -16,6 +16,7 @@ fi
 
 export CHANGED_FILES
 
+bash scripts/ci/validate-preflight-gate.sh
 LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
 LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
 LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh

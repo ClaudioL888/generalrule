@@ -16,6 +16,9 @@ jobs:
       - name: Run Codex capability gate
         run: bash scripts/ci/check-codex-capabilities.sh
 
+      - name: Run preflight gate
+        run: bash scripts/ci/validate-preflight-gate.sh
+
       - name: Prepare governance metadata
         env:
           PR_BODY: ${{ github.event.pull_request.body }}

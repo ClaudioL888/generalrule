@@ -46,20 +46,20 @@ cat > "$seed_l1_full" <<'SEED'
 <!-- END_SEED_KV -->
 SEED
 
-out_default="$tmp_dir/out-default"
-default_output="$($INIT_SCRIPT --output "$out_default" --seed "$seed_l1_full" 2>&1)"
-if ! grep -q 'Compatibility mode warning: full work_type is missing advanced keys' <<<"$default_output"; then
-  echo "expected compatibility warning for missing L2 keys in default mode"
-  exit 1
-fi
-
 strict_fail_log="$tmp_dir/strict-fail.log"
-if STRICT_SEED=1 "$INIT_SCRIPT" --output "$tmp_dir/out-strict-fail" --seed "$seed_l1_full" >"$strict_fail_log" 2>&1; then
-  echo "expected strict mode failure for missing L2 keys"
+if "$INIT_SCRIPT" --output "$tmp_dir/out-strict-default-fail" --seed "$seed_l1_full" >"$strict_fail_log" 2>&1; then
+  echo "expected default strict mode failure for missing L2 keys"
   exit 1
 fi
 if ! grep -q 'missing full-strict seed key' "$strict_fail_log"; then
   echo "expected missing full-strict seed key error message"
+  exit 1
+fi
+
+out_compat="$tmp_dir/out-compat"
+compat_output="$(STRICT_SEED=0 "$INIT_SCRIPT" --output "$out_compat" --seed "$seed_l1_full" 2>&1)"
+if ! grep -q 'Compatibility mode warning: full work_type is missing advanced keys' <<<"$compat_output"; then
+  echo "expected compatibility warning for missing L2 keys when STRICT_SEED=0"
   exit 1
 fi
 

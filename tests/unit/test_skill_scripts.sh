@@ -42,11 +42,38 @@ if bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh --spec-id SPEC-00
   exit 1
 fi
 
-bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
+cat > docs/status/blackbox-session.md <<'MD'
+# Blackbox Session
+- GOAL: test
+- SPEC_ID: SPEC-0002-test
+- TASK_TYPE: feature
+- WORK_TYPE: full
+- CURRENT_GATE: Gate 0
+- CURRENT_ROLE: Founder
+- NEXT_ROLE: PM
+- APPROVAL_GATE_0: approved
+- APPROVAL_GATE_2: pending
+- APPROVAL_GATE_3: pending
+- APPROVAL_RELEASE: pending
+- STATUS: gate0_approved
+- LAST_ACTION: approve:gate0
+- LAST_UPDATED: 2026-03-05T00:00:00Z
+MD
+
+PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
   --spec-id SPEC-0002-test \
   --task-type feature \
   --current-role Dev \
-  --next-role QA
+  --next-role QA > "$tmp_dir/task-pack.out"
+
+grep -q '\[step-report\]' "$tmp_dir/task-pack.out" || {
+  echo "new-task-pack output must contain step-report"
+  exit 1
+}
+grep -q '^- NEXT_ACTION: ' "$tmp_dir/task-pack.out" || {
+  echo "new-task-pack step-report must include NEXT_ACTION"
+  exit 1
+}
 
 [[ -f "docs/specs/SPEC-0002-test.md" ]] || { echo "missing generated spec"; exit 1; }
 [[ -f "docs/contracts/SPEC-0002-test-api-frontend-map.md" ]] || { echo "missing generated map"; exit 1; }
@@ -94,7 +121,16 @@ fi
 sed -i.bak -E 's/^- CONTRACT_SYNC_STATUS:.*$/- CONTRACT_SYNC_STATUS: synced/' docs/status/current-task.md
 rm -f docs/status/current-task.md.bak
 
-PATH="$mock_bin:/usr/bin:/bin" CHANGED_FILES="$changed_files" bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh
+PATH="$mock_bin:/usr/bin:/bin" CHANGED_FILES="$changed_files" bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh > "$tmp_dir/local-gates.out"
+
+grep -q '\[step-report\]' "$tmp_dir/local-gates.out" || {
+  echo "run-local-gates output must contain step-report"
+  exit 1
+}
+grep -q '^- GATE_STATUS: pass' "$tmp_dir/local-gates.out" || {
+  echo "run-local-gates should output pass step-report entries"
+  exit 1
+}
 
 popd >/dev/null
 

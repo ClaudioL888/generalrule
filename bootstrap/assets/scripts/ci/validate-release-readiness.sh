@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [[ -f "$ROOT_DIR/scripts/lib/step-report.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT_DIR/scripts/lib/step-report.sh"
+else
+  emit_step_report() { return 0; }
+fi
+
 fail() {
-  echo "[release-readiness] $1" >&2
+  local msg="$1"
+  echo "[release-readiness] $msg" >&2
+  emit_step_report \
+    "validate-release-readiness" \
+    "release readiness gate" \
+    "校验发布前置条件与 current-task 状态" \
+    "none" \
+    "none" \
+    "validate-release-readiness.sh" \
+    "fail" \
+    "$msg" \
+    "补齐发布条件后重试"
   exit 1
 }
 
@@ -50,6 +69,16 @@ NORMALIZED_CHANGED_FILES="$(normalize_changed_files)"
 
 if [[ "$FORCE_RELEASE_CHECK" != "1" ]] && ! has_changed_prefix "src/"; then
   echo "[release-readiness] SKIP (no src changes)"
+  emit_step_report \
+    "validate-release-readiness" \
+    "release readiness gate" \
+    "校验发布前置条件与 current-task 状态" \
+    "none" \
+    "none" \
+    "validate-release-readiness.sh" \
+    "skip" \
+    "无 src 变更，跳过发布就绪校验" \
+    "继续执行后续门禁"
   exit 0
 fi
 
@@ -82,3 +111,13 @@ if [[ "$contract_sync_status" != "synced" ]]; then
 fi
 
 echo "[release-readiness] PASS"
+emit_step_report \
+  "validate-release-readiness" \
+  "release readiness gate" \
+  "校验发布前置条件与 current-task 状态" \
+  "none" \
+  "none" \
+  "validate-release-readiness.sh" \
+  "pass" \
+  "发布就绪门禁通过" \
+  "可进入发布流程"
