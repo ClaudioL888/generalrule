@@ -1,0 +1,10 @@
+# CODEOWNERS baseline (replace placeholder owners after project bootstrap)
+
+* @YOUR_ORG/general-owners
+
+/.codex/ @YOUR_ORG/platform-owners
+/.github/ @YOUR_ORG/platform-owners
+/docs/ @YOUR_ORG/product-owners @YOUR_ORG/architecture-owners
+/scripts/ci/ @YOUR_ORG/platform-owners
+/src/ @YOUR_ORG/dev-owners
+/tests/ @YOUR_ORG/qa-owners

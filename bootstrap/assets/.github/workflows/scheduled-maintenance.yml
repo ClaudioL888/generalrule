@@ -1,0 +1,18 @@
+name: Scheduled Maintenance
+
+on:
+  schedule:
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+
+jobs:
+  observability-maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run observability gate (warn mode)
+        env:
+          OBS_ENFORCEMENT: warn
+        run: bash scripts/ci/validate-observability-gate.sh

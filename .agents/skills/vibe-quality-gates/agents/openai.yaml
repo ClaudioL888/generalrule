@@ -1,0 +1,8 @@
+interface:
+  display_name: Vibe Quality Gates
+  short_description: 执行本地门禁链并汇总失败原因。
+policy:
+  allow_implicit_invocation: false
+dependencies:
+  tools:
+    - bash

@@ -15,16 +15,26 @@
 - [ ] 已执行 tests/build/lint 并附结果摘要
 - [ ] 已更新 docs/status
 - [ ] 已更新 docs/status/current-task.md 且字段完整
+- [ ] 已更新 docs/specs 对应 SPEC 文档
+- [ ] 已更新 docs/contracts API/前端映射文档
+- [ ] 已更新角色交接文档（handoff）
 - [ ] 已更新 docs/release/CHANGELOG.md
 - [ ] 已更新 docs/release/RELEASE_NOTES.md
 
 ## Governance Metadata (必填，CI 解析)
 
 - WORK_TYPE: full
+- TASK_TYPE: feature
 - PRD_LINK: docs/prd/0001-problem-statement.md
 - DESIGN_LINK: docs/design/0001-architecture-overview.md
 - PLAN_LINK: docs/plans/0001-mvp-implementation-plan.md
 - TASK_STATE_LINK: docs/status/current-task.md
+- SPEC_LINK: docs/specs/SPEC-0001-core-flow.md
+- API_FRONTEND_MAP_LINK: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
+- ROLE_HANDOFF_LINK: docs/status/handoffs/SPEC-0001-core-flow-dev-to-qa.md
+- CURRENT_ROLE: Dev
+- NEXT_ROLE: QA
+- CONTRACT_SYNC_STATUS: synced
 - MINI_PLAN_LINK: N/A
 - INCIDENT_LINK: N/A
 - FAST_TRACK_FOLLOWUP_LINK: N/A
@@ -32,6 +42,9 @@
 - APPROVAL_EXECUTION: approved
 - APPROVAL_DEPENDENCY: approved
 - APPROVAL_PERMISSION: approved
+- CODEOWNER_REVIEW: approved
+- SECURITY_REVIEW: approved
+- RELEASE_REVIEW: approved
 - APPROVAL_EVIDENCE: {{approval_reference}}
 
 ## Test Output Summary

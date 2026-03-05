@@ -13,6 +13,20 @@
 
 Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 
+## 黑盒半自动入口
+
+1. 人类唯一必填输入：`开始任务：<一句话目标>`。
+2. 人类仅在关键节点批准：`批准 Gate 0`、`批准 Gate 2`、`批准 Gate 3`、`批准发布`。
+3. AI 必须每阶段输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
+4. 除关键批准外，AI 自动推进角色链并自检，失败时进入 Observe/Repair 并给出可执行修复动作。
+
+## Skill 调用提醒（强制）
+
+1. `vibe-governance` 作为默认主流程 skill，允许隐式触发（自动进入规范流程）。
+2. `vibe-task-pack` 与 `vibe-quality-gates` 保持显式触发，避免误触发重型检查。
+3. 每次收到新任务时，AI 必须先说明当前将走 `vibe-governance` 主流程，并给出可选显式命令。
+4. 用户明确回复“跳过 skill”后，AI 才可继续，但必须提示风险（可能偏离标准流程或漏掉门禁）。
+
 ## 强制规则
 
 1. 不允许跳过 PRD/Design/Plan 直接改大功能。

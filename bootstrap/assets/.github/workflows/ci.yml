@@ -28,6 +28,45 @@ jobs:
           git fetch origin "${{ github.base_ref }}" --depth=1
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > .ci/changed_files.txt
 
+      - name: Run spec pack gate
+        env:
+          PR_BODY_FILE: .ci/pr_body.md
+        run: |
+          if [ -s .ci/changed_files.txt ]; then
+            export CHANGED_FILES="$(cat .ci/changed_files.txt)"
+          fi
+          bash scripts/ci/validate-spec-pack.sh
+
+      - name: Run role flow gate
+        env:
+          PR_BODY_FILE: .ci/pr_body.md
+        run: |
+          if [ -s .ci/changed_files.txt ]; then
+            export CHANGED_FILES="$(cat .ci/changed_files.txt)"
+          fi
+          bash scripts/ci/validate-role-flow.sh
+
+      - name: Run API/Frontend sync gate
+        env:
+          PR_BODY_FILE: .ci/pr_body.md
+        run: |
+          if [ -s .ci/changed_files.txt ]; then
+            export CHANGED_FILES="$(cat .ci/changed_files.txt)"
+          fi
+          bash scripts/ci/validate-api-frontend-sync.sh
+
+      - name: Run permissions gate
+        env:
+          PR_BODY_FILE: .ci/pr_body.md
+        run: bash scripts/ci/validate-permissions-gate.sh
+
+      - name: Run security gate
+        run: |
+          if [ -s .ci/changed_files.txt ]; then
+            export CHANGED_FILES="$(cat .ci/changed_files.txt)"
+          fi
+          bash scripts/ci/validate-security-gate.sh
+
       - name: Run governance gate
         env:
           PR_BODY_FILE: .ci/pr_body.md
@@ -38,6 +77,18 @@ jobs:
           # current-task path defaults to docs/status/current-task.md.
           # Override via TASK_STATE_LINK in PR metadata or CURRENT_TASK_FILE env.
           bash scripts/ci/validate-governance.sh
+
+      - name: Run release readiness gate
+        run: |
+          if [ -s .ci/changed_files.txt ]; then
+            export CHANGED_FILES="$(cat .ci/changed_files.txt)"
+          fi
+          bash scripts/ci/validate-release-readiness.sh
+
+      - name: Run observability gate (warn mode)
+        env:
+          OBS_ENFORCEMENT: warn
+        run: bash scripts/ci/validate-observability-gate.sh
 
       - name: Run doc link gate
         run: bash scripts/ci/validate-doc-links.sh

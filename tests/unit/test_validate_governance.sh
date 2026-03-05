@@ -63,16 +63,27 @@ MD
 cat > "$tmp_dir/work/docs/release/RELEASE_NOTES.md" <<'MD'
 # Release Notes
 MD
+cat > "$tmp_dir/work/docs/status/TEMPLATE-role-handoff.md" <<'MD'
+# Role Handoff
+MD
 
-changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/prd/0001-problem-statement.md\ndocs/design/0001-architecture-overview.md\ndocs/plans/0001-mvp-implementation-plan.md'
+changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/TEMPLATE-role-handoff.md\ndocs/prd/0001-problem-statement.md\ndocs/design/0001-architecture-overview.md\ndocs/plans/0001-mvp-implementation-plan.md'
 
 pushd "$tmp_dir/work" >/dev/null
 cat > docs/status/current-task.md <<'MD'
 # Current Task
 - TASK_ID: T1
+- SPEC_ID: SPEC-0001-core-flow
+- TASK_TYPE: feature
 - ROLE: Dev
 - WORK_TYPE: full
 - CURRENT_GATE: Gate 4
+- CURRENT_ROLE: Dev
+- NEXT_ROLE: QA
+- HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
+- API_SURFACE_CHANGED: yes
+- FRONTEND_SURFACE_CHANGED: yes
+- CONTRACT_SYNC_STATUS: synced
 - TEST_COMMANDS: npm test && npm run lint
 - TEST_RESULT: unit=pass;integration=pass;e2e=pass
 - UPDATED_AT: 2026-03-03T00:00:00Z
@@ -93,9 +104,17 @@ fi
 cat > docs/status/current-task.md <<'MD'
 # Current Task
 - TASK_ID: T1
+- SPEC_ID: SPEC-0001-core-flow
+- TASK_TYPE: feature
 - ROLE: Dev
 - WORK_TYPE: full
 - CURRENT_GATE: Gate 4
+- CURRENT_ROLE: Dev
+- NEXT_ROLE: QA
+- HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
+- API_SURFACE_CHANGED: yes
+- FRONTEND_SURFACE_CHANGED: yes
+- CONTRACT_SYNC_STATUS: synced
 - TEST_COMMANDS: npm test
 - UPDATED_AT: 2026-03-03T00:00:00Z
 - NEXT_ACTION: handoff to QA
@@ -109,9 +128,17 @@ fi
 cat > docs/status/current-task.md <<'MD'
 # Current Task
 - TASK_ID: T1
+- SPEC_ID: SPEC-0001-core-flow
+- TASK_TYPE: feature
 - ROLE: Dev
 - WORK_TYPE: full
 - CURRENT_GATE: Gate 4
+- CURRENT_ROLE: Dev
+- NEXT_ROLE: QA
+- HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
+- API_SURFACE_CHANGED: yes
+- FRONTEND_SURFACE_CHANGED: yes
+- CONTRACT_SYNC_STATUS: synced
 - TEST_COMMANDS: npm test && npm run lint
 - TEST_RESULT: unit=pass;integration=pass;e2e=pass
 - UPDATED_AT: 2026-03-03T00:00:00Z

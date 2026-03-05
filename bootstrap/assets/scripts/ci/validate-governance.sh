@@ -80,9 +80,17 @@ validate_current_task_file() {
   local required_keys
   required_keys=(
     "TASK_ID"
+    "SPEC_ID"
+    "TASK_TYPE"
     "ROLE"
     "WORK_TYPE"
     "CURRENT_GATE"
+    "CURRENT_ROLE"
+    "NEXT_ROLE"
+    "HANDOFF_LINK"
+    "API_SURFACE_CHANGED"
+    "FRONTEND_SURFACE_CHANGED"
+    "CONTRACT_SYNC_STATUS"
     "TEST_COMMANDS"
     "TEST_RESULT"
     "UPDATED_AT"
@@ -95,6 +103,48 @@ validate_current_task_file() {
     val="$(extract_meta "$key" "$task_file")"
     value_required "current-task $key" "$val"
   done
+
+  local task_type
+  task_type="$(extract_meta "TASK_TYPE" "$task_file")"
+  case "$task_type" in
+    feature|bugfix|refactor|ops|content)
+      ;;
+    *)
+      fail "current-task TASK_TYPE must be one of: feature, bugfix, refactor, ops, content"
+      ;;
+  esac
+
+  local api_surface_changed frontend_surface_changed contract_sync_status handoff_link
+  api_surface_changed="$(extract_meta "API_SURFACE_CHANGED" "$task_file")"
+  frontend_surface_changed="$(extract_meta "FRONTEND_SURFACE_CHANGED" "$task_file")"
+  contract_sync_status="$(extract_meta "CONTRACT_SYNC_STATUS" "$task_file")"
+  handoff_link="$(extract_meta "HANDOFF_LINK" "$task_file")"
+
+  case "$api_surface_changed" in
+    yes|no)
+      ;;
+    *)
+      fail "current-task API_SURFACE_CHANGED must be yes or no"
+      ;;
+  esac
+
+  case "$frontend_surface_changed" in
+    yes|no)
+      ;;
+    *)
+      fail "current-task FRONTEND_SURFACE_CHANGED must be yes or no"
+      ;;
+  esac
+
+  case "$contract_sync_status" in
+    synced|pending)
+      ;;
+    *)
+      fail "current-task CONTRACT_SYNC_STATUS must be synced or pending"
+      ;;
+  esac
+
+  [[ -f "$handoff_link" ]] || fail "current-task HANDOFF_LINK file missing: $handoff_link"
 }
 
 resolve_current_task_file() {

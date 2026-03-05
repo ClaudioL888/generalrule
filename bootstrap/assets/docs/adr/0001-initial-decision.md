@@ -28,6 +28,13 @@ last_updated: "{{YYYY-MM-DD}}"
 
 {{decision}}
 
+## 安全边界
+
+security_boundary: {{security_boundary}}
+- 认证与授权：{{authz_boundary}}
+- 数据分级与访问：{{data_access_boundary}}
+- 外部依赖与信任边界：{{third_party_boundary}}
+
 ## 备选方案
 
 1. {{alternative_1}} - {{alternative_1_tradeoff}}
