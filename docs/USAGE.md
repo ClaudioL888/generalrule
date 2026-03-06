@@ -9,6 +9,7 @@
 - Codex 运行时约束基线（`.codex/`）
 - 文档与门禁脚本基线（`docs/`、`scripts/ci/`、`.github/`）
 - 基于 seed 的项目骨架生成器（`scripts/init-project.sh`）
+- `NORMS + standards + prompts` 三层规范资产
 
 它不是业务模板市场，不负责生成具体业务代码。
 
@@ -26,17 +27,15 @@
 bash scripts/ci/check-codex-capabilities.sh
 ```
 
-如果失败，先升级 Codex CLI 再继续。
-
 ## 3. 快速开始（5 分钟）
 
-1. 复制 seed 模板为你的项目 seed 文件：
+1. 复制 seed 模板：
 
 ```bash
 cp seed.template.md seed.my-project.md
 ```
 
-2. 编辑 `seed.my-project.md`，填写 `START_SEED_KV` 到 `END_SEED_KV` 之间的必填键。
+2. 编辑 `seed.my-project.md`，填写 `START_SEED_KV` 与 `END_SEED_KV` 之间的必填键。
 
 3. 生成目标项目骨架：
 
@@ -46,7 +45,7 @@ bash scripts/init-project.sh \
   --seed ./seed.my-project.md
 ```
 
-4. 正式 `full` 项目建议开启 strict seed 模式（强制 L2 进阶字段）：
+4. 正式 `full` 项目建议启用 strict seed：
 
 ```bash
 STRICT_SEED=1 bash scripts/init-project.sh \
@@ -54,115 +53,49 @@ STRICT_SEED=1 bash scripts/init-project.sh \
   --seed ./seed.my-project.md
 ```
 
-或：
-
-```bash
-bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.my-project.md \
-  --strict-seed
-```
-
-5. 如果目标目录已存在且非空，明确允许覆盖时使用：
-
-```bash
-bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.my-project.md \
-  --force
-```
-
-6. 初始化后第一步安装本地 hooks（启用 pre-push 阻断）：
+5. 初始化后安装本地 hooks：
 
 ```bash
 cd /absolute/path/to/new-project
 bash scripts/dev/install-hooks.sh
 ```
 
-如果项目会启用 `spec-workflow` MCP，再执行一次预热安装：
+6. 安装 pre-commit（可选但推荐）：
+
+```bash
+bash scripts/dev/install-pre-commit.sh
+```
+
+7. 如果项目会启用 `spec-workflow` MCP，再执行一次预热安装：
 
 ```bash
 bash scripts/dev/install-spec-workflow.sh
 ```
 
-未预热时，`spec-workflow` wrapper 会直接报错并提示执行这条命令，而不是在 Codex 会话启动时静默等待长时间安装。
-
-7. Skill 驱动策略（推荐）：
-
-```bash
-# 默认：vibe-governance 会隐式触发（主流程）
-# 按需显式触发：
-$vibe-task-pack
-$vibe-quality-gates
-$vibe-governance
-```
-
 ## 4. 生成结果说明
 
-生成后会包含以下官方路径结构：
+生成后会包含以下新增规范层：
 
-- `.codex/config.toml`
-- `.codex/rules/default.rules`
-- `.agents/skills/vibe-governance/*`
-- `.agents/skills/vibe-task-pack/*`
-- `.agents/skills/vibe-quality-gates/*`
-- `AGENTS.md`
-- `.github/CODEOWNERS`
-- `.github/PULL_REQUEST_TEMPLATE.md`
-- `.github/workflows/ci.yml`
-- `.github/workflows/security.yml`
-- `.github/workflows/release.yml`
-- `.github/workflows/scheduled-maintenance.yml`
-- `docs/prd/0001-problem-statement.md`
-- `docs/design/0001-architecture-overview.md`
-- `docs/adr/0001-initial-decision.md`
-- `docs/governance/BRANCH_PROTECTION.md`
-- `docs/governance/ROLE_ROUTING.md`
-- `docs/plans/0001-implementation-plan.md`
-- `docs/test-plan/0001-test-plan.md`
-- `docs/specs/TEMPLATE-feature-spec.md`
-- `docs/design/TEMPLATE-feature-design.md`
-- `docs/plans/TEMPLATE-feature-plan.md`
-- `docs/contracts/TEMPLATE-api-frontend-map.md`
-- `docs/runbooks/incident-playbook.md`
-- `docs/runbooks/backup-restore.md`
-- `docs/runbooks/oncall-checklist.md`
-- `docs/metrics/TEMPLATE-dora-aarrr.md`
-- `docs/status/TEMPLATE-weekly-maintenance.md`
-- `docs/status/TEMPLATE-monthly-maintenance.md`
-- `docs/status/TEMPLATE-role-handoff.md`
-- `docs/status/TEMPLATE-blackbox-session.md`
-- `docs/status/TEMPLATE-brainstorming.md`
-- `docs/release/CHANGELOG.md`
-- `docs/release/RELEASE_NOTES.md`
-- `docs/status/current-task.md`
-- `.githooks/pre-push`
-- `scripts/ci/check-codex-capabilities.sh`
-- `scripts/ci/validate-spec-pack.sh`
-- `scripts/ci/validate-role-flow.sh`
-- `scripts/ci/validate-api-frontend-sync.sh`
-- `scripts/ci/validate-governance.sh`
-- `scripts/ci/validate-doc-links.sh`
-- `scripts/ci/validate-permissions-gate.sh`
-- `scripts/ci/validate-security-gate.sh`
-- `scripts/ci/validate-release-readiness.sh`
-- `scripts/ci/validate-observability-gate.sh`
-- `scripts/dev/install-hooks.sh`
+- `docs/NORMS.md`
+- `docs/standards/*.md`
+- `docs/prompts/*.md`
+- `docs/governance/ROLE_STANDARD_MATRIX.md`
+- `docs/governance/TASK_TYPE_STANDARD_PROFILES.md`
+- `docs/governance/EXCEPTIONS.md`
+- `docs/metrics/ENGINEERING_METRICS.md`
+- `docs/status/TEMPLATE-exception-log.md`
+- `docs/status/TEMPLATE-metrics-weekly.md`
+- `.pre-commit-config.yaml`
+- `scripts/dev/install-pre-commit.sh`
+- `scripts/ci/validate-exception-gate.sh`
+- `scripts/ci/collect-metrics.sh`
 
 说明：
 
-- `.codex/*`、CI 脚本等属于固定基线。
-- `.codex/config.toml` 默认带项目级 `spec-workflow` MCP 配置：`command = "bash"`、`args = [".codex/bin/spec-workflow.sh", "."]`。其中 `"."` 表示生成后的项目根目录；`SPEC_WORKFLOW_HOME=.spec-workflow-mcp` 用于把 workflow 状态写到项目内可写目录；wrapper 会把 MCP 包安装到项目内 `.codex/vendor/`，避免依赖全局 `npx` 缓存。
-- 文档中的 `{{token}}` 会由 seed 键填充；未提供的非关键键会写成 `TODO(key)`。
-- 默认是兼容模式：`work_type=full` 缺 L2 键会告警不阻断；strict 模式下会阻断。
-
-## 4.1 Seed 严格模式与迁移建议
-
-迁移建议：
-
-1. 先用兼容模式跑通初始化，观察缺失的 L2 告警列表。
-2. 在你的 seed 中补齐技术、安全、可观测、发布四类 L2 字段。
-3. 切到 strict 模式并保持通过，作为正式项目默认流程。
+- `docs/NORMS.md` 是最短硬规则真值。
+- `docs/standards/*.md` 是长期标准，不随单个任务频繁改动。
+- `docs/prompts/*.md` 是角色提示资产，用于稳定角色行为。
+- `spec/design/plan/current-task` 是任务级真值。
 
 ## 5. 日常开发与门禁流程
 
@@ -174,7 +107,9 @@ LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
 bash scripts/ci/validate-spec-quality.sh
 bash scripts/ci/validate-citation-quality.sh
 LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
+LOCAL_MODE=1 bash scripts/ci/validate-standards-binding.sh
 LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
+LOCAL_MODE=1 bash scripts/ci/validate-exception-gate.sh
 LOCAL_MODE=1 bash scripts/ci/validate-permissions-gate.sh
 bash scripts/ci/validate-security-gate.sh
 LOCAL_MODE=1 bash scripts/ci/validate-governance.sh
@@ -185,77 +120,59 @@ bash scripts/ci/validate-doc-links.sh
 
 ### 5.1 Skill 驱动开发（推荐）
 
-当你希望按固定流程执行时，优先调用：
+优先通过以下入口驱动：
 
 ```bash
-bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
-  --spec-id SPEC-0001-core-flow \
-  --task-type feature \
-  --current-role Dev \
-  --next-role QA
-
-bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh
-
-bash .agents/skills/vibe-governance/scripts/run-full-loop.sh \
-  --spec-id SPEC-0001-core-flow \
-  --task-type feature \
-  --current-role Dev \
-  --next-role QA \
-  --work-type full
+$vibe-governance
+$vibe-task-pack
+$vibe-quality-gates
 ```
 
-说明：
+### 5.2 规范读取顺序
 
-- `validate-governance.sh` 会在 `src/` 变更时强制检查 `docs/release/*` 与 `docs/status/current-task.md`。
-- `validate-spec-pack.sh` 会在 `src/` 变更时强制检查 `SPEC_LINK`、Design/Plan 变更、Spec 结构完整性。
-- `validate-spec-quality.sh` 会在 Spec 相关变更时检查 `SPEC_QUALITY_STATUS`、`SPEC_WORKFLOW_STATUS` 与 `SPEC_WORKFLOW_LINK`。默认模式允许 `degraded + unavailable` 降级，设置 `SPEC_WORKFLOW_REQUIRED=strict` 后必须 `approved + passed`。
-- 黑盒流程中可优先使用 `run-blackbox-flow.sh spec-quality --auto --status approved|degraded`，自动连通 `spec-workflow` 并写入审查记录，再由治理流程保留最终 approved/degraded 判断。
-- `validate-citation-quality.sh` 会在 `docs/prd/`、`docs/design/`、`docs/adr/`、`docs/specs/` 变更时强制检查 `## 引用与依据` 与结构化来源行。
-- `validate-role-flow.sh` 会强制校验 `TASK_TYPE` 的角色流转与 handoff 文档。
-- `validate-api-frontend-sync.sh` 会强制校验 API/前端契约映射与 `CONTRACT_SYNC_STATUS`。
-- PR/CI 中会再次执行同类校验，不满足则阻断合并。
-- `validate-observability-gate.sh` 默认是告警模式，可通过 `OBS_ENFORCEMENT=strict` 切换为硬阻断。
+新会话或新任务开始时，建议先读：
 
-### 5.2 黑盒半自动开发（你只做 Gate 批准）
+1. `AGENTS.md`
+2. `docs/NORMS.md`
+3. 当前任务相关的 `docs/standards/*.md`
+4. 当前角色对应的 `docs/prompts/*.md`
+5. `docs/governance/ROLE_STANDARD_MATRIX.md` 与 `docs/governance/TASK_TYPE_STANDARD_PROFILES.md`
+6. 当前 `spec/design/plan/current-task`
 
-当你希望“人类只输入一句话目标，AI 自动推进其余流程”时，使用：
+### 5.2.1 更细的角色交接检查
+
+`validate-role-flow.sh` 现在不只检查角色跳转是否合法，还会检查：
+
+1. handoff 是否包含 `Inputs / Outputs / Definition of Done / Handoff To`
+2. handoff 是否引用当前角色与下一角色的 prompt 资产
+3. handoff 是否包含当前角色必须交付的主产物链接
+4. `Dev -> QA` 这类交接是否带可读测试证据
+
+### 5.2.2 标准绑定门禁
+
+`validate-standards-binding.sh` 负责检查：
+
+1. `CURRENT_ROLE_STANDARDS` / `NEXT_ROLE_STANDARDS` 是否与角色矩阵一致
+2. handoff 是否引用当前/下一角色 standards
+3. `ROLE_DOD_STATUS` 与 `EVIDENCE_STATUS` 是否已完成
+4. `DEVIATION_STATUS=documented` 时是否附 `EXCEPTION_LINK`
+
+默认 `STANDARDS_ENFORCEMENT=strict`：
+
+1. 所有角色缺标准或证据都会直接阻断
+2. 需要降级时，显式设为 `mixed` 或 `warn`
+3. `mixed` 下仅 `Architect / Dev / QA / Release-Ops` 继续硬阻断，其余角色告警通过
+
+### 5.3 metrics 与例外
+
+1. 需要破例时，先创建 `docs/status/TEMPLATE-exception-log.md` 的实例。
+2. 每周至少生成一份 metrics 快照：
 
 ```bash
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
-  --goal "做一个让新用户 10 分钟内完成首次发布的流程" \
-  --task-type feature \
-  --work-type full
-
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm \
-  --note "docs/status/brainstorming/spec-0001-core-flow.md"
-
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh spec-quality \
-  --status approved \
-  --workflow-status unavailable \
-  --note "docs/status/spec-quality/spec-0001-core-flow.md"
-
-bash -lc 'sed -i.bak -E "s/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
-
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
-
-bash -lc 'sed -i.bak -E "s/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
-
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2"
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 3"
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "发布"
+bash scripts/ci/collect-metrics.sh
 ```
 
-说明：
-
-- 你唯一任务入口是 `--goal`（一句话目标）。
-- Gate 0 前必须完成 brainstorming（需求/选型前期准备），否则脚本会阻断批准。
-- Gate 0 / Gate 2 前必须完成 spec quality 审查；默认允许记录 `degraded + unavailable` 作为 MCP 不可用时的降级结果。
-- 如果当前项目的 `spec-workflow` MCP 已稳定可用，建议在本地或 CI 中设置 `SPEC_WORKFLOW_REQUIRED=strict`，把 spec quality 从“可降级”切到“硬阻断”。
-- Gate 0 前还必须更新 `docs/design/<SPEC_ID>-design.md`，并把 `DESIGN_SYNC_STATUS` 设为 `synced`。
-- Gate 2 前必须更新 `docs/plans/<SPEC_ID>-plan.md`，并把 `PLAN_SYNC_STATUS` 设为 `synced`。
-- 人类只在 `Gate 0/Gate 2/Gate 3/发布` 进行批准。
-- 每次执行会输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
-- 会话状态写入 `docs/status/blackbox-session.md`，任务状态写入 `docs/status/current-task.md`。
+3. fast-track 任务必须带 exception 记录与追补期限。
 
 ## 6. 常见失败与修复
 
@@ -273,116 +190,64 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate 
 
 ### 6.3 `codex execpolicy check does not support --rules`
 
-原因：Codex 版本过旧，不满足严格能力门槛。
+原因：Codex 版本过旧。
 
-修复：升级 Codex CLI 后重试能力检查脚本。
+修复：升级 Codex CLI 后重试能力检查。
 
 ### 6.4 `current-task ... is required`
 
 原因：`docs/status/current-task.md` 缺少必填字段或未更新。
 
-修复：补齐并更新以下字段：
+修复：补齐字段，并确认 `EXCEPTION_STATUS / REWORK_RISK / METRICS_IMPACT` 也已填写。
 
-- `TASK_ID`
-- `SPEC_ID`
-- `TASK_TYPE`
-- `ROLE`
-- `WORK_TYPE`
-- `CURRENT_GATE`
-- `CURRENT_ROLE`
-- `NEXT_ROLE`
-- `HANDOFF_LINK`
-- `API_SURFACE_CHANGED`
-- `FRONTEND_SURFACE_CHANGED`
-- `CONTRACT_SYNC_STATUS`
-- `TEST_COMMANDS`
-- `TEST_RESULT`
-- `UPDATED_AT`
-- `NEXT_ACTION`
+### 6.5 `EXCEPTION_STATUS mismatch` 或 `WORK_TYPE=fast-track requires EXCEPTION_STATUS`
 
-### 6.5 `missing full-strict seed key: <key>`
+原因：例外状态未同步，或 fast-track 未记录 exception。
 
-原因：你启用了 strict seed，且 `work_type=full` 时缺少 L2 进阶字段。
+修复：更新 `docs/status/current-task.md`、PR metadata 与 exception log。
 
-修复：补齐 `seed.template.md` 的 L2_FULL_REQUIRED 字段，或暂时改回兼容模式。
+### 6.6 `no weekly metrics record found`
 
-### 6.6 `CODEOWNERS missing required path rule pattern`
+原因：缺 weekly metrics 快照。
 
-原因：`.github/CODEOWNERS` 未覆盖核心路径规则（`docs/`、`scripts/ci/`、`.codex/`、`.github/`）。
+修复：执行 `bash scripts/ci/collect-metrics.sh` 并补充人工指标。
 
-修复：补齐对应路径与 owner 规则（可先用占位符 owner，后续替换为真实团队）。
+### 6.7 `standards-binding ...`
 
-### 6.7 `src changes require docs/release/RELEASE_NOTES.md update for security impact disclosure`
+原因：handoff 缺 standards 引用、`ROLE_DOD_STATUS/EVIDENCE_STATUS` 未完成，或偏差未记录。
 
-原因：有 `src/` 变更但未在 release notes 体现安全影响说明。
+修复：
 
-修复：更新 `docs/release/RELEASE_NOTES.md`，明确安全边界影响与回滚要点。
-
-### 6.8 `CURRENT_GATE must be at least Gate 6 before release`
-
-原因：发布就绪检查要求 `current-task` 已进入 Gate 6 及以上。
-
-修复：先完成测试/文档/发布前检查，再将 `CURRENT_GATE` 更新到 `Gate 6` 或更高。
-
-### 6.9 `illegal role transition`
-
-原因：`CURRENT_ROLE -> NEXT_ROLE` 不符合 `TASK_TYPE` 对应角色链。
-
-修复：按 `docs/governance/ROLE_ROUTING.md` 修正流转并更新 handoff 文档。
-
-### 6.10 `API_FRONTEND_MAP_LINK must be updated`
-
-原因：代码改动涉及 API/前端契约，但映射文档未同步更新。
-
-修复：更新 `docs/contracts/*` 并将 `CONTRACT_SYNC_STATUS` 置为 `synced`。
-
-### 6.11 `Gate approval is only valid when CURRENT_GATE=...`
-
-原因：批准指令与当前阶段不匹配（例如还在 `Gate 0` 却执行了 `批准发布`）。
-
-修复：先运行 `bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh status` 查看当前阶段，再按顺序批准。
-
-### 6.12 `must include at least one primary or internal citation`
-
-原因：你修改了 `docs/prd/`、`docs/design/`、`docs/adr/` 或 `docs/specs/`，但没有补齐结构化引用块，或只有 `secondary` 来源。
-
-修复：在文档中加入：
-
-- `## 引用与依据`
-- `- SOURCE: <url-or-path> | TYPE: primary|secondary|internal | NOTE: <why-it-matters>`
-
-并至少保留一条 `TYPE: primary` 或 `TYPE: internal`。
+1. 更新 `docs/status/current-task.md` 中的 standards 与状态字段
+2. 在 handoff 中补 `Applicable Standards` 与 `Evidence Summary`
+3. 如有偏差，补 `EXCEPTION_LINK` 与具体偏差说明
 
 ## 7. 版本升级与回归验证
 
-升级 Codex CLI：
+推荐回归命令：
 
 ```bash
-npm install -g @openai/codex@latest
-hash -r
-codex --version
+for t in tests/unit/*.sh; do bash "$t"; done
 ```
 
-执行全量回归：
+如果升级了 Codex、skills 或 gate 脚本，优先重跑：
 
-```bash
-bash tests/unit/test_check_codex_capabilities.sh
-bash tests/unit/test_validate_governance.sh
-bash tests/unit/test_validate_doc_links.sh
-bash tests/unit/test_init_project.sh
-bash tests/unit/test_codex_runtime_config.sh
-```
+- `tests/unit/test_codex_runtime_config.sh`
+- `tests/unit/test_init_project.sh`
+- `tests/unit/test_validate_governance.sh`
+- `tests/unit/test_validate_exception_gate.sh`
+- `tests/unit/test_validate_observability_gate.sh`
 
 ## 8. FAQ
 
-### 8.1 什么时候用 `--force`？
+### 8.1 什么时候用 `--force`
 
-仅在你明确要覆盖目标目录原内容时使用。默认不覆盖是为了避免误删。
+当你明确允许覆盖非空输出目录时才用。
 
-### 8.2 为什么会出现很多 `TODO(key)`？
+### 8.2 为什么会出现大量 `TODO(key)`
 
-因为你没有在 seed 中提供对应可选键。生成器会保留占位提醒，避免静默丢字段。
+说明 seed 没填对应非关键键；这不是错误，但表示后续需要补全。
 
-### 8.3 为什么严格门槛会阻断旧版 Codex？
+### 8.3 为什么旧版 Codex 会被阻断
 
-本仓库选择“官方严格语义”，要求 `--rules` 与 `justification` 可用；不满足时必须先升级，保证本地与 CI 行为一致。
+因为这套基线依赖官方 `--rules` 与 `justification` 语义；旧版本不具备足够运行时约束能力。

@@ -113,6 +113,11 @@ grep -q '\[blackbox-card\]' "$tmp_dir/start.out" || {
   exit 1
 }
 
+grep -q 'standards=' "$tmp_dir/start.out" || {
+  echo "start output must include standards summary"
+  exit 1
+}
+
 if PATH="$mock_bin:/usr/local/bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"; then
   echo "Gate 0 approval should fail before brainstorming"
   exit 1
@@ -184,6 +189,28 @@ grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 3$' docs/status/current-tas
   exit 1
 }
 
+dev_handoff="$(sed -n -E 's/^-[[:space:]]*HANDOFF_LINK:[[:space:]]*(.*)$/\1/p' docs/status/current-task.md | tail -n1)"
+[[ -n "$dev_handoff" && -f "$dev_handoff" ]] || {
+  echo "missing dev handoff after Gate 2 approval"
+  exit 1
+}
+sed -i.bak -E 's/^(.*测试证据：).*$/\1 unit=pass;integration=pass;e2e=pass/' "$dev_handoff"
+rm -f "$dev_handoff.bak"
+sed -i.bak -E 's|^(.*主证据：).*$|\1 docs/contracts/SPEC-0099-blackbox-api-frontend-map.md|' "$dev_handoff"
+rm -f "$dev_handoff.bak"
+sed -i.bak -E 's|^(.*次证据：).*$|\1 docs/status/current-task.md|' "$dev_handoff"
+rm -f "$dev_handoff.bak"
+sed -i.bak -E 's/^(.*风险证据：).*$/\1 low/' "$dev_handoff"
+rm -f "$dev_handoff.bak"
+sed -i.bak -E 's|^(.*文档同步证据：).*$|\1 docs/status/current-task.md|' "$dev_handoff"
+rm -f "$dev_handoff.bak"
+sed -i.bak -E 's/^- TEST_RESULT:.*$/- TEST_RESULT: unit=pass;integration=pass;e2e=pass/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
+sed -i.bak -E 's/^- ROLE_DOD_STATUS:.*$/- ROLE_DOD_STATUS: met/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
+sed -i.bak -E 's/^- EVIDENCE_STATUS:.*$/- EVIDENCE_STATUS: complete/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
+
 PATH="$mock_bin:/usr/local/bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 3"
 grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 6$' docs/status/current-task.md || {
   echo "current-task CURRENT_GATE should be Gate 6 after Gate 3 approval"
@@ -194,6 +221,26 @@ grep -q '^-[[:space:]]*STATUS:[[:space:]]*waiting_release_approval$' docs/status
   echo "session should wait release approval after Gate 3"
   exit 1
 }
+
+release_handoff="$(sed -n -E 's/^-[[:space:]]*HANDOFF_LINK:[[:space:]]*(.*)$/\1/p' docs/status/current-task.md | tail -n1)"
+[[ -n "$release_handoff" && -f "$release_handoff" ]] || {
+  echo "missing release handoff before release approval"
+  exit 1
+}
+sed -i.bak -E 's|^(.*主证据：).*$|\1 docs/release/CHANGELOG.md|' "$release_handoff"
+rm -f "$release_handoff.bak"
+sed -i.bak -E 's|^(.*次证据：).*$|\1 docs/release/RELEASE_NOTES.md|' "$release_handoff"
+rm -f "$release_handoff.bak"
+sed -i.bak -E 's/^(.*测试证据：).*$/\1 release-check=pass/' "$release_handoff"
+rm -f "$release_handoff.bak"
+sed -i.bak -E 's/^(.*风险证据：).*$/\1 low/' "$release_handoff"
+rm -f "$release_handoff.bak"
+sed -i.bak -E 's|^(.*文档同步证据：).*$|\1 docs/status/current-task.md|' "$release_handoff"
+rm -f "$release_handoff.bak"
+sed -i.bak -E 's/^- ROLE_DOD_STATUS:.*$/- ROLE_DOD_STATUS: met/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
+sed -i.bak -E 's/^- EVIDENCE_STATUS:.*$/- EVIDENCE_STATUS: complete/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
 
 PATH="$mock_bin:/usr/local/bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "发布"
 grep -q '^-[[:space:]]*STATUS:[[:space:]]*released$' docs/status/blackbox-session.md || {
@@ -209,6 +256,11 @@ grep -q '^-[[:space:]]*APPROVAL_RELEASE:[[:space:]]*approved$' docs/status/black
 PATH="$mock_bin:/usr/local/bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh status > "$tmp_dir/status.out"
 grep -q '\[blackbox-card\]' "$tmp_dir/status.out" || {
   echo "status output must contain blackbox card"
+  exit 1
+}
+
+grep -q 'standards=' "$tmp_dir/status.out" || {
+  echo "status output must include standards summary"
   exit 1
 }
 

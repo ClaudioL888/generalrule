@@ -8,12 +8,13 @@
 
 ```mermaid
 flowchart LR
-  A["Spec"] --> B["Role Routing"]
-  B --> C["Edit"]
-  C --> D["Run Tools"]
-  D --> E["Observe / Repair"]
-  E --> F["Update docs/status"]
-  F --> A
+  A["NORMS / Standards / Prompts"] --> B["Spec"]
+  B --> C["Role Routing"]
+  C --> D["Edit"]
+  D --> E["Run Tools"]
+  E --> F["Observe / Repair"]
+  F --> G["Update docs/status"]
+  G --> A
 ```
 
 ## 仓库职责
@@ -29,6 +30,9 @@ flowchart LR
 - `.codex/rules/default.rules`
 - `.agents/skills/`
 - `AGENTS.md`
+- `docs/NORMS.md`
+- `docs/standards/*`
+- `docs/prompts/*`
 - `seed.template.md`
 - `bootstrap/assets/`
 - `scripts/init-project.sh`
@@ -46,44 +50,15 @@ flowchart LR
 - `$vibe-task-pack`
 - `$vibe-quality-gates`
 
-本地脚本调用：
+## 规范层级
 
-```bash
-bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
-  --spec-id SPEC-0001-core-flow \
-  --task-type feature \
-  --current-role Dev \
-  --next-role QA
+1. `docs/NORMS.md`：最短硬规则真值
+2. `docs/standards/*`：discovery/design/planning/coding/testing/security/observability/release/documentation 长期标准
+3. `docs/prompts/*`：角色提示资产
+4. `spec/design/plan/contract/current-task/handoff`：任务级真值
+5. `scripts/ci/* + CI`：最终硬门禁
 
-bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh
-```
-
-黑盒半自动（你只给一句话目标）：
-
-```bash
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
-  --goal "做一个让新用户 10 分钟内完成首次发布的流程" \
-  --task-type feature \
-  --work-type full
-
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm \
-  --note "docs/status/brainstorming/spec-0001-core-flow.md"
-
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh spec-quality \
-  --auto \
-  --status approved \
-  --note "docs/status/spec-quality/spec-0001-core-flow.md"
-
-bash -lc 'sed -i.bak -E "s/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
-
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
-
-bash -lc 'sed -i.bak -E "s/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
-
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2"
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 3"
-bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "发布"
-```
+其中 `handoff` 现在是细粒度校验对象：必须包含固定章节、当前/下一角色 prompt 路径、当前/下一角色 standards、当前角色应交付的主产物链接，以及证据摘要。
 
 ## 生成新项目
 
@@ -93,16 +68,7 @@ bash scripts/init-project.sh \
   --seed ./seed.template.md
 ```
 
-覆盖非空目录：
-
-```bash
-bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.template.md \
-  --force
-```
-
-可选开启严格 seed 校验（`full` 项目推荐）：
+正式 `full` 项目建议启用 strict seed：
 
 ```bash
 STRICT_SEED=1 bash scripts/init-project.sh \
@@ -110,59 +76,29 @@ STRICT_SEED=1 bash scripts/init-project.sh \
   --seed ./seed.template.md
 ```
 
-## 生成后默认结构
+## 生成后新增的关键资产
 
-- `.codex/config.toml`
-- `.codex/rules/default.rules`
-- `AGENTS.md`
-- `.agents/skills/vibe-governance/SKILL.md`
-- `.agents/skills/vibe-governance/scripts/run-blackbox-flow.sh`
-- `.agents/skills/vibe-task-pack/SKILL.md`
-- `.agents/skills/vibe-quality-gates/SKILL.md`
-- `.github/CODEOWNERS`
-- `.github/PULL_REQUEST_TEMPLATE.md`
-- `.github/workflows/ci.yml`
-- `.github/workflows/security.yml`
-- `.github/workflows/release.yml`
-- `.github/workflows/scheduled-maintenance.yml`
-- `docs/prd/0001-problem-statement.md`
-- `docs/design/0001-architecture-overview.md`
-- `docs/adr/0001-initial-decision.md`
-- `docs/governance/BRANCH_PROTECTION.md`
-- `docs/governance/ROLE_ROUTING.md`
-- `docs/plans/0001-implementation-plan.md`
-- `docs/test-plan/0001-test-plan.md`
-- `docs/specs/TEMPLATE-feature-spec.md`
-- `docs/design/TEMPLATE-feature-design.md`
-- `docs/plans/TEMPLATE-feature-plan.md`
-- `docs/contracts/TEMPLATE-api-frontend-map.md`
-- `docs/runbooks/incident-playbook.md`
-- `docs/runbooks/backup-restore.md`
-- `docs/runbooks/oncall-checklist.md`
-- `docs/metrics/TEMPLATE-dora-aarrr.md`
-- `docs/status/TEMPLATE-weekly-maintenance.md`
-- `docs/status/TEMPLATE-monthly-maintenance.md`
-- `docs/status/TEMPLATE-role-handoff.md`
-- `docs/status/TEMPLATE-blackbox-session.md`
-- `docs/status/TEMPLATE-brainstorming.md`
-- `docs/status/TEMPLATE-spec-quality.md`
-- `docs/release/CHANGELOG.md`
-- `docs/release/RELEASE_NOTES.md`
-- `docs/status/current-task.md`
-- `.githooks/pre-push`
-- `scripts/ci/check-codex-capabilities.sh`
-- `scripts/ci/validate-spec-pack.sh`
-- `scripts/ci/validate-spec-quality.sh`
-- `scripts/ci/validate-citation-quality.sh`
-- `scripts/ci/validate-role-flow.sh`
-- `scripts/ci/validate-api-frontend-sync.sh`
-- `scripts/ci/validate-governance.sh`
-- `scripts/ci/validate-doc-links.sh`
-- `scripts/ci/validate-permissions-gate.sh`
-- `scripts/ci/validate-security-gate.sh`
-- `scripts/ci/validate-release-readiness.sh`
-- `scripts/ci/validate-observability-gate.sh`
-- `scripts/dev/install-hooks.sh`
+- `docs/NORMS.md`
+- `docs/standards/coding-standards.md`
+- `docs/standards/discovery-standards.md`
+- `docs/standards/design-standards.md`
+- `docs/standards/planning-standards.md`
+- `docs/standards/release-standards.md`
+- `docs/standards/documentation-standards.md`
+- `docs/standards/testing-standards.md`
+- `docs/standards/security-standards.md`
+- `docs/standards/observability-standards.md`
+- `docs/prompts/*.md`
+- `docs/governance/ROLE_STANDARD_MATRIX.md`
+- `docs/governance/TASK_TYPE_STANDARD_PROFILES.md`
+- `docs/governance/EXCEPTIONS.md`
+- `docs/metrics/ENGINEERING_METRICS.md`
+- `docs/status/TEMPLATE-exception-log.md`
+- `docs/status/TEMPLATE-metrics-weekly.md`
+- `.pre-commit-config.yaml`
+- `scripts/dev/install-pre-commit.sh`
+- `scripts/ci/validate-exception-gate.sh`
+- `scripts/ci/collect-metrics.sh`
 
 ## 官方 Codex 配置
 
@@ -171,7 +107,7 @@ STRICT_SEED=1 bash scripts/init-project.sh \
 - `.codex/config.toml`
 - `.codex/rules/default.rules`
 
-其中 `.codex/config.toml` 现在默认声明项目级 `spec-workflow` MCP：
+其中 `.codex/config.toml` 默认声明项目级 `spec-workflow` MCP：
 
 - `[mcp_servers.spec-workflow]`
 - `command = "bash"`
@@ -179,61 +115,12 @@ STRICT_SEED=1 bash scripts/init-project.sh \
 - `env = { SPEC_WORKFLOW_HOME = ".spec-workflow-mcp" }`
 - `startup_timeout_sec = 180`
 
-这里的 `"."` 表示“当前项目根目录”，这样初始化到其他项目后不需要再把固定绝对路径写死到配置里。`.spec-workflow-mcp` 则是项目内可写状态目录，避免受限沙箱下把状态写到只读的 `$HOME`。`.codex/bin/spec-workflow.sh` 会把 `spec-workflow-mcp` 安装到项目内 `.codex/vendor/`，避免反复走全局 `npx` 缓存。
-
-Profile 示例：
-
-- `codex --profile strict`
-- `codex --profile release`
-
-官方能力门槛（严格模式）：
-
-- 必须支持 `codex execpolicy check --rules ...`
-- 必须支持 `prefix_rule(..., justification = "...")`
-- 不满足能力门槛时本地与 CI 都阻断
-- `spec-workflow` 默认是项目级增强能力；若当前项目要把它变成硬门禁，可设置 `SPEC_WORKFLOW_REQUIRED=strict`
-
-本地检查命令：
-
-- `bash scripts/ci/check-codex-capabilities.sh`
-
-规则验证示例：
-
-- `codex execpolicy check --pretty --rules .codex/rules/default.rules -- git reset --hard`
-- `codex execpolicy check --pretty --rules .codex/rules/default.rules -- git status`
-
-如果当前项目要真实启用 `spec-workflow` MCP，先预热本地 vendor 安装：
-
-- `bash scripts/dev/install-spec-workflow.sh`
-
-未预热时，`.codex/bin/spec-workflow.sh` 会快速失败并提示安装，而不会在 Codex 会话启动阶段长时间卡住。
-
 ## 生产级加固能力
 
 当前基线已内置分级门禁策略：
 
-- 硬阻断：权限（CODEOWNERS + 审批元数据）、安全（secret/dependency/policy）、发布就绪检查
-- 软阻断（告警）：观测与维护记录（可切 strict）
-- 文档依据硬阻断：`docs/prd/`、`docs/design/`、`docs/adr/`、`docs/specs/` 变更时必须带结构化引用块
-
-新增核心资产位于 `bootstrap/assets`：
-
-- `.agents/skills/vibe-governance/*`
-- `.agents/skills/vibe-task-pack/*`
-- `.agents/skills/vibe-quality-gates/*`
-- `.github/CODEOWNERS`
-- `.github/workflows/security.yml`
-- `.github/workflows/release.yml`
-- `.github/workflows/scheduled-maintenance.yml`
-- `docs/governance/ROLE_ROUTING.md`
-- `docs/specs/TEMPLATE-feature-spec.md`
-- `docs/contracts/TEMPLATE-api-frontend-map.md`
-- `docs/status/TEMPLATE-role-handoff.md`
-- `.githooks/pre-push`
-- `scripts/ci/validate-permissions-gate.sh`
-- `scripts/ci/validate-security-gate.sh`
-- `scripts/ci/validate-release-readiness.sh`
-- `scripts/ci/validate-observability-gate.sh`
-- `scripts/ci/validate-spec-pack.sh`
-- `scripts/ci/validate-role-flow.sh`
-- `scripts/ci/validate-api-frontend-sync.sh`
+- 硬阻断：权限、安全、发布、exception、契约一致性
+- 分级阻断：`standards-binding` 默认 `strict`，所有角色缺标准绑定或缺证据都会阻断；需要降级时显式设 `STANDARDS_ENFORCEMENT=mixed|warn`
+- 软阻断（告警）：观测与维护记录
+- 文档依据硬阻断：spec/design/adr/prd 的 citation quality
+- 更早阻断：`pre-push + pre-commit + CI`
