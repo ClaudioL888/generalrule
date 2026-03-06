@@ -65,3 +65,8 @@ last_updated: "{{YYYY-MM-DD}}"
 - [ ] 指标可量化并可观测
 - [ ] 非目标明确
 - [ ] Founder 批准
+
+## 9. 引用与依据
+
+- SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
+- SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

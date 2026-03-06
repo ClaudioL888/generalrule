@@ -6,12 +6,14 @@ usage() {
 Usage:
   run-blackbox-flow.sh start --goal <single-line-goal> [--task-type <feature|bugfix|refactor|ops|content>] [--work-type <full|mini|fast-track>] [--spec-id <SPEC-...>]
   run-blackbox-flow.sh brainstorm [--note <path>]
+  run-blackbox-flow.sh spec-quality [--auto] [--status <approved|degraded>] [--workflow-status <passed|unavailable>] [--note <path>]
   run-blackbox-flow.sh approve --gate <Gate 0|Gate 2|Gate 3|发布|release> [--decision <approved|rejected>]
   run-blackbox-flow.sh status
 
 Examples:
   run-blackbox-flow.sh start --goal "做一个让新用户 10 分钟内完成首次发布的流程"
   run-blackbox-flow.sh brainstorm --note "docs/status/brainstorming/spec-20260305-core.md"
+  run-blackbox-flow.sh spec-quality --auto --status approved --note "docs/status/spec-quality/spec-20260305-core.md"
   run-blackbox-flow.sh approve --gate "Gate 0"
   run-blackbox-flow.sh approve --gate "Gate 2"
   run-blackbox-flow.sh approve --gate "Gate 3"
@@ -29,6 +31,8 @@ SESSION_TEMPLATE="docs/status/TEMPLATE-blackbox-session.md"
 TASK_PACK_SCRIPT=".agents/skills/vibe-task-pack/scripts/new-task-pack.sh"
 QUALITY_GATES_SCRIPT=".agents/skills/vibe-quality-gates/scripts/run-local-gates.sh"
 BRAINSTORM_TEMPLATE="docs/status/TEMPLATE-brainstorming.md"
+SPEC_QUALITY_TEMPLATE="docs/status/TEMPLATE-spec-quality.md"
+SPEC_WORKFLOW_REVIEW_SCRIPT="scripts/dev/run-spec-workflow-review.sh"
 
 now_utc() {
   date -u +"%Y-%m-%dT%H:%M:%SZ"
@@ -178,6 +182,14 @@ brainstorm_file_for() {
   printf 'docs/status/brainstorming/%s.md\n' "$spec_slug"
 }
 
+spec_quality_file_for() {
+  local spec_id="$1"
+  local spec_slug
+
+  spec_slug="$(printf '%s' "$spec_id" | tr '[:upper:]' '[:lower:]')"
+  printf 'docs/status/spec-quality/%s.md\n' "$spec_slug"
+}
+
 design_file_for() {
   local spec_id="$1"
   printf 'docs/design/%s-design.md\n' "$spec_id"
@@ -250,6 +262,9 @@ ensure_session_file() {
 - APPROVAL_RELEASE: pending
 - DESIGN_SYNC_STATUS: pending
 - PLAN_SYNC_STATUS: pending
+- SPEC_QUALITY_STATUS: pending
+- SPEC_WORKFLOW_STATUS: pending
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/todo.md
 - BRAINSTORMING_STATUS: pending
 - BRAINSTORMING_LINK: docs/status/brainstorming/todo.md
 - STATUS: active
@@ -279,6 +294,9 @@ ensure_current_task_file() {
 - HANDOFF_LINK: docs/status/handoffs/todo.md
 - DESIGN_SYNC_STATUS: pending
 - PLAN_SYNC_STATUS: pending
+- SPEC_QUALITY_STATUS: pending
+- SPEC_WORKFLOW_STATUS: pending
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/todo.md
 - API_SURFACE_CHANGED: no
 - FRONTEND_SURFACE_CHANGED: no
 - CONTRACT_SYNC_STATUS: pending
@@ -328,6 +346,40 @@ FALLBACK
   replace_token_file "$file" "project_goal" "$goal"
 }
 
+ensure_spec_quality_file() {
+  local file="$1"
+  local spec_id="$2"
+
+  mkdir -p "$(dirname "$file")"
+  if [[ ! -f "$file" ]]; then
+    if [[ -f "$SPEC_QUALITY_TEMPLATE" ]]; then
+      cp "$SPEC_QUALITY_TEMPLATE" "$file"
+    else
+      cat > "$file" <<'FALLBACK'
+# Spec Quality Review TODO(spec_id)
+
+## 1. 审查上下文
+- SPEC_ID: TODO(spec_id)
+- 审查方式：TODO(method)
+- 审查结论：TODO(status)
+- MCP 状态：TODO(workflow_status)
+
+## 2. 关键发现
+- 歧义点：TODO
+- 缺失项：TODO
+- 契约风险：TODO
+
+## 3. 处置结论
+- 建议动作：TODO
+- 是否允许进入 Gate 0 / Gate 2：TODO
+- 降级原因（如有）：TODO
+FALLBACK
+    fi
+  fi
+
+  replace_token_file "$file" "spec_id" "$spec_id"
+}
+
 set_brainstorm_pending() {
   local spec_id="$1"
   local goal="$2"
@@ -343,6 +395,37 @@ set_brainstorm_pending() {
   upsert_kv "$CURRENT_TASK_FILE" "BRAINSTORMING_LINK" "$note_file"
   upsert_kv "$SESSION_FILE" "BRAINSTORMING_STATUS" "pending"
   upsert_kv "$SESSION_FILE" "BRAINSTORMING_LINK" "$note_file"
+}
+
+set_spec_quality_pending() {
+  local spec_id="$1"
+  local note_file
+
+  ensure_current_task_file
+  ensure_session_file
+
+  note_file="$(spec_quality_file_for "$spec_id")"
+  ensure_spec_quality_file "$note_file" "$spec_id"
+
+  upsert_kv "$CURRENT_TASK_FILE" "SPEC_QUALITY_STATUS" "pending"
+  upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_STATUS" "pending"
+  upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK" "$note_file"
+  upsert_kv "$SESSION_FILE" "SPEC_QUALITY_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "SPEC_WORKFLOW_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "SPEC_WORKFLOW_LINK" "$note_file"
+}
+
+spec_quality_mode() {
+  local mode="${SPEC_WORKFLOW_REQUIRED:-optional}"
+  case "$mode" in
+    optional|strict)
+      printf '%s\n' "$mode"
+      ;;
+    *)
+      echo "invalid SPEC_WORKFLOW_REQUIRED: $mode (use optional or strict)" >&2
+      exit 1
+      ;;
+  esac
 }
 
 print_card() {
@@ -378,6 +461,8 @@ run_partial_gates() {
 
   CHANGED_FILES="$changed_files" bash scripts/ci/check-codex-capabilities.sh
   CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-spec-quality.sh
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-citation-quality.sh
   CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
   CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
   CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-governance.sh
@@ -405,6 +490,8 @@ run_release_gates() {
 
   CHANGED_FILES="$changed_files" bash scripts/ci/check-codex-capabilities.sh
   CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-spec-quality.sh
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-citation-quality.sh
   CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
   CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
   CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-permissions-gate.sh
@@ -493,6 +580,15 @@ update_current_task_transition() {
   if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "PLAN_SYNC_STATUS")" ]]; then
     upsert_kv "$CURRENT_TASK_FILE" "PLAN_SYNC_STATUS" "pending"
   fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "SPEC_QUALITY_STATUS")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "SPEC_QUALITY_STATUS" "pending"
+  fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_STATUS")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_STATUS" "pending"
+  fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK" "$(spec_quality_file_for "$spec_id")"
+  fi
 }
 
 run_task_pack() {
@@ -569,6 +665,7 @@ cmd_start() {
   run_task_pack "$spec_id" "$task_type" "$current_role" "$next_role"
   update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 0" "$current_role" "$next_role" "先完成 brainstorming，再更新 design 并标记 synced"
   set_brainstorm_pending "$spec_id" "$goal"
+  set_spec_quality_pending "$spec_id"
 
   upsert_kv "$SESSION_FILE" "GOAL" "$goal"
   upsert_kv "$SESSION_FILE" "SPEC_ID" "$spec_id"
@@ -585,20 +682,23 @@ cmd_start() {
   upsert_kv "$SESSION_FILE" "APPROVAL_RELEASE" "pending"
   upsert_kv "$SESSION_FILE" "DESIGN_SYNC_STATUS" "pending"
   upsert_kv "$SESSION_FILE" "PLAN_SYNC_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "SPEC_QUALITY_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "SPEC_WORKFLOW_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "SPEC_WORKFLOW_LINK" "$(spec_quality_file_for "$spec_id")"
   upsert_kv "$SESSION_FILE" "BRAINSTORMING_STATUS" "pending"
   upsert_kv "$SESSION_FILE" "BRAINSTORMING_LINK" "$(brainstorm_file_for "$spec_id")"
   upsert_kv "$SESSION_FILE" "STATUS" "waiting_gate_0"
   upsert_kv "$SESSION_FILE" "LAST_ACTION" "start"
   upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
-  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "先运行 brainstorming，再更新 design 并把 DESIGN_SYNC_STATUS 设为 synced"
+  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "先运行 brainstorming，再完成 spec quality 审查，然后更新 design 并把 DESIGN_SYNC_STATUS 设为 synced"
   upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
 
   print_card \
     "完成前期准备并绑定目标" \
-    "已初始化任务包，并创建 brainstorming brief（需先完成）" \
+    "已初始化任务包，并创建 brainstorming brief 与 spec quality review（均需先完成）" \
     "Gate 0 待批准" \
     "先执行 brainstorming 标记完成" \
-    "完成 brainstorming 后更新 design 文档并再批准 Gate 0"
+    "完成 brainstorming 与 spec quality 后更新 design 文档并再批准 Gate 0"
 }
 
 cmd_brainstorm() {
@@ -654,7 +754,116 @@ cmd_brainstorm() {
   print_card \
     "前期需求与选型准备" \
     "已完成 brainstorming 标记并记录笔记路径" \
-    "待同步 design" \
+    "待完成 spec quality 与 design 同步" \
+    "运行 spec-quality 记录审查结论" \
+    "spec quality 完成后更新 design 文档并再批准 Gate 0"
+}
+
+cmd_spec_quality() {
+  local status="approved"
+  local workflow_status="unavailable"
+  local note=""
+  local auto="0"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --status)
+        status="${2:-}"
+        shift 2
+        ;;
+      --workflow-status)
+        workflow_status="${2:-}"
+        shift 2
+        ;;
+      --note)
+        note="${2:-}"
+        shift 2
+        ;;
+      --auto)
+        auto="1"
+        shift
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
+        echo "unknown argument for spec-quality: $1" >&2
+        usage >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  case "$status" in
+    approved|degraded)
+      ;;
+    *)
+      echo "spec-quality --status must be approved or degraded" >&2
+      exit 1
+      ;;
+  esac
+
+  case "$workflow_status" in
+    passed|unavailable)
+      ;;
+    *)
+      echo "spec-quality --workflow-status must be passed or unavailable" >&2
+      exit 1
+      ;;
+  esac
+
+  [[ -f "$SESSION_FILE" ]] || { echo "missing session file: $SESSION_FILE" >&2; exit 1; }
+  ensure_current_task_file
+
+  local spec_id note_file mode
+  spec_id="$(kv_get "$SESSION_FILE" "SPEC_ID")"
+  [[ -n "$spec_id" ]] || { echo "session SPEC_ID is empty" >&2; exit 1; }
+  mode="$(spec_quality_mode)"
+
+  note_file="$note"
+  if [[ -z "$note_file" ]]; then
+    note_file="$(kv_get "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK")"
+  fi
+  if [[ -z "$note_file" ]]; then
+    note_file="$(spec_quality_file_for "$spec_id")"
+  fi
+
+  ensure_spec_quality_file "$note_file" "$spec_id"
+  [[ -f "$note_file" ]] || { echo "spec quality note file not found: $note_file" >&2; exit 1; }
+
+  local workflow_summary=""
+  if [[ "$auto" == "1" ]]; then
+    [[ -x "$SPEC_WORKFLOW_REVIEW_SCRIPT" ]] || {
+      echo "missing executable spec workflow review script: $SPEC_WORKFLOW_REVIEW_SCRIPT" >&2
+      exit 1
+    }
+    local review_output review_status review_link
+    review_output="$(bash "$SPEC_WORKFLOW_REVIEW_SCRIPT" --spec-id "$spec_id" --note "$note_file")"
+    review_status="$(printf '%s\n' "$review_output" | sed -n -E 's/^SPEC_WORKFLOW_STATUS=(.*)$/\1/p' | tail -n1)"
+    review_link="$(printf '%s\n' "$review_output" | sed -n -E 's/^SPEC_WORKFLOW_LINK=(.*)$/\1/p' | tail -n1)"
+    workflow_summary="$(printf '%s\n' "$review_output" | sed -n -E 's/^SPEC_WORKFLOW_SUMMARY=(.*)$/\1/p' | tail -n1)"
+    [[ -n "$review_status" ]] || { echo "spec workflow review did not return SPEC_WORKFLOW_STATUS" >&2; exit 1; }
+    workflow_status="$review_status"
+    [[ -n "$review_link" ]] && note_file="$review_link"
+  fi
+
+  upsert_kv "$CURRENT_TASK_FILE" "SPEC_QUALITY_STATUS" "$status"
+  upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_STATUS" "$workflow_status"
+  upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK" "$note_file"
+  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "更新 design 文档并准备批准 Gate 0"
+  upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
+
+  upsert_kv "$SESSION_FILE" "SPEC_QUALITY_STATUS" "$status"
+  upsert_kv "$SESSION_FILE" "SPEC_WORKFLOW_STATUS" "$workflow_status"
+  upsert_kv "$SESSION_FILE" "SPEC_WORKFLOW_LINK" "$note_file"
+  upsert_kv "$SESSION_FILE" "LAST_ACTION" "spec-quality"
+  upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
+
+  print_card \
+    "Spec 质量审查" \
+    "已记录 spec quality 结论：status=${status}; workflow=${workflow_status}${workflow_summary:+; summary=${workflow_summary}}" \
+    "模式=${mode}" \
     "更新 design 文档并把 DESIGN_SYNC_STATUS 设为 synced" \
     "design 同步后再批准 Gate 0"
 }
@@ -723,14 +932,22 @@ cmd_approve() {
     gate0)
       [[ "$current_gate" == "Gate 0" ]] || { echo "Gate 0 approval is only valid when CURRENT_GATE=Gate 0 (current: $current_gate)" >&2; exit 1; }
       local brainstorming_status brainstorming_link design_sync_status design_link
+      local spec_quality_status spec_workflow_status spec_workflow_link spec_mode
       brainstorming_status="$(kv_get "$CURRENT_TASK_FILE" "BRAINSTORMING_STATUS")"
       brainstorming_link="$(kv_get "$CURRENT_TASK_FILE" "BRAINSTORMING_LINK")"
       design_sync_status="$(kv_get "$CURRENT_TASK_FILE" "DESIGN_SYNC_STATUS")"
       design_link="$(kv_get "$CURRENT_TASK_FILE" "DESIGN_LINK")"
+      spec_quality_status="$(kv_get "$CURRENT_TASK_FILE" "SPEC_QUALITY_STATUS")"
+      spec_workflow_status="$(kv_get "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_STATUS")"
+      spec_workflow_link="$(kv_get "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK")"
+      spec_mode="$(spec_quality_mode)"
       [[ -n "$brainstorming_status" ]] || brainstorming_status="$(kv_get "$SESSION_FILE" "BRAINSTORMING_STATUS")"
       [[ -n "$brainstorming_link" ]] || brainstorming_link="$(kv_get "$SESSION_FILE" "BRAINSTORMING_LINK")"
       [[ -n "$design_sync_status" ]] || design_sync_status="$(kv_get "$SESSION_FILE" "DESIGN_SYNC_STATUS")"
       [[ -n "$design_link" ]] || design_link="$(kv_get "$SESSION_FILE" "DESIGN_LINK")"
+      [[ -n "$spec_quality_status" ]] || spec_quality_status="$(kv_get "$SESSION_FILE" "SPEC_QUALITY_STATUS")"
+      [[ -n "$spec_workflow_status" ]] || spec_workflow_status="$(kv_get "$SESSION_FILE" "SPEC_WORKFLOW_STATUS")"
+      [[ -n "$spec_workflow_link" ]] || spec_workflow_link="$(kv_get "$SESSION_FILE" "SPEC_WORKFLOW_LINK")"
       if [[ "$brainstorming_status" != "done" ]]; then
         echo "Gate 0 requires brainstorming completion. Run: bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm --note <path>" >&2
         exit 1
@@ -738,6 +955,17 @@ cmd_approve() {
       if [[ -z "$brainstorming_link" || ! -f "$brainstorming_link" ]]; then
         echo "Gate 0 requires valid brainstorming note file. Missing: ${brainstorming_link:-<empty>}" >&2
         exit 1
+      fi
+      if [[ -z "$spec_workflow_link" || ! -f "$spec_workflow_link" ]]; then
+        echo "Gate 0 requires valid spec quality note file. Missing: ${spec_workflow_link:-<empty>}" >&2
+        exit 1
+      fi
+      if [[ "$spec_mode" == "strict" ]]; then
+        [[ "$spec_quality_status" == "approved" ]] || { echo "Gate 0 strict mode requires SPEC_QUALITY_STATUS=approved" >&2; exit 1; }
+        [[ "$spec_workflow_status" == "passed" ]] || { echo "Gate 0 strict mode requires SPEC_WORKFLOW_STATUS=passed" >&2; exit 1; }
+      else
+        [[ "$spec_quality_status" != "pending" ]] || { echo "Gate 0 requires spec quality resolution. Run: bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh spec-quality --status approved|degraded --workflow-status passed|unavailable --note <path>" >&2; exit 1; }
+        [[ "$spec_workflow_status" != "pending" ]] || { echo "Gate 0 requires spec workflow status resolution. Run: bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh spec-quality --status approved|degraded --workflow-status passed|unavailable --note <path>" >&2; exit 1; }
       fi
       if [[ "$design_sync_status" != "synced" ]]; then
         echo "Gate 0 requires design sync. Update docs/design/<SPEC_ID>-design.md and set DESIGN_SYNC_STATUS=synced in docs/status/current-task.md" >&2
@@ -772,10 +1000,18 @@ cmd_approve() {
     gate2)
       [[ "$current_gate" == "Gate 2" ]] || { echo "Gate 2 approval is only valid when CURRENT_GATE=Gate 2 (current: $current_gate)" >&2; exit 1; }
       local plan_sync_status plan_link
+      local spec_quality_status spec_workflow_status spec_workflow_link spec_mode
       plan_sync_status="$(kv_get "$CURRENT_TASK_FILE" "PLAN_SYNC_STATUS")"
       plan_link="$(kv_get "$CURRENT_TASK_FILE" "PLAN_LINK")"
+      spec_quality_status="$(kv_get "$CURRENT_TASK_FILE" "SPEC_QUALITY_STATUS")"
+      spec_workflow_status="$(kv_get "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_STATUS")"
+      spec_workflow_link="$(kv_get "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK")"
+      spec_mode="$(spec_quality_mode)"
       [[ -n "$plan_sync_status" ]] || plan_sync_status="$(kv_get "$SESSION_FILE" "PLAN_SYNC_STATUS")"
       [[ -n "$plan_link" ]] || plan_link="$(kv_get "$SESSION_FILE" "PLAN_LINK")"
+      [[ -n "$spec_quality_status" ]] || spec_quality_status="$(kv_get "$SESSION_FILE" "SPEC_QUALITY_STATUS")"
+      [[ -n "$spec_workflow_status" ]] || spec_workflow_status="$(kv_get "$SESSION_FILE" "SPEC_WORKFLOW_STATUS")"
+      [[ -n "$spec_workflow_link" ]] || spec_workflow_link="$(kv_get "$SESSION_FILE" "SPEC_WORKFLOW_LINK")"
       if [[ "$plan_sync_status" != "synced" ]]; then
         echo "Gate 2 requires plan sync. Update docs/plans/<SPEC_ID>-plan.md and set PLAN_SYNC_STATUS=synced in docs/status/current-task.md" >&2
         exit 1
@@ -783,6 +1019,17 @@ cmd_approve() {
       if [[ -z "$plan_link" || ! -f "$plan_link" ]]; then
         echo "Gate 2 requires valid plan file. Missing: ${plan_link:-<empty>}" >&2
         exit 1
+      fi
+      if [[ -z "$spec_workflow_link" || ! -f "$spec_workflow_link" ]]; then
+        echo "Gate 2 requires valid spec quality note file. Missing: ${spec_workflow_link:-<empty>}" >&2
+        exit 1
+      fi
+      if [[ "$spec_mode" == "strict" ]]; then
+        [[ "$spec_quality_status" == "approved" ]] || { echo "Gate 2 strict mode requires SPEC_QUALITY_STATUS=approved" >&2; exit 1; }
+        [[ "$spec_workflow_status" == "passed" ]] || { echo "Gate 2 strict mode requires SPEC_WORKFLOW_STATUS=passed" >&2; exit 1; }
+      else
+        [[ "$spec_quality_status" != "pending" ]] || { echo "Gate 2 requires resolved spec quality status" >&2; exit 1; }
+        [[ "$spec_workflow_status" != "pending" ]] || { echo "Gate 2 requires resolved spec workflow status" >&2; exit 1; }
       fi
       transition="$(transition_for_stage "$task_type" gate3)"
       current_role="${transition%%|*}"
@@ -913,7 +1160,13 @@ cmd_status() {
   case "$status" in
     waiting_gate_0)
       if [[ "$brainstorming_status" == "done" ]]; then
-        if [[ "$design_sync_status" == "synced" ]]; then
+        local spec_quality_status spec_workflow_status
+        spec_quality_status="$(kv_get "$SESSION_FILE" "SPEC_QUALITY_STATUS")"
+        spec_workflow_status="$(kv_get "$SESSION_FILE" "SPEC_WORKFLOW_STATUS")"
+        if [[ "$spec_quality_status" == "pending" || "$spec_workflow_status" == "pending" ]]; then
+          one_action="运行 spec-quality 记录审查结论"
+          next_step="spec quality 完成后再同步 design 并批准 Gate 0"
+        elif [[ "$design_sync_status" == "synced" ]]; then
           one_action="批准 Gate 0"
           next_step="AI 推进 PM/Architect 草案"
         else
@@ -974,6 +1227,9 @@ main() {
       ;;
     brainstorm)
       cmd_brainstorm "$@"
+      ;;
+    spec-quality)
+      cmd_spec_quality "$@"
       ;;
     approve)
       cmd_approve "$@"

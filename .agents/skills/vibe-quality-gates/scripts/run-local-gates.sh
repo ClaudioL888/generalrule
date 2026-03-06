@@ -31,6 +31,8 @@ run_step() {
 
 run_step "codex capabilities" bash scripts/ci/check-codex-capabilities.sh
 run_step "spec pack" env LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
+run_step "spec quality" bash scripts/ci/validate-spec-quality.sh
+run_step "citation quality" bash scripts/ci/validate-citation-quality.sh
 run_step "role flow" env LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
 run_step "api/frontend sync" env LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
 run_step "permissions" env LOCAL_MODE=1 bash scripts/ci/validate-permissions-gate.sh

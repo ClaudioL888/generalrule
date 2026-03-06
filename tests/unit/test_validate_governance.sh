@@ -47,7 +47,7 @@ if CHANGED_FILES="src/app.ts" PR_BODY_FILE="$pr_file_full" "$SCRIPT"; then
   exit 1
 fi
 
-mkdir -p "$tmp_dir/work/docs/prd" "$tmp_dir/work/docs/design" "$tmp_dir/work/docs/plans" "$tmp_dir/work/docs/release" "$tmp_dir/work/docs/status"
+mkdir -p "$tmp_dir/work/docs/prd" "$tmp_dir/work/docs/design" "$tmp_dir/work/docs/plans" "$tmp_dir/work/docs/release" "$tmp_dir/work/docs/status/spec-quality"
 cat > "$tmp_dir/work/docs/prd/0001-problem-statement.md" <<'MD'
 # PRD
 MD
@@ -65,6 +65,9 @@ cat > "$tmp_dir/work/docs/release/RELEASE_NOTES.md" <<'MD'
 MD
 cat > "$tmp_dir/work/docs/status/TEMPLATE-role-handoff.md" <<'MD'
 # Role Handoff
+MD
+cat > "$tmp_dir/work/docs/status/spec-quality/spec-0001-core-flow.md" <<'MD'
+# Spec Quality Review SPEC-0001-core-flow
 MD
 
 changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/TEMPLATE-role-handoff.md\ndocs/prd/0001-problem-statement.md\ndocs/design/SPEC-0001-core-flow-design.md\ndocs/plans/SPEC-0001-core-flow-plan.md'
@@ -85,6 +88,9 @@ cat > docs/status/current-task.md <<'MD'
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
 - DESIGN_SYNC_STATUS: synced
 - PLAN_SYNC_STATUS: synced
+- SPEC_QUALITY_STATUS: approved
+- SPEC_WORKFLOW_STATUS: unavailable
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/spec-0001-core-flow.md
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced
@@ -120,6 +126,9 @@ cat > docs/status/current-task.md <<'MD'
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
 - DESIGN_SYNC_STATUS: synced
 - PLAN_SYNC_STATUS: synced
+- SPEC_QUALITY_STATUS: approved
+- SPEC_WORKFLOW_STATUS: unavailable
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/spec-0001-core-flow.md
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced
@@ -148,6 +157,9 @@ cat > docs/status/current-task.md <<'MD'
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
 - DESIGN_SYNC_STATUS: synced
 - PLAN_SYNC_STATUS: synced
+- SPEC_QUALITY_STATUS: approved
+- SPEC_WORKFLOW_STATUS: unavailable
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/spec-0001-core-flow.md
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced

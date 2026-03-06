@@ -37,6 +37,20 @@ jobs:
           fi
           bash scripts/ci/validate-spec-pack.sh
 
+      - name: Run spec quality gate
+        run: |
+          if [ -s .ci/changed_files.txt ]; then
+            export CHANGED_FILES="$(cat .ci/changed_files.txt)"
+          fi
+          bash scripts/ci/validate-spec-quality.sh
+
+      - name: Run citation quality gate
+        run: |
+          if [ -s .ci/changed_files.txt ]; then
+            export CHANGED_FILES="$(cat .ci/changed_files.txt)"
+          fi
+          bash scripts/ci/validate-citation-quality.sh
+
       - name: Run role flow gate
         env:
           PR_BODY_FILE: .ci/pr_body.md

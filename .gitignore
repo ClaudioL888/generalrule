@@ -6,3 +6,7 @@ coverage/
 .cache/
 dist/
 out/
+.codex/vendor/
+.spec-workflow-mcp/
+.spec-workflow-mcp*/
+.spec-workflow/

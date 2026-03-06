@@ -56,3 +56,8 @@ last_updated: "{{YYYY-MM-DD}}"
 - 回滚摘要：{{rollback_summary}}
 - 发布负责人：{{release_owner}}
 - 契约评审责任人：{{contract_review_owner}}
+
+## 8. 引用与依据
+
+- SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
+- SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

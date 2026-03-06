@@ -50,3 +50,8 @@ last_updated: "{{YYYY-MM-DD}}"
 - 关键取舍：{{decision_tradeoff}}
 - 风险：{{risk_1}}
 - 缓解：{{mitigation_1}}
+
+## 7. 引用与依据
+
+- SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
+- SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

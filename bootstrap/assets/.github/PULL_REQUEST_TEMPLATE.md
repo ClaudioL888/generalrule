@@ -16,6 +16,7 @@
 - [ ] 已更新 docs/status
 - [ ] 已更新 docs/status/current-task.md 且字段完整
 - [ ] 已更新 docs/specs 对应 SPEC 文档
+- [ ] 已更新 spec quality review 文档或记录降级原因
 - [ ] 已更新 docs/design 对应 Design 文档
 - [ ] 已更新 docs/plans 对应 Plan 文档
 - [ ] 已更新 docs/contracts API/前端映射文档
@@ -32,6 +33,8 @@
 - PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - TASK_STATE_LINK: docs/status/current-task.md
 - SPEC_LINK: docs/specs/SPEC-0001-core-flow.md
+- SPEC_QUALITY_STATUS: approved
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/SPEC-0001-core-flow.md
 - API_FRONTEND_MAP_LINK: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
 - ROLE_HANDOFF_LINK: docs/status/handoffs/SPEC-0001-core-flow-dev-to-qa.md
 - CURRENT_ROLE: Dev

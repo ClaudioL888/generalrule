@@ -17,6 +17,8 @@ fi
 export CHANGED_FILES
 
 LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
+LOCAL_MODE=1 bash scripts/ci/validate-spec-quality.sh
+LOCAL_MODE=1 bash scripts/ci/validate-citation-quality.sh
 LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
 LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
 LOCAL_MODE=1 bash scripts/ci/validate-governance.sh

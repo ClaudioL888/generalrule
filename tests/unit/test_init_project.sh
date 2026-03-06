@@ -83,6 +83,7 @@ required_files=(
   "docs/status/TEMPLATE-role-handoff.md"
   "docs/status/TEMPLATE-blackbox-session.md"
   "docs/status/TEMPLATE-brainstorming.md"
+  "docs/status/TEMPLATE-spec-quality.md"
   "docs/release/CHANGELOG.md"
   "docs/release/RELEASE_NOTES.md"
   "docs/status/current-task.md"
@@ -90,6 +91,8 @@ required_files=(
   ".githooks/pre-push"
   "scripts/ci/check-codex-capabilities.sh"
   "scripts/ci/validate-spec-pack.sh"
+  "scripts/ci/validate-spec-quality.sh"
+  "scripts/ci/validate-citation-quality.sh"
   "scripts/ci/validate-role-flow.sh"
   "scripts/ci/validate-api-frontend-sync.sh"
   "scripts/ci/validate-permissions-gate.sh"
@@ -99,6 +102,8 @@ required_files=(
   "scripts/ci/validate-governance.sh"
   "scripts/ci/validate-doc-links.sh"
   "scripts/dev/install-hooks.sh"
+  "scripts/dev/install-spec-workflow.sh"
+  "scripts/dev/run-spec-workflow-review.sh"
   ".github/PULL_REQUEST_TEMPLATE.md"
   ".github/workflows/ci.yml"
   ".github/workflows/security.yml"
@@ -116,6 +121,8 @@ done
 for script_path in \
   "scripts/ci/check-codex-capabilities.sh" \
   "scripts/ci/validate-spec-pack.sh" \
+  "scripts/ci/validate-spec-quality.sh" \
+  "scripts/ci/validate-citation-quality.sh" \
   "scripts/ci/validate-role-flow.sh" \
   "scripts/ci/validate-api-frontend-sync.sh" \
   "scripts/ci/validate-permissions-gate.sh" \
@@ -125,6 +132,8 @@ for script_path in \
   "scripts/ci/validate-governance.sh" \
   "scripts/ci/validate-doc-links.sh" \
   "scripts/dev/install-hooks.sh" \
+  "scripts/dev/install-spec-workflow.sh" \
+  "scripts/dev/run-spec-workflow-review.sh" \
   ".agents/skills/vibe-governance/scripts/run-full-loop.sh" \
   ".agents/skills/vibe-governance/scripts/run-blackbox-flow.sh" \
   ".agents/skills/vibe-task-pack/scripts/new-task-pack.sh" \
@@ -142,7 +151,7 @@ fi
 
 for key in \
   TASK_ID SPEC_ID TASK_TYPE ROLE WORK_TYPE CURRENT_GATE CURRENT_ROLE NEXT_ROLE HANDOFF_LINK \
-  DESIGN_LINK PLAN_LINK DESIGN_SYNC_STATUS PLAN_SYNC_STATUS \
+  DESIGN_LINK PLAN_LINK DESIGN_SYNC_STATUS PLAN_SYNC_STATUS SPEC_QUALITY_STATUS SPEC_WORKFLOW_STATUS SPEC_WORKFLOW_LINK \
   API_SURFACE_CHANGED FRONTEND_SURFACE_CHANGED CONTRACT_SYNC_STATUS BRAINSTORMING_STATUS BRAINSTORMING_LINK \
   TEST_COMMANDS TEST_RESULT UPDATED_AT NEXT_ACTION; do
   grep -q "^- $key: " "$output_dir/docs/status/current-task.md" || {
@@ -159,10 +168,55 @@ cp "$output_dir/docs/specs/TEMPLATE-feature-spec.md" "$output_dir/docs/specs/SPE
 cp "$output_dir/docs/contracts/TEMPLATE-api-frontend-map.md" "$output_dir/docs/contracts/SPEC-0001-core-flow-api-frontend-map.md"
 cp "$output_dir/docs/design/TEMPLATE-feature-design.md" "$output_dir/docs/design/SPEC-0001-core-flow-design.md"
 cp "$output_dir/docs/plans/TEMPLATE-feature-plan.md" "$output_dir/docs/plans/SPEC-0001-core-flow-plan.md"
+sed -i.bak \
+  -e 's|TODO(citation_source_1)|https://docs.example.com/problem|' \
+  -e 's|TODO(citation_note_1)|official problem statement source|' \
+  -e 's|TODO(citation_source_2)|docs/status/brainstorming/SPEC-0001-core-flow.md|' \
+  -e 's|TODO(citation_note_2)|internal discovery context|' \
+  "$output_dir/docs/prd/0001-problem-statement.md"
+rm -f "$output_dir/docs/prd/0001-problem-statement.md.bak"
+sed -i.bak \
+  -e 's|TODO(citation_source_1)|https://docs.example.com/spec|' \
+  -e 's|TODO(citation_note_1)|official feature contract|' \
+  -e 's|TODO(citation_source_2)|docs/prd/0001-problem-statement.md|' \
+  -e 's|TODO(citation_note_2)|feature traces to PRD|' \
+  "$output_dir/docs/specs/SPEC-0001-core-flow.md"
+rm -f "$output_dir/docs/specs/SPEC-0001-core-flow.md.bak"
+sed -i.bak \
+  -e 's|TODO(citation_source_1)|https://docs.example.com/design|' \
+  -e 's|TODO(citation_note_1)|official architecture guidance|' \
+  -e 's|TODO(citation_source_2)|docs/specs/SPEC-0001-core-flow.md|' \
+  -e 's|TODO(citation_note_2)|design traces to spec|' \
+  "$output_dir/docs/design/SPEC-0001-core-flow-design.md"
+rm -f "$output_dir/docs/design/SPEC-0001-core-flow-design.md.bak"
 sed -i.bak -E 's/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/' "$output_dir/docs/status/current-task.md"
 rm -f "$output_dir/docs/status/current-task.md.bak"
 sed -i.bak -E 's/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/' "$output_dir/docs/status/current-task.md"
 rm -f "$output_dir/docs/status/current-task.md.bak"
+sed -i.bak -E 's/^- SPEC_QUALITY_STATUS:.*$/- SPEC_QUALITY_STATUS: approved/' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
+sed -i.bak -E 's/^- SPEC_WORKFLOW_STATUS:.*$/- SPEC_WORKFLOW_STATUS: unavailable/' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
+mkdir -p "$output_dir/docs/status/spec-quality"
+cat > "$output_dir/docs/status/spec-quality/spec-0001-core-flow.md" <<'MD'
+# Spec Quality Review SPEC-0001-core-flow
+
+## 1. 审查上下文
+- SPEC_ID: SPEC-0001-core-flow
+- 审查方式：manual fallback
+- 审查结论：approved
+- MCP 状态：unavailable
+
+## 2. 关键发现
+- 歧义点：none
+- 缺失项：none
+- 契约风险：low
+
+## 3. 处置结论
+- 建议动作：proceed
+- 是否允许进入 Gate 0 / Gate 2：yes
+- 降级原因（如有）：spec-workflow MCP unavailable in test environment
+MD
 
 pr_file="$tmp_dir/pr.md"
 cat > "$pr_file" <<'PR'
@@ -208,6 +262,8 @@ MOCK
   chmod +x "$mock_codex_bin/codex"
   PATH="$mock_codex_bin:/usr/bin:/bin" bash scripts/ci/check-codex-capabilities.sh
   CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-spec-pack.sh
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-spec-quality.sh
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-citation-quality.sh
   CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-role-flow.sh
   CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-api-frontend-sync.sh
   PR_BODY_FILE="$pr_file" bash scripts/ci/validate-permissions-gate.sh

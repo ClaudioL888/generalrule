@@ -11,11 +11,12 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 
 1. 人类唯一必填输入：`开始任务：<一句话目标>`。
 2. Gate 0 前必须先运行 brainstorming skill 并记录结论（需求、约束、技术选型）。
-3. Gate 0 前必须更新 `docs/design/<SPEC_ID>-design.md` 并同步 `DESIGN_SYNC_STATUS=synced`。
-4. Gate 2 前必须更新 `docs/plans/<SPEC_ID>-plan.md` 并同步 `PLAN_SYNC_STATUS=synced`。
-5. 人类仅在关键节点批准：`批准 Gate 0`、`批准 Gate 2`、`批准 Gate 3`、`批准发布`。
-6. AI 必须每阶段输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
-7. 推荐使用 `bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh` 执行半自动流程。
+3. Gate 0 / Gate 2 前必须完成 spec quality 审查；默认允许 `degraded + unavailable` 降级通过，`SPEC_WORKFLOW_REQUIRED=strict` 时必须 `approved + passed`。
+4. Gate 0 前必须更新 `docs/design/<SPEC_ID>-design.md` 并同步 `DESIGN_SYNC_STATUS=synced`。
+5. Gate 2 前必须更新 `docs/plans/<SPEC_ID>-plan.md` 并同步 `PLAN_SYNC_STATUS=synced`。
+6. 人类仅在关键节点批准：`批准 Gate 0`、`批准 Gate 2`、`批准 Gate 3`、`批准发布`。
+7. AI 必须每阶段输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
+8. 推荐使用 `bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh` 执行半自动流程。
 
 ## Skill 调用提醒（强制）
 
@@ -35,13 +36,15 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
    - `docs/specs/<SPEC_ID>.md`
    - `docs/design/<SPEC_ID>-design.md`
    - `docs/plans/<SPEC_ID>-plan.md`
+7. 修改 `docs/prd/`、`docs/design/`、`docs/adr/`、`docs/specs/` 时，必须补齐结构化引用块 `## 引用与依据`，且至少包含一条 `primary` 或 `internal` 来源。
 
 ## Codex 运行时配置约束
 
 1. 仓库内强制层位于 `.codex/config.toml` 与 `.codex/rules/default.rules`。
-2. 高风险操作默认使用 `codex --profile strict`。
-3. 发布窗口操作建议使用 `codex --profile release`。
-4. 运行时约束是前置补强，不替代现有 PR/CI 门禁。
+2. `.codex/config.toml` 默认声明项目级 `spec-workflow` MCP，参数中的 `"."` 必须指向当前项目根目录，不要写死其他项目的绝对路径。
+3. 高风险操作默认使用 `codex --profile strict`。
+4. 发布窗口操作建议使用 `codex --profile release`。
+5. 运行时约束是前置补强，不替代现有 PR/CI 门禁。
 
 ## 任务级执行约束
 

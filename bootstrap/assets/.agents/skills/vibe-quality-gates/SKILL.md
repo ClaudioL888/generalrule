@@ -18,14 +18,16 @@ description: 执行本地治理门禁链路并输出阻断项，确保提交前�
 
 1. capabilities
 2. spec-pack
-3. role-flow
-4. api/frontend sync
-5. permissions
-6. security
-7. governance
-8. release readiness
-9. observability
-10. doc links
+3. spec quality
+4. citation quality
+5. role-flow
+6. api/frontend sync
+7. permissions
+8. security
+9. governance
+10. release readiness
+11. observability
+12. doc links
 
 ## Commands
 

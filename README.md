@@ -69,6 +69,11 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm \
   --note "docs/status/brainstorming/spec-0001-core-flow.md"
 
+bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh spec-quality \
+  --auto \
+  --status approved \
+  --note "docs/status/spec-quality/spec-0001-core-flow.md"
+
 bash -lc 'sed -i.bak -E "s/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
 
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
@@ -140,12 +145,15 @@ STRICT_SEED=1 bash scripts/init-project.sh \
 - `docs/status/TEMPLATE-role-handoff.md`
 - `docs/status/TEMPLATE-blackbox-session.md`
 - `docs/status/TEMPLATE-brainstorming.md`
+- `docs/status/TEMPLATE-spec-quality.md`
 - `docs/release/CHANGELOG.md`
 - `docs/release/RELEASE_NOTES.md`
 - `docs/status/current-task.md`
 - `.githooks/pre-push`
 - `scripts/ci/check-codex-capabilities.sh`
 - `scripts/ci/validate-spec-pack.sh`
+- `scripts/ci/validate-spec-quality.sh`
+- `scripts/ci/validate-citation-quality.sh`
 - `scripts/ci/validate-role-flow.sh`
 - `scripts/ci/validate-api-frontend-sync.sh`
 - `scripts/ci/validate-governance.sh`
@@ -163,6 +171,16 @@ STRICT_SEED=1 bash scripts/init-project.sh \
 - `.codex/config.toml`
 - `.codex/rules/default.rules`
 
+其中 `.codex/config.toml` 现在默认声明项目级 `spec-workflow` MCP：
+
+- `[mcp_servers.spec-workflow]`
+- `command = "bash"`
+- `args = [".codex/bin/spec-workflow.sh", "."]`
+- `env = { SPEC_WORKFLOW_HOME = ".spec-workflow-mcp" }`
+- `startup_timeout_sec = 180`
+
+这里的 `"."` 表示“当前项目根目录”，这样初始化到其他项目后不需要再把固定绝对路径写死到配置里。`.spec-workflow-mcp` 则是项目内可写状态目录，避免受限沙箱下把状态写到只读的 `$HOME`。`.codex/bin/spec-workflow.sh` 会把 `spec-workflow-mcp` 安装到项目内 `.codex/vendor/`，避免反复走全局 `npx` 缓存。
+
 Profile 示例：
 
 - `codex --profile strict`
@@ -173,6 +191,7 @@ Profile 示例：
 - 必须支持 `codex execpolicy check --rules ...`
 - 必须支持 `prefix_rule(..., justification = "...")`
 - 不满足能力门槛时本地与 CI 都阻断
+- `spec-workflow` 默认是项目级增强能力；若当前项目要把它变成硬门禁，可设置 `SPEC_WORKFLOW_REQUIRED=strict`
 
 本地检查命令：
 
@@ -183,12 +202,19 @@ Profile 示例：
 - `codex execpolicy check --pretty --rules .codex/rules/default.rules -- git reset --hard`
 - `codex execpolicy check --pretty --rules .codex/rules/default.rules -- git status`
 
+如果当前项目要真实启用 `spec-workflow` MCP，先预热本地 vendor 安装：
+
+- `bash scripts/dev/install-spec-workflow.sh`
+
+未预热时，`.codex/bin/spec-workflow.sh` 会快速失败并提示安装，而不会在 Codex 会话启动阶段长时间卡住。
+
 ## 生产级加固能力
 
 当前基线已内置分级门禁策略：
 
 - 硬阻断：权限（CODEOWNERS + 审批元数据）、安全（secret/dependency/policy）、发布就绪检查
 - 软阻断（告警）：观测与维护记录（可切 strict）
+- 文档依据硬阻断：`docs/prd/`、`docs/design/`、`docs/adr/`、`docs/specs/` 变更时必须带结构化引用块
 
 新增核心资产位于 `bootstrap/assets`：
 

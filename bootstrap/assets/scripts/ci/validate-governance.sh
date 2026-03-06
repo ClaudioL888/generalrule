@@ -92,6 +92,9 @@ validate_current_task_file() {
     "HANDOFF_LINK"
     "DESIGN_SYNC_STATUS"
     "PLAN_SYNC_STATUS"
+    "SPEC_QUALITY_STATUS"
+    "SPEC_WORKFLOW_STATUS"
+    "SPEC_WORKFLOW_LINK"
     "API_SURFACE_CHANGED"
     "FRONTEND_SURFACE_CHANGED"
     "CONTRACT_SYNC_STATUS"
@@ -168,9 +171,31 @@ validate_current_task_file() {
       ;;
   esac
 
+  local spec_quality_status spec_workflow_status spec_workflow_link
+  spec_quality_status="$(extract_meta "SPEC_QUALITY_STATUS" "$task_file")"
+  spec_workflow_status="$(extract_meta "SPEC_WORKFLOW_STATUS" "$task_file")"
+  spec_workflow_link="$(extract_meta "SPEC_WORKFLOW_LINK" "$task_file")"
+
+  case "$spec_quality_status" in
+    approved|degraded|pending)
+      ;;
+    *)
+      fail "current-task SPEC_QUALITY_STATUS must be approved, degraded, or pending"
+      ;;
+  esac
+
+  case "$spec_workflow_status" in
+    passed|unavailable|pending)
+      ;;
+    *)
+      fail "current-task SPEC_WORKFLOW_STATUS must be passed, unavailable, or pending"
+      ;;
+  esac
+
   [[ -f "$design_link" ]] || fail "current-task DESIGN_LINK file missing: $design_link"
   [[ -f "$plan_link" ]] || fail "current-task PLAN_LINK file missing: $plan_link"
   [[ -f "$handoff_link" ]] || fail "current-task HANDOFF_LINK file missing: $handoff_link"
+  [[ -f "$spec_workflow_link" ]] || fail "current-task SPEC_WORKFLOW_LINK file missing: $spec_workflow_link"
 }
 
 resolve_current_task_file() {

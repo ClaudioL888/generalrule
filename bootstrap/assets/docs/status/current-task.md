@@ -31,6 +31,9 @@ last_updated: "{{YYYY-MM-DD}}"
 - HANDOFF_LINK: {{handoff_link}}
 - DESIGN_SYNC_STATUS: pending
 - PLAN_SYNC_STATUS: pending
+- SPEC_QUALITY_STATUS: pending
+- SPEC_WORKFLOW_STATUS: pending
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/{{spec_id}}.md
 - API_SURFACE_CHANGED: {{api_surface_changed}}
 - FRONTEND_SURFACE_CHANGED: {{frontend_surface_changed}}
 - CONTRACT_SYNC_STATUS: {{contract_sync_status}}
@@ -55,11 +58,14 @@ last_updated: "{{YYYY-MM-DD}}"
 10. `HANDOFF_LINK`：交接文档路径，文件必须存在。
 11. `DESIGN_SYNC_STATUS`：`synced | pending`，Gate 0 前必须 `synced`。
 12. `PLAN_SYNC_STATUS`：`synced | pending`，Gate 2 前必须 `synced`。
-13. `API_SURFACE_CHANGED/FRONTEND_SURFACE_CHANGED`：`yes | no`。
-14. `CONTRACT_SYNC_STATUS`：`synced | pending`，进入发布前必须 `synced`。
-15. `BRAINSTORMING_STATUS`：`pending | done`，Gate 0 前必须 `done`。
-16. `BRAINSTORMING_LINK`：brainstorming 记录文档路径，文件必须存在。
-17. `TEST_COMMANDS`：本轮执行过的测试命令。
-18. `TEST_RESULT`：必须是可读结果摘要（例如 `unit=pass;integration=pass;e2e=pass`）。
-19. `UPDATED_AT`：ISO8601 时间戳。
-20. `NEXT_ACTION`：下一步动作或交接对象。
+13. `SPEC_QUALITY_STATUS`：`approved | degraded | pending`。默认模式下 Gate 0 / Gate 2 前不得为 `pending`；严格模式下必须是 `approved`。
+14. `SPEC_WORKFLOW_STATUS`：`passed | unavailable | pending`。默认模式下 Gate 0 / Gate 2 前不得为 `pending`；严格模式下必须是 `passed`。
+15. `SPEC_WORKFLOW_LINK`：Spec 质量审查记录文档路径，必须存在；可记录 MCP 输出摘要或降级说明。
+16. `API_SURFACE_CHANGED/FRONTEND_SURFACE_CHANGED`：`yes | no`。
+17. `CONTRACT_SYNC_STATUS`：`synced | pending`，进入发布前必须 `synced`。
+18. `BRAINSTORMING_STATUS`：`pending | done`，Gate 0 前必须 `done`。
+19. `BRAINSTORMING_LINK`：brainstorming 记录文档路径，文件必须存在。
+20. `TEST_COMMANDS`：本轮执行过的测试命令。
+21. `TEST_RESULT`：必须是可读结果摘要（例如 `unit=pass;integration=pass;e2e=pass`）。
+22. `UPDATED_AT`：ISO8601 时间戳。
+23. `NEXT_ACTION`：下一步动作或交接对象。

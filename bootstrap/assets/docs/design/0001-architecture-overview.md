@@ -73,3 +73,8 @@ last_updated: "{{YYYY-MM-DD}}"
 - [ ] 边界情况与错误处理完整
 - [ ] 可观测性与安全边界明确
 - [ ] Founder 批准
+
+## 10. 引用与依据
+
+- SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
+- SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

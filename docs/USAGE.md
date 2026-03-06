@@ -79,6 +79,14 @@ cd /absolute/path/to/new-project
 bash scripts/dev/install-hooks.sh
 ```
 
+如果项目会启用 `spec-workflow` MCP，再执行一次预热安装：
+
+```bash
+bash scripts/dev/install-spec-workflow.sh
+```
+
+未预热时，`spec-workflow` wrapper 会直接报错并提示执行这条命令，而不是在 Codex 会话启动时静默等待长时间安装。
+
 7. Skill 驱动策略（推荐）：
 
 ```bash
@@ -144,6 +152,7 @@ $vibe-governance
 说明：
 
 - `.codex/*`、CI 脚本等属于固定基线。
+- `.codex/config.toml` 默认带项目级 `spec-workflow` MCP 配置：`command = "bash"`、`args = [".codex/bin/spec-workflow.sh", "."]`。其中 `"."` 表示生成后的项目根目录；`SPEC_WORKFLOW_HOME=.spec-workflow-mcp` 用于把 workflow 状态写到项目内可写目录；wrapper 会把 MCP 包安装到项目内 `.codex/vendor/`，避免依赖全局 `npx` 缓存。
 - 文档中的 `{{token}}` 会由 seed 键填充；未提供的非关键键会写成 `TODO(key)`。
 - 默认是兼容模式：`work_type=full` 缺 L2 键会告警不阻断；strict 模式下会阻断。
 
@@ -162,6 +171,8 @@ $vibe-governance
 ```bash
 bash scripts/ci/check-codex-capabilities.sh
 LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
+bash scripts/ci/validate-spec-quality.sh
+bash scripts/ci/validate-citation-quality.sh
 LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
 LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
 LOCAL_MODE=1 bash scripts/ci/validate-permissions-gate.sh
@@ -197,6 +208,9 @@ bash .agents/skills/vibe-governance/scripts/run-full-loop.sh \
 
 - `validate-governance.sh` 会在 `src/` 变更时强制检查 `docs/release/*` 与 `docs/status/current-task.md`。
 - `validate-spec-pack.sh` 会在 `src/` 变更时强制检查 `SPEC_LINK`、Design/Plan 变更、Spec 结构完整性。
+- `validate-spec-quality.sh` 会在 Spec 相关变更时检查 `SPEC_QUALITY_STATUS`、`SPEC_WORKFLOW_STATUS` 与 `SPEC_WORKFLOW_LINK`。默认模式允许 `degraded + unavailable` 降级，设置 `SPEC_WORKFLOW_REQUIRED=strict` 后必须 `approved + passed`。
+- 黑盒流程中可优先使用 `run-blackbox-flow.sh spec-quality --auto --status approved|degraded`，自动连通 `spec-workflow` 并写入审查记录，再由治理流程保留最终 approved/degraded 判断。
+- `validate-citation-quality.sh` 会在 `docs/prd/`、`docs/design/`、`docs/adr/`、`docs/specs/` 变更时强制检查 `## 引用与依据` 与结构化来源行。
 - `validate-role-flow.sh` 会强制校验 `TASK_TYPE` 的角色流转与 handoff 文档。
 - `validate-api-frontend-sync.sh` 会强制校验 API/前端契约映射与 `CONTRACT_SYNC_STATUS`。
 - PR/CI 中会再次执行同类校验，不满足则阻断合并。
@@ -215,6 +229,11 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm \
   --note "docs/status/brainstorming/spec-0001-core-flow.md"
 
+bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh spec-quality \
+  --status approved \
+  --workflow-status unavailable \
+  --note "docs/status/spec-quality/spec-0001-core-flow.md"
+
 bash -lc 'sed -i.bak -E "s/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
 
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
@@ -230,6 +249,8 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate 
 
 - 你唯一任务入口是 `--goal`（一句话目标）。
 - Gate 0 前必须完成 brainstorming（需求/选型前期准备），否则脚本会阻断批准。
+- Gate 0 / Gate 2 前必须完成 spec quality 审查；默认允许记录 `degraded + unavailable` 作为 MCP 不可用时的降级结果。
+- 如果当前项目的 `spec-workflow` MCP 已稳定可用，建议在本地或 CI 中设置 `SPEC_WORKFLOW_REQUIRED=strict`，把 spec quality 从“可降级”切到“硬阻断”。
 - Gate 0 前还必须更新 `docs/design/<SPEC_ID>-design.md`，并把 `DESIGN_SYNC_STATUS` 设为 `synced`。
 - Gate 2 前必须更新 `docs/plans/<SPEC_ID>-plan.md`，并把 `PLAN_SYNC_STATUS` 设为 `synced`。
 - 人类只在 `Gate 0/Gate 2/Gate 3/发布` 进行批准。
@@ -320,6 +341,17 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate 
 原因：批准指令与当前阶段不匹配（例如还在 `Gate 0` 却执行了 `批准发布`）。
 
 修复：先运行 `bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh status` 查看当前阶段，再按顺序批准。
+
+### 6.12 `must include at least one primary or internal citation`
+
+原因：你修改了 `docs/prd/`、`docs/design/`、`docs/adr/` 或 `docs/specs/`，但没有补齐结构化引用块，或只有 `secondary` 来源。
+
+修复：在文档中加入：
+
+- `## 引用与依据`
+- `- SOURCE: <url-or-path> | TYPE: primary|secondary|internal | NOTE: <why-it-matters>`
+
+并至少保留一条 `TYPE: primary` 或 `TYPE: internal`。
 
 ## 7. 版本升级与回归验证
 

@@ -63,6 +63,40 @@ TS
 
 cp docs/specs/TEMPLATE-feature-spec.md docs/specs/SPEC-0002-test.md
 cp docs/contracts/TEMPLATE-api-frontend-map.md docs/contracts/SPEC-0002-test-api-frontend-map.md
+mkdir -p docs/status/spec-quality
+cat > docs/status/spec-quality/spec-0002-test.md <<'MD'
+# Spec Quality Review SPEC-0002-test
+
+## 1. 审查上下文
+- SPEC_ID: SPEC-0002-test
+- 审查方式：manual fallback
+- 审查结论：approved
+- MCP 状态：unavailable
+
+## 2. 关键发现
+- 歧义点：none
+- 缺失项：none
+- 契约风险：low
+
+## 3. 处置结论
+- 建议动作：proceed
+- 是否允许进入 Gate 0 / Gate 2：yes
+- 降级原因（如有）：spec-workflow MCP unavailable in test environment
+MD
+sed -i.bak \
+  -e 's|TODO(citation_source_1)|https://docs.example.com/spec|' \
+  -e 's|TODO(citation_note_1)|official product specification|' \
+  -e 's|TODO(citation_source_2)|docs/prd/0001-problem-statement.md|' \
+  -e 's|TODO(citation_note_2)|approved problem framing|' \
+  docs/specs/SPEC-0002-test.md
+rm -f docs/specs/SPEC-0002-test.md.bak
+sed -i.bak \
+  -e 's|TODO(citation_source_1)|https://docs.example.com/architecture|' \
+  -e 's|TODO(citation_note_1)|official architecture constraints|' \
+  -e 's|TODO(citation_source_2)|docs/specs/SPEC-0002-test.md|' \
+  -e 's|TODO(citation_note_2)|design derived from current spec|' \
+  docs/design/SPEC-0002-test-design.md
+rm -f docs/design/SPEC-0002-test-design.md.bak
 
 cat > docs/status/current-task.md <<'MD'
 # Current Task
@@ -79,6 +113,9 @@ cat > docs/status/current-task.md <<'MD'
 - HANDOFF_LINK: docs/status/handoffs/spec-0002-test-dev-to-qa.md
 - DESIGN_SYNC_STATUS: synced
 - PLAN_SYNC_STATUS: pending
+- SPEC_QUALITY_STATUS: approved
+- SPEC_WORKFLOW_STATUS: unavailable
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/spec-0002-test.md
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: pending

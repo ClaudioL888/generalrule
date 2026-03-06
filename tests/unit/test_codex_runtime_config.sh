@@ -11,6 +11,11 @@ CAPABILITY_SCRIPT="$ROOT_DIR/scripts/ci/check-codex-capabilities.sh"
   exit 1
 }
 
+[[ -x "$ROOT_DIR/.codex/bin/spec-workflow.sh" ]] || {
+  echo "missing executable spec-workflow wrapper: $ROOT_DIR/.codex/bin/spec-workflow.sh"
+  exit 1
+}
+
 [[ -f "$RULE_FILE" ]] || {
   echo "missing rules file: $RULE_FILE"
   exit 1
@@ -48,6 +53,15 @@ require_path(["allow_login_shell"], False)
 require_path(["sandbox_workspace_write", "network_access"], False)
 require_path(["sandbox_workspace_write", "exclude_tmpdir_env_var"], False)
 require_path(["sandbox_workspace_write", "exclude_slash_tmp"], False)
+require_path(["mcp_servers", "spec-workflow", "command"], "bash")
+spec_workflow_args = require_path(["mcp_servers", "spec-workflow", "args"])
+expected = [".codex/bin/spec-workflow.sh", "."]
+if spec_workflow_args != expected:
+    raise SystemExit(
+        f"unexpected spec-workflow args: {spec_workflow_args!r} != {expected!r}"
+    )
+require_path(["mcp_servers", "spec-workflow", "env", "SPEC_WORKFLOW_HOME"], ".spec-workflow-mcp")
+require_path(["mcp_servers", "spec-workflow", "startup_timeout_sec"], 180)
 require_path(["project_doc_max_bytes"], 65536)
 fallback = require_path(["project_doc_fallback_filenames"])
 if "AGENTS.override.md" not in fallback:

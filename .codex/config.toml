@@ -9,6 +9,12 @@ network_access = false
 exclude_tmpdir_env_var = false
 exclude_slash_tmp = false
 
+[mcp_servers.spec-workflow]
+command = "bash"
+args = [".codex/bin/spec-workflow.sh", "."]
+env = { SPEC_WORKFLOW_HOME = ".spec-workflow-mcp" }
+startup_timeout_sec = 180
+
 [profiles.strict]
 approval_policy = "untrusted"
 sandbox_mode = "read-only"
