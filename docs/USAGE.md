@@ -113,6 +113,8 @@ $vibe-governance
 - `docs/plans/0001-implementation-plan.md`
 - `docs/test-plan/0001-test-plan.md`
 - `docs/specs/TEMPLATE-feature-spec.md`
+- `docs/design/TEMPLATE-feature-design.md`
+- `docs/plans/TEMPLATE-feature-plan.md`
 - `docs/contracts/TEMPLATE-api-frontend-map.md`
 - `docs/runbooks/incident-playbook.md`
 - `docs/runbooks/backup-restore.md`
@@ -122,6 +124,7 @@ $vibe-governance
 - `docs/status/TEMPLATE-monthly-maintenance.md`
 - `docs/status/TEMPLATE-role-handoff.md`
 - `docs/status/TEMPLATE-blackbox-session.md`
+- `docs/status/TEMPLATE-brainstorming.md`
 - `docs/release/CHANGELOG.md`
 - `docs/release/RELEASE_NOTES.md`
 - `docs/status/current-task.md`
@@ -209,7 +212,15 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
   --task-type feature \
   --work-type full
 
+bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm \
+  --note "docs/status/brainstorming/spec-0001-core-flow.md"
+
+bash -lc 'sed -i.bak -E "s/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
+
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
+
+bash -lc 'sed -i.bak -E "s/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
+
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 3"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "发布"
@@ -218,6 +229,9 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate 
 说明：
 
 - 你唯一任务入口是 `--goal`（一句话目标）。
+- Gate 0 前必须完成 brainstorming（需求/选型前期准备），否则脚本会阻断批准。
+- Gate 0 前还必须更新 `docs/design/<SPEC_ID>-design.md`，并把 `DESIGN_SYNC_STATUS` 设为 `synced`。
+- Gate 2 前必须更新 `docs/plans/<SPEC_ID>-plan.md`，并把 `PLAN_SYNC_STATUS` 设为 `synced`。
 - 人类只在 `Gate 0/Gate 2/Gate 3/发布` 进行批准。
 - 每次执行会输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
 - 会话状态写入 `docs/status/blackbox-session.md`，任务状态写入 `docs/status/current-task.md`。

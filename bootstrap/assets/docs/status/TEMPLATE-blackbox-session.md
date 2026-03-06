@@ -25,10 +25,16 @@ last_updated: "{{YYYY-MM-DD}}"
 - CURRENT_GATE: Gate 0
 - CURRENT_ROLE: Founder
 - NEXT_ROLE: PM
+- DESIGN_LINK: docs/design/{{spec_id}}-design.md
+- PLAN_LINK: docs/plans/{{spec_id}}-plan.md
 - APPROVAL_GATE_0: pending
 - APPROVAL_GATE_2: pending
 - APPROVAL_GATE_3: pending
 - APPROVAL_RELEASE: pending
+- DESIGN_SYNC_STATUS: pending
+- PLAN_SYNC_STATUS: pending
+- BRAINSTORMING_STATUS: pending
+- BRAINSTORMING_LINK: docs/status/brainstorming/{{spec_id}}.md
 - STATUS: waiting_gate_0
 - LAST_ACTION: start
 - LAST_UPDATED: {{updated_at_iso8601}}
@@ -36,10 +42,13 @@ last_updated: "{{YYYY-MM-DD}}"
 ## 人类输入契约
 
 1. `开始任务：<一句话目标>`
-2. `批准 Gate 0`
-3. `批准 Gate 2`
-4. `批准 Gate 3`
-5. `批准发布`
+2. 运行 brainstorming 并执行：`run-blackbox-flow.sh brainstorm --note <path>`
+3. 更新 `docs/design/<SPEC_ID>-design.md`，并把 `DESIGN_SYNC_STATUS` 设为 `synced`
+4. `批准 Gate 0`
+5. 更新 `docs/plans/<SPEC_ID>-plan.md`，并把 `PLAN_SYNC_STATUS` 设为 `synced`
+6. `批准 Gate 2`
+7. `批准 Gate 3`
+8. `批准发布`
 
 ## 阶段卡片固定字段
 

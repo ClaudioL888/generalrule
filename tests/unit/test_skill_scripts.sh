@@ -50,6 +50,8 @@ bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
 
 [[ -f "docs/specs/SPEC-0002-test.md" ]] || { echo "missing generated spec"; exit 1; }
 [[ -f "docs/contracts/SPEC-0002-test-api-frontend-map.md" ]] || { echo "missing generated map"; exit 1; }
+[[ -f "docs/design/SPEC-0002-test-design.md" ]] || { echo "missing generated design"; exit 1; }
+[[ -f "docs/plans/SPEC-0002-test-plan.md" ]] || { echo "missing generated plan"; exit 1; }
 
 handoff_file="$(sed -n -E 's/^- HANDOFF_LINK:[[:space:]]*(.*)$/\1/p' docs/status/current-task.md | tail -n1)"
 [[ -n "$handoff_file" && -f "$handoff_file" ]] || { echo "missing generated handoff file"; exit 1; }
@@ -72,7 +74,11 @@ cat > docs/status/current-task.md <<'MD'
 - CURRENT_GATE: Gate 6
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- DESIGN_LINK: docs/design/SPEC-0002-test-design.md
+- PLAN_LINK: docs/plans/SPEC-0002-test-plan.md
 - HANDOFF_LINK: docs/status/handoffs/spec-0002-test-dev-to-qa.md
+- DESIGN_SYNC_STATUS: synced
+- PLAN_SYNC_STATUS: pending
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: pending
@@ -84,7 +90,7 @@ MD
 
 cp docs/status/TEMPLATE-role-handoff.md docs/status/handoffs/spec-0002-test-dev-to-qa.md
 
-changed_files=$'src/app.ts\ndocs/specs/SPEC-0002-test.md\ndocs/contracts/SPEC-0002-test-api-frontend-map.md\ndocs/status/current-task.md\ndocs/status/handoffs/spec-0002-test-dev-to-qa.md\ndocs/design/0001-architecture-overview.md\ndocs/plans/0001-implementation-plan.md\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md'
+changed_files=$'src/app.ts\ndocs/specs/SPEC-0002-test.md\ndocs/contracts/SPEC-0002-test-api-frontend-map.md\ndocs/design/SPEC-0002-test-design.md\ndocs/plans/SPEC-0002-test-plan.md\ndocs/status/current-task.md\ndocs/status/handoffs/spec-0002-test-dev-to-qa.md\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md'
 
 if PATH="$mock_bin:/usr/bin:/bin" CHANGED_FILES="$changed_files" bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh; then
   echo "expected failure when CONTRACT_SYNC_STATUS is pending"
@@ -92,6 +98,8 @@ if PATH="$mock_bin:/usr/bin:/bin" CHANGED_FILES="$changed_files" bash .agents/sk
 fi
 
 sed -i.bak -E 's/^- CONTRACT_SYNC_STATUS:.*$/- CONTRACT_SYNC_STATUS: synced/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
+sed -i.bak -E 's/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/' docs/status/current-task.md
 rm -f docs/status/current-task.md.bak
 
 PATH="$mock_bin:/usr/bin:/bin" CHANGED_FILES="$changed_files" bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh

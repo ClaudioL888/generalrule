@@ -10,13 +10,16 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 ## 黑盒半自动入口
 
 1. 人类唯一必填输入：`开始任务：<一句话目标>`。
-2. 人类仅在关键节点批准：`批准 Gate 0`、`批准 Gate 2`、`批准 Gate 3`、`批准发布`。
-3. AI 必须每阶段输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
-4. 推荐使用 `bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh` 执行半自动流程。
+2. Gate 0 前必须先运行 brainstorming skill 并记录结论（需求、约束、技术选型）。
+3. Gate 0 前必须更新 `docs/design/<SPEC_ID>-design.md` 并同步 `DESIGN_SYNC_STATUS=synced`。
+4. Gate 2 前必须更新 `docs/plans/<SPEC_ID>-plan.md` 并同步 `PLAN_SYNC_STATUS=synced`。
+5. 人类仅在关键节点批准：`批准 Gate 0`、`批准 Gate 2`、`批准 Gate 3`、`批准发布`。
+6. AI 必须每阶段输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
+7. 推荐使用 `bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh` 执行半自动流程。
 
 ## Skill 调用提醒（强制）
 
-1. `vibe-governance` 作为默认主流程 skill，允许隐式触发（自动进入规范流程）。
+1. `vibe-governance` 作为默认主流程 skill，允许隐式触发（自动进入规范流程，并先提示 brainstorming）。
 2. `vibe-task-pack` 与 `vibe-quality-gates` 保持显式触发，避免误触发重型检查。
 3. 每次收到新任务时，AI 必须先说明当前将走 `vibe-governance` 主流程，并给出可选显式命令。
 4. 用户明确回复“跳过 skill”后，AI 才可继续，但必须提示风险（可能偏离标准流程或漏掉门禁）。
@@ -28,6 +31,10 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 3. 必须运行并报告测试结果，不接受“我觉得可以”。
 4. 任何改动必须更新对应文档与发布说明。
 5. 执行命令、依赖安装、权限变更必须进入 approval。
+6. 每个新 `SPEC_ID` 必须绑定独立文档：
+   - `docs/specs/<SPEC_ID>.md`
+   - `docs/design/<SPEC_ID>-design.md`
+   - `docs/plans/<SPEC_ID>-plan.md`
 
 ## Codex 运行时配置约束
 

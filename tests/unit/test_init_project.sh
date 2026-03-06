@@ -71,6 +71,8 @@ required_files=(
   "docs/plans/0001-implementation-plan.md"
   "docs/test-plan/0001-test-plan.md"
   "docs/specs/TEMPLATE-feature-spec.md"
+  "docs/design/TEMPLATE-feature-design.md"
+  "docs/plans/TEMPLATE-feature-plan.md"
   "docs/contracts/TEMPLATE-api-frontend-map.md"
   "docs/runbooks/incident-playbook.md"
   "docs/runbooks/backup-restore.md"
@@ -80,6 +82,7 @@ required_files=(
   "docs/status/TEMPLATE-monthly-maintenance.md"
   "docs/status/TEMPLATE-role-handoff.md"
   "docs/status/TEMPLATE-blackbox-session.md"
+  "docs/status/TEMPLATE-brainstorming.md"
   "docs/release/CHANGELOG.md"
   "docs/release/RELEASE_NOTES.md"
   "docs/status/current-task.md"
@@ -139,7 +142,9 @@ fi
 
 for key in \
   TASK_ID SPEC_ID TASK_TYPE ROLE WORK_TYPE CURRENT_GATE CURRENT_ROLE NEXT_ROLE HANDOFF_LINK \
-  API_SURFACE_CHANGED FRONTEND_SURFACE_CHANGED CONTRACT_SYNC_STATUS TEST_COMMANDS TEST_RESULT UPDATED_AT NEXT_ACTION; do
+  DESIGN_LINK PLAN_LINK DESIGN_SYNC_STATUS PLAN_SYNC_STATUS \
+  API_SURFACE_CHANGED FRONTEND_SURFACE_CHANGED CONTRACT_SYNC_STATUS BRAINSTORMING_STATUS BRAINSTORMING_LINK \
+  TEST_COMMANDS TEST_RESULT UPDATED_AT NEXT_ACTION; do
   grep -q "^- $key: " "$output_dir/docs/status/current-task.md" || {
     echo "missing key in current-task.md: $key"
     exit 1
@@ -152,6 +157,12 @@ fi
 
 cp "$output_dir/docs/specs/TEMPLATE-feature-spec.md" "$output_dir/docs/specs/SPEC-0001-core-flow.md"
 cp "$output_dir/docs/contracts/TEMPLATE-api-frontend-map.md" "$output_dir/docs/contracts/SPEC-0001-core-flow-api-frontend-map.md"
+cp "$output_dir/docs/design/TEMPLATE-feature-design.md" "$output_dir/docs/design/SPEC-0001-core-flow-design.md"
+cp "$output_dir/docs/plans/TEMPLATE-feature-plan.md" "$output_dir/docs/plans/SPEC-0001-core-flow-plan.md"
+sed -i.bak -E 's/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
+sed -i.bak -E 's/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
 
 pr_file="$tmp_dir/pr.md"
 cat > "$pr_file" <<'PR'
@@ -159,8 +170,8 @@ cat > "$pr_file" <<'PR'
 - WORK_TYPE: full
 - TASK_TYPE: feature
 - PRD_LINK: docs/prd/0001-problem-statement.md
-- DESIGN_LINK: docs/design/0001-architecture-overview.md
-- PLAN_LINK: docs/plans/0001-implementation-plan.md
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - SPEC_LINK: docs/specs/SPEC-0001-core-flow.md
 - API_FRONTEND_MAP_LINK: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
 - ROLE_HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
@@ -177,7 +188,7 @@ cat > "$pr_file" <<'PR'
 - RELEASE_REVIEW: approved
 PR
 
-changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/TEMPLATE-role-handoff.md\ndocs/specs/SPEC-0001-core-flow.md\ndocs/contracts/SPEC-0001-core-flow-api-frontend-map.md\ndocs/prd/0001-problem-statement.md\ndocs/design/0001-architecture-overview.md\ndocs/plans/0001-implementation-plan.md'
+changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/TEMPLATE-role-handoff.md\ndocs/specs/SPEC-0001-core-flow.md\ndocs/contracts/SPEC-0001-core-flow-api-frontend-map.md\ndocs/prd/0001-problem-statement.md\ndocs/design/SPEC-0001-core-flow-design.md\ndocs/plans/SPEC-0001-core-flow-plan.md'
 (
   cd "$output_dir"
   mock_codex_bin="$tmp_dir/mock-codex"

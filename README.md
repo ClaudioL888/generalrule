@@ -38,6 +38,7 @@ flowchart LR
 默认行为：
 
 - `vibe-governance` 会作为主流程自动触发（隐式）
+- 在需求确认与技术选型阶段，默认先调用 `brainstorming` skill 辅助收敛
 
 显式触发（按需）：
 
@@ -65,7 +66,15 @@ bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
   --task-type feature \
   --work-type full
 
+bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm \
+  --note "docs/status/brainstorming/spec-0001-core-flow.md"
+
+bash -lc 'sed -i.bak -E "s/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
+
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
+
+bash -lc 'sed -i.bak -E "s/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/" docs/status/current-task.md && rm -f docs/status/current-task.md.bak'
+
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 3"
 bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "发布"
@@ -119,6 +128,8 @@ STRICT_SEED=1 bash scripts/init-project.sh \
 - `docs/plans/0001-implementation-plan.md`
 - `docs/test-plan/0001-test-plan.md`
 - `docs/specs/TEMPLATE-feature-spec.md`
+- `docs/design/TEMPLATE-feature-design.md`
+- `docs/plans/TEMPLATE-feature-plan.md`
 - `docs/contracts/TEMPLATE-api-frontend-map.md`
 - `docs/runbooks/incident-playbook.md`
 - `docs/runbooks/backup-restore.md`
@@ -128,6 +139,7 @@ STRICT_SEED=1 bash scripts/init-project.sh \
 - `docs/status/TEMPLATE-monthly-maintenance.md`
 - `docs/status/TEMPLATE-role-handoff.md`
 - `docs/status/TEMPLATE-blackbox-session.md`
+- `docs/status/TEMPLATE-brainstorming.md`
 - `docs/release/CHANGELOG.md`
 - `docs/release/RELEASE_NOTES.md`
 - `docs/status/current-task.md`

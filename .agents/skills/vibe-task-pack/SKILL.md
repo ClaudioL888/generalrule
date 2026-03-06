@@ -1,6 +1,6 @@
 ---
 name: vibe-task-pack
-description: 为单个任务创建或更新 Spec/API-Frontend 映射/角色交接与 current-task 关键字段。
+description: 为单个任务创建或更新 Spec/Design/Plan/API-Frontend 映射/角色交接与 current-task 关键字段。
 ---
 
 # Vibe Task Pack Skill
@@ -8,7 +8,7 @@ description: 为单个任务创建或更新 Spec/API-Frontend 映射/角色交�
 ## Use When
 
 - 新功能或新任务开始前
-- 当前任务缺少 spec/map/handoff 文档
+- 当前任务缺少 spec/design/plan/map/handoff 文档
 - 需要修正 current-task 中任务标识与角色信息
 
 ## Do Not Use When
@@ -31,3 +31,11 @@ bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
   --current-role Dev \
   --next-role QA
 ```
+
+脚本会同时生成：
+
+- `docs/specs/<SPEC_ID>.md`
+- `docs/design/<SPEC_ID>-design.md`
+- `docs/plans/<SPEC_ID>-plan.md`
+- `docs/contracts/<SPEC_ID>-api-frontend-map.md`
+- `docs/status/handoffs/*.md`

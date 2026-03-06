@@ -5,11 +5,13 @@ usage() {
   cat <<'USAGE'
 Usage:
   run-blackbox-flow.sh start --goal <single-line-goal> [--task-type <feature|bugfix|refactor|ops|content>] [--work-type <full|mini|fast-track>] [--spec-id <SPEC-...>]
+  run-blackbox-flow.sh brainstorm [--note <path>]
   run-blackbox-flow.sh approve --gate <Gate 0|Gate 2|Gate 3|发布|release> [--decision <approved|rejected>]
   run-blackbox-flow.sh status
 
 Examples:
   run-blackbox-flow.sh start --goal "做一个让新用户 10 分钟内完成首次发布的流程"
+  run-blackbox-flow.sh brainstorm --note "docs/status/brainstorming/spec-20260305-core.md"
   run-blackbox-flow.sh approve --gate "Gate 0"
   run-blackbox-flow.sh approve --gate "Gate 2"
   run-blackbox-flow.sh approve --gate "Gate 3"
@@ -26,6 +28,7 @@ HANDOFF_TEMPLATE="docs/status/TEMPLATE-role-handoff.md"
 SESSION_TEMPLATE="docs/status/TEMPLATE-blackbox-session.md"
 TASK_PACK_SCRIPT=".agents/skills/vibe-task-pack/scripts/new-task-pack.sh"
 QUALITY_GATES_SCRIPT=".agents/skills/vibe-quality-gates/scripts/run-local-gates.sh"
+BRAINSTORM_TEMPLATE="docs/status/TEMPLATE-brainstorming.md"
 
 now_utc() {
   date -u +"%Y-%m-%dT%H:%M:%SZ"
@@ -167,6 +170,24 @@ handoff_file_for() {
   printf 'docs/status/handoffs/%s-%s-to-%s.md\n' "$spec_slug" "$from_slug" "$to_slug"
 }
 
+brainstorm_file_for() {
+  local spec_id="$1"
+  local spec_slug
+
+  spec_slug="$(printf '%s' "$spec_id" | tr '[:upper:]' '[:lower:]')"
+  printf 'docs/status/brainstorming/%s.md\n' "$spec_slug"
+}
+
+design_file_for() {
+  local spec_id="$1"
+  printf 'docs/design/%s-design.md\n' "$spec_id"
+}
+
+plan_file_for() {
+  local spec_id="$1"
+  printf 'docs/plans/%s-plan.md\n' "$spec_id"
+}
+
 ensure_handoff_file() {
   local file="$1"
   local spec_id="$2"
@@ -221,10 +242,16 @@ ensure_session_file() {
 - CURRENT_GATE: Gate 0
 - CURRENT_ROLE: Founder
 - NEXT_ROLE: PM
+- DESIGN_LINK: docs/design/TODO-design.md
+- PLAN_LINK: docs/plans/TODO-plan.md
 - APPROVAL_GATE_0: pending
 - APPROVAL_GATE_2: pending
 - APPROVAL_GATE_3: pending
 - APPROVAL_RELEASE: pending
+- DESIGN_SYNC_STATUS: pending
+- PLAN_SYNC_STATUS: pending
+- BRAINSTORMING_STATUS: pending
+- BRAINSTORMING_LINK: docs/status/brainstorming/todo.md
 - STATUS: active
 - LAST_ACTION: start
 - LAST_UPDATED: TODO(updated_at)
@@ -247,15 +274,75 @@ ensure_current_task_file() {
 - CURRENT_GATE: Gate 0
 - CURRENT_ROLE: Founder
 - NEXT_ROLE: PM
+- DESIGN_LINK: docs/design/TODO-design.md
+- PLAN_LINK: docs/plans/TODO-plan.md
 - HANDOFF_LINK: docs/status/handoffs/todo.md
+- DESIGN_SYNC_STATUS: pending
+- PLAN_SYNC_STATUS: pending
 - API_SURFACE_CHANGED: no
 - FRONTEND_SURFACE_CHANGED: no
 - CONTRACT_SYNC_STATUS: pending
+- BRAINSTORMING_STATUS: pending
+- BRAINSTORMING_LINK: docs/status/brainstorming/todo.md
 - TEST_COMMANDS: pending
 - TEST_RESULT: pending
 - UPDATED_AT: 1970-01-01T00:00:00Z
 - NEXT_ACTION: pending
 FALLBACK
+}
+
+ensure_brainstorm_file() {
+  local file="$1"
+  local spec_id="$2"
+  local goal="$3"
+
+  mkdir -p "$(dirname "$file")"
+  if [[ ! -f "$file" ]]; then
+    if [[ -f "$BRAINSTORM_TEMPLATE" ]]; then
+      cp "$BRAINSTORM_TEMPLATE" "$file"
+    else
+      cat > "$file" <<'FALLBACK'
+# Brainstorming Brief
+
+## 目标与非目标
+- 目标：TODO
+- 非目标：TODO
+
+## 用户与场景
+- 用户画像：TODO
+- 核心场景：TODO
+
+## 技术选型候选
+- 方案A：TODO
+- 方案B：TODO
+- 取舍：TODO
+
+## 风险与边界
+- 风险：TODO
+- 约束：TODO
+FALLBACK
+    fi
+  fi
+
+  replace_token_file "$file" "spec_id" "$spec_id"
+  replace_token_file "$file" "project_goal" "$goal"
+}
+
+set_brainstorm_pending() {
+  local spec_id="$1"
+  local goal="$2"
+  local note_file
+
+  ensure_current_task_file
+  ensure_session_file
+
+  note_file="$(brainstorm_file_for "$spec_id")"
+  ensure_brainstorm_file "$note_file" "$spec_id" "$goal"
+
+  upsert_kv "$CURRENT_TASK_FILE" "BRAINSTORMING_STATUS" "pending"
+  upsert_kv "$CURRENT_TASK_FILE" "BRAINSTORMING_LINK" "$note_file"
+  upsert_kv "$SESSION_FILE" "BRAINSTORMING_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "BRAINSTORMING_LINK" "$note_file"
 }
 
 print_card() {
@@ -361,8 +448,12 @@ update_current_task_transition() {
   local next_role="$6"
   local next_action="$7"
   local handoff
+  local design_link
+  local plan_link
 
   handoff="$(handoff_file_for "$spec_id" "$current_role" "$next_role")"
+  design_link="$(design_file_for "$spec_id")"
+  plan_link="$(plan_file_for "$spec_id")"
   ensure_handoff_file "$handoff" "$spec_id" "$task_type" "$current_role" "$next_role"
 
   ensure_current_task_file
@@ -375,6 +466,8 @@ update_current_task_transition() {
   upsert_kv "$CURRENT_TASK_FILE" "CURRENT_GATE" "$current_gate"
   upsert_kv "$CURRENT_TASK_FILE" "CURRENT_ROLE" "$current_role"
   upsert_kv "$CURRENT_TASK_FILE" "NEXT_ROLE" "$next_role"
+  upsert_kv "$CURRENT_TASK_FILE" "DESIGN_LINK" "$design_link"
+  upsert_kv "$CURRENT_TASK_FILE" "PLAN_LINK" "$plan_link"
   upsert_kv "$CURRENT_TASK_FILE" "HANDOFF_LINK" "$handoff"
   upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
   upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "$next_action"
@@ -393,6 +486,12 @@ update_current_task_transition() {
   fi
   if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "CONTRACT_SYNC_STATUS")" ]]; then
     upsert_kv "$CURRENT_TASK_FILE" "CONTRACT_SYNC_STATUS" "pending"
+  fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "DESIGN_SYNC_STATUS")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "DESIGN_SYNC_STATUS" "pending"
+  fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "PLAN_SYNC_STATUS")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "PLAN_SYNC_STATUS" "pending"
   fi
 }
 
@@ -468,7 +567,8 @@ cmd_start() {
 
   ensure_session_file
   run_task_pack "$spec_id" "$task_type" "$current_role" "$next_role"
-  update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 0" "$current_role" "$next_role" "等待批准 Gate 0"
+  update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 0" "$current_role" "$next_role" "先完成 brainstorming，再更新 design 并标记 synced"
+  set_brainstorm_pending "$spec_id" "$goal"
 
   upsert_kv "$SESSION_FILE" "GOAL" "$goal"
   upsert_kv "$SESSION_FILE" "SPEC_ID" "$spec_id"
@@ -477,20 +577,86 @@ cmd_start() {
   upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 0"
   upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
   upsert_kv "$SESSION_FILE" "NEXT_ROLE" "$next_role"
+  upsert_kv "$SESSION_FILE" "DESIGN_LINK" "$(design_file_for "$spec_id")"
+  upsert_kv "$SESSION_FILE" "PLAN_LINK" "$(plan_file_for "$spec_id")"
   upsert_kv "$SESSION_FILE" "APPROVAL_GATE_0" "pending"
   upsert_kv "$SESSION_FILE" "APPROVAL_GATE_2" "pending"
   upsert_kv "$SESSION_FILE" "APPROVAL_GATE_3" "pending"
   upsert_kv "$SESSION_FILE" "APPROVAL_RELEASE" "pending"
+  upsert_kv "$SESSION_FILE" "DESIGN_SYNC_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "PLAN_SYNC_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "BRAINSTORMING_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "BRAINSTORMING_LINK" "$(brainstorm_file_for "$spec_id")"
   upsert_kv "$SESSION_FILE" "STATUS" "waiting_gate_0"
   upsert_kv "$SESSION_FILE" "LAST_ACTION" "start"
   upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
+  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "先运行 brainstorming，再更新 design 并把 DESIGN_SYNC_STATUS 设为 synced"
+  upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
 
   print_card \
-    "绑定一句话目标并建立任务包" \
-    "已初始化 SPEC、契约映射、角色交接与 current-task" \
+    "完成前期准备并绑定目标" \
+    "已初始化任务包，并创建 brainstorming brief（需先完成）" \
     "Gate 0 待批准" \
-    "批准 Gate 0" \
-    "AI 自动推进 PM/Architect 草案并等待 Gate 2"
+    "先执行 brainstorming 标记完成" \
+    "完成 brainstorming 后更新 design 文档并再批准 Gate 0"
+}
+
+cmd_brainstorm() {
+  local note=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --note)
+        note="${2:-}"
+        shift 2
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
+        echo "unknown argument for brainstorm: $1" >&2
+        usage >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  [[ -f "$SESSION_FILE" ]] || { echo "missing session file: $SESSION_FILE" >&2; exit 1; }
+  ensure_current_task_file
+
+  local spec_id goal note_file
+  spec_id="$(kv_get "$SESSION_FILE" "SPEC_ID")"
+  goal="$(kv_get "$SESSION_FILE" "GOAL")"
+  [[ -n "$spec_id" ]] || { echo "session SPEC_ID is empty" >&2; exit 1; }
+
+  note_file="$note"
+  if [[ -z "$note_file" ]]; then
+    note_file="$(kv_get "$CURRENT_TASK_FILE" "BRAINSTORMING_LINK")"
+  fi
+  if [[ -z "$note_file" ]]; then
+    note_file="$(brainstorm_file_for "$spec_id")"
+  fi
+
+  ensure_brainstorm_file "$note_file" "$spec_id" "$goal"
+  [[ -f "$note_file" ]] || { echo "brainstorm note file not found: $note_file" >&2; exit 1; }
+
+  upsert_kv "$CURRENT_TASK_FILE" "BRAINSTORMING_STATUS" "done"
+  upsert_kv "$CURRENT_TASK_FILE" "BRAINSTORMING_LINK" "$note_file"
+  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "批准 Gate 0"
+  upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
+
+  upsert_kv "$SESSION_FILE" "BRAINSTORMING_STATUS" "done"
+  upsert_kv "$SESSION_FILE" "BRAINSTORMING_LINK" "$note_file"
+  upsert_kv "$SESSION_FILE" "LAST_ACTION" "brainstorm"
+  upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
+
+  print_card \
+    "前期需求与选型准备" \
+    "已完成 brainstorming 标记并记录笔记路径" \
+    "待同步 design" \
+    "更新 design 文档并把 DESIGN_SYNC_STATUS 设为 synced" \
+    "design 同步后再批准 Gate 0"
 }
 
 cmd_approve() {
@@ -521,6 +687,7 @@ cmd_approve() {
 
   [[ -f "$SESSION_FILE" ]] || { echo "missing session file: $SESSION_FILE" >&2; exit 1; }
   [[ -n "$gate" ]] || { echo "--gate is required" >&2; exit 1; }
+  ensure_current_task_file
 
   local norm_gate
   norm_gate="$(normalize_gate "$gate")"
@@ -555,15 +722,41 @@ cmd_approve() {
   case "$norm_gate" in
     gate0)
       [[ "$current_gate" == "Gate 0" ]] || { echo "Gate 0 approval is only valid when CURRENT_GATE=Gate 0 (current: $current_gate)" >&2; exit 1; }
+      local brainstorming_status brainstorming_link design_sync_status design_link
+      brainstorming_status="$(kv_get "$CURRENT_TASK_FILE" "BRAINSTORMING_STATUS")"
+      brainstorming_link="$(kv_get "$CURRENT_TASK_FILE" "BRAINSTORMING_LINK")"
+      design_sync_status="$(kv_get "$CURRENT_TASK_FILE" "DESIGN_SYNC_STATUS")"
+      design_link="$(kv_get "$CURRENT_TASK_FILE" "DESIGN_LINK")"
+      [[ -n "$brainstorming_status" ]] || brainstorming_status="$(kv_get "$SESSION_FILE" "BRAINSTORMING_STATUS")"
+      [[ -n "$brainstorming_link" ]] || brainstorming_link="$(kv_get "$SESSION_FILE" "BRAINSTORMING_LINK")"
+      [[ -n "$design_sync_status" ]] || design_sync_status="$(kv_get "$SESSION_FILE" "DESIGN_SYNC_STATUS")"
+      [[ -n "$design_link" ]] || design_link="$(kv_get "$SESSION_FILE" "DESIGN_LINK")"
+      if [[ "$brainstorming_status" != "done" ]]; then
+        echo "Gate 0 requires brainstorming completion. Run: bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm --note <path>" >&2
+        exit 1
+      fi
+      if [[ -z "$brainstorming_link" || ! -f "$brainstorming_link" ]]; then
+        echo "Gate 0 requires valid brainstorming note file. Missing: ${brainstorming_link:-<empty>}" >&2
+        exit 1
+      fi
+      if [[ "$design_sync_status" != "synced" ]]; then
+        echo "Gate 0 requires design sync. Update docs/design/<SPEC_ID>-design.md and set DESIGN_SYNC_STATUS=synced in docs/status/current-task.md" >&2
+        exit 1
+      fi
+      if [[ -z "$design_link" || ! -f "$design_link" ]]; then
+        echo "Gate 0 requires valid design file. Missing: ${design_link:-<empty>}" >&2
+        exit 1
+      fi
       transition="$(transition_for_stage "$task_type" gate2)"
       current_role="${transition%%|*}"
       next_role="${transition##*|}"
-      update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 2" "$current_role" "$next_role" "等待批准 Gate 2"
+      update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 2" "$current_role" "$next_role" "更新 plan 文档并把 PLAN_SYNC_STATUS 设为 synced"
 
       upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 2"
       upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
       upsert_kv "$SESSION_FILE" "NEXT_ROLE" "$next_role"
       upsert_kv "$SESSION_FILE" "APPROVAL_GATE_0" "approved"
+      upsert_kv "$SESSION_FILE" "DESIGN_SYNC_STATUS" "synced"
       upsert_kv "$SESSION_FILE" "STATUS" "waiting_gate_2"
       upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:gate0"
       upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
@@ -572,12 +765,25 @@ cmd_approve() {
         "完成需求/设计草案并进入架构确认" \
         "已记录 Gate 0 批准，AI 推进到 Gate 2" \
         "Gate 2 待批准" \
-        "批准 Gate 2" \
-        "AI 自动推进 Planner 拆解并等待 Gate 3"
+        "更新 plan 文档并把 PLAN_SYNC_STATUS 设为 synced" \
+        "plan 同步后再批准 Gate 2"
       ;;
 
     gate2)
       [[ "$current_gate" == "Gate 2" ]] || { echo "Gate 2 approval is only valid when CURRENT_GATE=Gate 2 (current: $current_gate)" >&2; exit 1; }
+      local plan_sync_status plan_link
+      plan_sync_status="$(kv_get "$CURRENT_TASK_FILE" "PLAN_SYNC_STATUS")"
+      plan_link="$(kv_get "$CURRENT_TASK_FILE" "PLAN_LINK")"
+      [[ -n "$plan_sync_status" ]] || plan_sync_status="$(kv_get "$SESSION_FILE" "PLAN_SYNC_STATUS")"
+      [[ -n "$plan_link" ]] || plan_link="$(kv_get "$SESSION_FILE" "PLAN_LINK")"
+      if [[ "$plan_sync_status" != "synced" ]]; then
+        echo "Gate 2 requires plan sync. Update docs/plans/<SPEC_ID>-plan.md and set PLAN_SYNC_STATUS=synced in docs/status/current-task.md" >&2
+        exit 1
+      fi
+      if [[ -z "$plan_link" || ! -f "$plan_link" ]]; then
+        echo "Gate 2 requires valid plan file. Missing: ${plan_link:-<empty>}" >&2
+        exit 1
+      fi
       transition="$(transition_for_stage "$task_type" gate3)"
       current_role="${transition%%|*}"
       next_role="${transition##*|}"
@@ -587,6 +793,7 @@ cmd_approve() {
       upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
       upsert_kv "$SESSION_FILE" "NEXT_ROLE" "$next_role"
       upsert_kv "$SESSION_FILE" "APPROVAL_GATE_2" "approved"
+      upsert_kv "$SESSION_FILE" "PLAN_SYNC_STATUS" "synced"
       upsert_kv "$SESSION_FILE" "STATUS" "waiting_gate_3"
       upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:gate2"
       upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
@@ -696,15 +903,36 @@ cmd_status() {
 
   local one_action="查看 current-task 并继续"
   local next_step="继续按状态推进"
+  local brainstorming_status
+  local design_sync_status
+  local plan_sync_status
+  brainstorming_status="$(kv_get "$SESSION_FILE" "BRAINSTORMING_STATUS")"
+  design_sync_status="$(kv_get "$SESSION_FILE" "DESIGN_SYNC_STATUS")"
+  plan_sync_status="$(kv_get "$SESSION_FILE" "PLAN_SYNC_STATUS")"
 
   case "$status" in
     waiting_gate_0)
-      one_action="批准 Gate 0"
-      next_step="AI 推进 PM/Architect 草案"
+      if [[ "$brainstorming_status" == "done" ]]; then
+        if [[ "$design_sync_status" == "synced" ]]; then
+          one_action="批准 Gate 0"
+          next_step="AI 推进 PM/Architect 草案"
+        else
+          one_action="更新 design 文档并把 DESIGN_SYNC_STATUS 设为 synced"
+          next_step="design 同步后再批准 Gate 0"
+        fi
+      else
+        one_action="先运行 brainstorming 标记完成"
+        next_step="执行 run-blackbox-flow.sh brainstorm --note <path>"
+      fi
       ;;
     waiting_gate_2)
-      one_action="批准 Gate 2"
-      next_step="AI 推进 Planner 拆解"
+      if [[ "$plan_sync_status" == "synced" ]]; then
+        one_action="批准 Gate 2"
+        next_step="AI 推进 Planner 拆解"
+      else
+        one_action="更新 plan 文档并把 PLAN_SYNC_STATUS 设为 synced"
+        next_step="plan 同步后再批准 Gate 2"
+      fi
       ;;
     waiting_gate_3)
       one_action="批准 Gate 3"
@@ -743,6 +971,9 @@ main() {
   case "$command" in
     start)
       cmd_start "$@"
+      ;;
+    brainstorm)
+      cmd_brainstorm "$@"
       ;;
     approve)
       cmd_approve "$@"

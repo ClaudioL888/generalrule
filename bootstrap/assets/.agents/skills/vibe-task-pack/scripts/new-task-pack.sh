@@ -62,14 +62,16 @@ case "$TASK_TYPE" in
     ;;
 esac
 
-for required in docs/specs/TEMPLATE-feature-spec.md docs/contracts/TEMPLATE-api-frontend-map.md docs/status/TEMPLATE-role-handoff.md docs/status/current-task.md; do
+for required in docs/specs/TEMPLATE-feature-spec.md docs/contracts/TEMPLATE-api-frontend-map.md docs/design/TEMPLATE-feature-design.md docs/plans/TEMPLATE-feature-plan.md docs/status/TEMPLATE-role-handoff.md docs/status/current-task.md; do
   [[ -f "$required" ]] || { echo "missing required file: $required" >&2; exit 1; }
 done
 
-mkdir -p docs/specs docs/contracts docs/status/handoffs
+mkdir -p docs/specs docs/contracts docs/design docs/plans docs/status/handoffs
 
 spec_file="docs/specs/${SPEC_ID}.md"
 map_file="docs/contracts/${SPEC_ID}-api-frontend-map.md"
+design_file="docs/design/${SPEC_ID}-design.md"
+plan_file="docs/plans/${SPEC_ID}-plan.md"
 spec_slug="$(printf '%s' "$SPEC_ID" | tr '[:upper:]' '[:lower:]')"
 from_slug="$(printf '%s' "$CURRENT_ROLE" | tr '[:upper:] ' '[:lower:]-' | sed 's/[^a-z0-9-]//g')"
 to_slug="$(printf '%s' "$NEXT_ROLE" | tr '[:upper:] ' '[:lower:]-' | sed 's/[^a-z0-9-]//g')"
@@ -86,6 +88,8 @@ maybe_copy() {
 
 maybe_copy docs/specs/TEMPLATE-feature-spec.md "$spec_file"
 maybe_copy docs/contracts/TEMPLATE-api-frontend-map.md "$map_file"
+maybe_copy docs/design/TEMPLATE-feature-design.md "$design_file"
+maybe_copy docs/plans/TEMPLATE-feature-plan.md "$plan_file"
 maybe_copy docs/status/TEMPLATE-role-handoff.md "$handoff_file"
 
 replace_token_file() {
@@ -98,7 +102,7 @@ replace_token_file() {
   rm -f "${file}.bak"
 }
 
-for f in "$spec_file" "$map_file" "$handoff_file"; do
+for f in "$spec_file" "$map_file" "$design_file" "$plan_file" "$handoff_file"; do
   replace_token_file "$f" "spec_id" "$SPEC_ID"
   replace_token_file "$f" "task_type" "$TASK_TYPE"
   replace_token_file "$f" "current_role" "$CURRENT_ROLE"
@@ -124,8 +128,12 @@ upsert_kv "$current_task" "SPEC_ID" "$SPEC_ID"
 upsert_kv "$current_task" "TASK_TYPE" "$TASK_TYPE"
 upsert_kv "$current_task" "CURRENT_ROLE" "$CURRENT_ROLE"
 upsert_kv "$current_task" "NEXT_ROLE" "$NEXT_ROLE"
+upsert_kv "$current_task" "DESIGN_LINK" "$design_file"
+upsert_kv "$current_task" "PLAN_LINK" "$plan_file"
 upsert_kv "$current_task" "HANDOFF_LINK" "$handoff_file"
 upsert_kv "$current_task" "ROLE" "$CURRENT_ROLE"
+upsert_kv "$current_task" "DESIGN_SYNC_STATUS" "pending"
+upsert_kv "$current_task" "PLAN_SYNC_STATUS" "pending"
 upsert_kv "$current_task" "API_SURFACE_CHANGED" "no"
 upsert_kv "$current_task" "FRONTEND_SURFACE_CHANGED" "no"
 upsert_kv "$current_task" "CONTRACT_SYNC_STATUS" "pending"
@@ -134,4 +142,6 @@ upsert_kv "$current_task" "UPDATED_AT" "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 printf 'task pack ready\n'
 printf '  SPEC: %s\n' "$spec_file"
 printf '  MAP: %s\n' "$map_file"
+printf '  DESIGN: %s\n' "$design_file"
+printf '  PLAN: %s\n' "$plan_file"
 printf '  HANDOFF: %s\n' "$handoff_file"

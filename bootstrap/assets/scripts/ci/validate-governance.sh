@@ -87,7 +87,11 @@ validate_current_task_file() {
     "CURRENT_GATE"
     "CURRENT_ROLE"
     "NEXT_ROLE"
+    "DESIGN_LINK"
+    "PLAN_LINK"
     "HANDOFF_LINK"
+    "DESIGN_SYNC_STATUS"
+    "PLAN_SYNC_STATUS"
     "API_SURFACE_CHANGED"
     "FRONTEND_SURFACE_CHANGED"
     "CONTRACT_SYNC_STATUS"
@@ -114,11 +118,15 @@ validate_current_task_file() {
       ;;
   esac
 
-  local api_surface_changed frontend_surface_changed contract_sync_status handoff_link
+  local api_surface_changed frontend_surface_changed contract_sync_status handoff_link design_link plan_link design_sync_status plan_sync_status
   api_surface_changed="$(extract_meta "API_SURFACE_CHANGED" "$task_file")"
   frontend_surface_changed="$(extract_meta "FRONTEND_SURFACE_CHANGED" "$task_file")"
   contract_sync_status="$(extract_meta "CONTRACT_SYNC_STATUS" "$task_file")"
   handoff_link="$(extract_meta "HANDOFF_LINK" "$task_file")"
+  design_link="$(extract_meta "DESIGN_LINK" "$task_file")"
+  plan_link="$(extract_meta "PLAN_LINK" "$task_file")"
+  design_sync_status="$(extract_meta "DESIGN_SYNC_STATUS" "$task_file")"
+  plan_sync_status="$(extract_meta "PLAN_SYNC_STATUS" "$task_file")"
 
   case "$api_surface_changed" in
     yes|no)
@@ -144,6 +152,24 @@ validate_current_task_file() {
       ;;
   esac
 
+  case "$design_sync_status" in
+    synced|pending)
+      ;;
+    *)
+      fail "current-task DESIGN_SYNC_STATUS must be synced or pending"
+      ;;
+  esac
+
+  case "$plan_sync_status" in
+    synced|pending)
+      ;;
+    *)
+      fail "current-task PLAN_SYNC_STATUS must be synced or pending"
+      ;;
+  esac
+
+  [[ -f "$design_link" ]] || fail "current-task DESIGN_LINK file missing: $design_link"
+  [[ -f "$plan_link" ]] || fail "current-task PLAN_LINK file missing: $plan_link"
   [[ -f "$handoff_link" ]] || fail "current-task HANDOFF_LINK file missing: $handoff_link"
 }
 

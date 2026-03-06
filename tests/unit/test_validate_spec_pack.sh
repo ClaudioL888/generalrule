@@ -22,6 +22,10 @@ cat > "$tmp_dir/work/docs/status/current-task.md" <<'MD'
 - SPEC_ID: SPEC-0001-core-flow
 - TASK_TYPE: feature
 - WORK_TYPE: full
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
+- DESIGN_SYNC_STATUS: synced
+- PLAN_SYNC_STATUS: synced
 MD
 
 cat > "$tmp_dir/work/docs/specs/SPEC-0001-core-flow.md" <<'MD'
@@ -43,10 +47,10 @@ x
 x
 MD
 
-cat > "$tmp_dir/work/docs/design/0001-architecture-overview.md" <<'MD'
+cat > "$tmp_dir/work/docs/design/SPEC-0001-core-flow-design.md" <<'MD'
 # Design
 MD
-cat > "$tmp_dir/work/docs/plans/0001-implementation-plan.md" <<'MD'
+cat > "$tmp_dir/work/docs/plans/SPEC-0001-core-flow-plan.md" <<'MD'
 # Plan
 MD
 
@@ -55,8 +59,8 @@ cat > "$pr_missing_spec" <<'PR'
 ## Governance Metadata
 - WORK_TYPE: full
 - TASK_TYPE: feature
-- DESIGN_LINK: docs/design/0001-architecture-overview.md
-- PLAN_LINK: docs/plans/0001-implementation-plan.md
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 PR
 
 pr_ok="$tmp_dir/pr-ok.md"
@@ -65,11 +69,11 @@ cat > "$pr_ok" <<'PR'
 - WORK_TYPE: full
 - TASK_TYPE: feature
 - SPEC_LINK: docs/specs/SPEC-0001-core-flow.md
-- DESIGN_LINK: docs/design/0001-architecture-overview.md
-- PLAN_LINK: docs/plans/0001-implementation-plan.md
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 PR
 
-changed_files=$'src/app.ts\ndocs/specs/SPEC-0001-core-flow.md\ndocs/design/0001-architecture-overview.md\ndocs/plans/0001-implementation-plan.md'
+changed_files=$'src/app.ts\ndocs/specs/SPEC-0001-core-flow.md\ndocs/design/SPEC-0001-core-flow-design.md\ndocs/plans/SPEC-0001-core-flow-plan.md'
 
 pushd "$tmp_dir/work" >/dev/null
 if CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_missing_spec" "$SCRIPT"; then

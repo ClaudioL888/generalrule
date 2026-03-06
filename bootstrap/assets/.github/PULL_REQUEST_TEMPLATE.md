@@ -16,6 +16,8 @@
 - [ ] 已更新 docs/status
 - [ ] 已更新 docs/status/current-task.md 且字段完整
 - [ ] 已更新 docs/specs 对应 SPEC 文档
+- [ ] 已更新 docs/design 对应 Design 文档
+- [ ] 已更新 docs/plans 对应 Plan 文档
 - [ ] 已更新 docs/contracts API/前端映射文档
 - [ ] 已更新角色交接文档（handoff）
 - [ ] 已更新 docs/release/CHANGELOG.md
@@ -26,8 +28,8 @@
 - WORK_TYPE: full
 - TASK_TYPE: feature
 - PRD_LINK: docs/prd/0001-problem-statement.md
-- DESIGN_LINK: docs/design/0001-architecture-overview.md
-- PLAN_LINK: docs/plans/0001-mvp-implementation-plan.md
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - TASK_STATE_LINK: docs/status/current-task.md
 - SPEC_LINK: docs/specs/SPEC-0001-core-flow.md
 - API_FRONTEND_MAP_LINK: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md

@@ -20,8 +20,8 @@ cat > "$pr_file_full" <<'PR'
 ## Governance Metadata
 - WORK_TYPE: full
 - PRD_LINK: docs/prd/0001-problem-statement.md
-- DESIGN_LINK: docs/design/0001-architecture-overview.md
-- PLAN_LINK: docs/plans/0001-mvp-implementation-plan.md
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - TASK_STATE_LINK: docs/status/current-task.md
 - TEST_RESULTS: unit=pass;integration=pass;e2e=pass
 - APPROVAL_EXECUTION: approved
@@ -34,8 +34,8 @@ cat > "$pr_file_no_task_state" <<'PR'
 ## Governance Metadata
 - WORK_TYPE: full
 - PRD_LINK: docs/prd/0001-problem-statement.md
-- DESIGN_LINK: docs/design/0001-architecture-overview.md
-- PLAN_LINK: docs/plans/0001-mvp-implementation-plan.md
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - TEST_RESULTS: unit=pass;integration=pass;e2e=pass
 - APPROVAL_EXECUTION: approved
 - APPROVAL_DEPENDENCY: approved
@@ -51,10 +51,10 @@ mkdir -p "$tmp_dir/work/docs/prd" "$tmp_dir/work/docs/design" "$tmp_dir/work/doc
 cat > "$tmp_dir/work/docs/prd/0001-problem-statement.md" <<'MD'
 # PRD
 MD
-cat > "$tmp_dir/work/docs/design/0001-architecture-overview.md" <<'MD'
+cat > "$tmp_dir/work/docs/design/SPEC-0001-core-flow-design.md" <<'MD'
 # Design
 MD
-cat > "$tmp_dir/work/docs/plans/0001-mvp-implementation-plan.md" <<'MD'
+cat > "$tmp_dir/work/docs/plans/SPEC-0001-core-flow-plan.md" <<'MD'
 # Plan
 MD
 cat > "$tmp_dir/work/docs/release/CHANGELOG.md" <<'MD'
@@ -67,7 +67,7 @@ cat > "$tmp_dir/work/docs/status/TEMPLATE-role-handoff.md" <<'MD'
 # Role Handoff
 MD
 
-changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/TEMPLATE-role-handoff.md\ndocs/prd/0001-problem-statement.md\ndocs/design/0001-architecture-overview.md\ndocs/plans/0001-mvp-implementation-plan.md'
+changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/TEMPLATE-role-handoff.md\ndocs/prd/0001-problem-statement.md\ndocs/design/SPEC-0001-core-flow-design.md\ndocs/plans/SPEC-0001-core-flow-plan.md'
 
 pushd "$tmp_dir/work" >/dev/null
 cat > docs/status/current-task.md <<'MD'
@@ -80,7 +80,11 @@ cat > docs/status/current-task.md <<'MD'
 - CURRENT_GATE: Gate 4
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
+- DESIGN_SYNC_STATUS: synced
+- PLAN_SYNC_STATUS: synced
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced
@@ -111,7 +115,11 @@ cat > docs/status/current-task.md <<'MD'
 - CURRENT_GATE: Gate 4
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
+- DESIGN_SYNC_STATUS: synced
+- PLAN_SYNC_STATUS: synced
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced
@@ -135,7 +143,11 @@ cat > docs/status/current-task.md <<'MD'
 - CURRENT_GATE: Gate 4
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
+- PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
+- DESIGN_SYNC_STATUS: synced
+- PLAN_SYNC_STATUS: synced
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced

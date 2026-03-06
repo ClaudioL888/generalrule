@@ -62,16 +62,74 @@ grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 0$' docs/status/current-tas
   exit 1
 }
 
+[[ -f docs/design/SPEC-0099-blackbox-design.md ]] || {
+  echo "missing generated design file after start"
+  exit 1
+}
+
+[[ -f docs/plans/SPEC-0099-blackbox-plan.md ]] || {
+  echo "missing generated plan file after start"
+  exit 1
+}
+
+grep -q '^-[[:space:]]*BRAINSTORMING_STATUS:[[:space:]]*pending$' docs/status/current-task.md || {
+  echo "BRAINSTORMING_STATUS should be pending after start"
+  exit 1
+}
+
+grep -q '^-[[:space:]]*DESIGN_SYNC_STATUS:[[:space:]]*pending$' docs/status/current-task.md || {
+  echo "DESIGN_SYNC_STATUS should be pending after start"
+  exit 1
+}
+
+grep -q '^-[[:space:]]*PLAN_SYNC_STATUS:[[:space:]]*pending$' docs/status/current-task.md || {
+  echo "PLAN_SYNC_STATUS should be pending after start"
+  exit 1
+}
+
 grep -q '\[blackbox-card\]' "$tmp_dir/start.out" || {
   echo "start output must contain blackbox card"
   exit 1
 }
+
+if PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"; then
+  echo "Gate 0 approval should fail before brainstorming"
+  exit 1
+fi
+
+brainstorm_note="$(sed -n -E 's/^-[[:space:]]*BRAINSTORMING_LINK:[[:space:]]*(.*)$/\1/p' docs/status/current-task.md | tail -n1)"
+[[ -n "$brainstorm_note" && -f "$brainstorm_note" ]] || {
+  echo "missing brainstorming note after start"
+  exit 1
+}
+
+PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh brainstorm --note "$brainstorm_note"
+grep -q '^-[[:space:]]*BRAINSTORMING_STATUS:[[:space:]]*done$' docs/status/current-task.md || {
+  echo "BRAINSTORMING_STATUS should be done after brainstorm command"
+  exit 1
+}
+
+if PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"; then
+  echo "Gate 0 approval should fail before design sync"
+  exit 1
+fi
+
+sed -i.bak -E 's/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
 
 PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 0"
 grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 2$' docs/status/current-task.md || {
   echo "current-task CURRENT_GATE should be Gate 2 after Gate 0 approval"
   exit 1
 }
+
+if PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2"; then
+  echo "Gate 2 approval should fail before plan sync"
+  exit 1
+fi
+
+sed -i.bak -E 's/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
 
 PATH="$mock_bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "Gate 2"
 grep -q '^-[[:space:]]*CURRENT_GATE:[[:space:]]*Gate 3$' docs/status/current-task.md || {

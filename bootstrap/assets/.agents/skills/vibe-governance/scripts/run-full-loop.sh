@@ -58,8 +58,10 @@ cd "$ROOT_DIR"
 
 spec_file="docs/specs/${SPEC_ID}.md"
 map_file="docs/contracts/${SPEC_ID}-api-frontend-map.md"
+design_file="docs/design/${SPEC_ID}-design.md"
+plan_file="docs/plans/${SPEC_ID}-plan.md"
 
-if [[ ! -f "$spec_file" || ! -f "$map_file" ]]; then
+if [[ ! -f "$spec_file" || ! -f "$map_file" || ! -f "$design_file" || ! -f "$plan_file" ]]; then
   bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
     --spec-id "$SPEC_ID" \
     --task-type "$TASK_TYPE" \
