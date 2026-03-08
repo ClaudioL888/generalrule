@@ -13,6 +13,22 @@
 
 Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 
+## 读取顺序（强制）
+
+1. `AGENTS.md`
+2. `docs/NORMS.md`
+3. 相关 `docs/standards/*.md`
+4. 相关 `docs/prompts/*.md`
+5. 当前角色绑定的 standards profile 与 evidence 状态
+5. 当前任务的 `spec/design/plan/current-task`
+
+## Standards Enforcement（默认严格）
+
+1. `standards-binding` 默认是 `strict`，不是 `mixed`。
+2. 默认情况下，所有角色缺 standards 绑定、缺证据、缺偏差记录都会被阻断。
+3. 只有显式设置 `STANDARDS_ENFORCEMENT=mixed` 或 `STANDARDS_ENFORCEMENT=warn` 时，才允许降级。
+4. 进入 Gate 3 或批准发布前，优先检查 `ROLE_DOD_STATUS=met`、`EVIDENCE_STATUS=complete`，否则会被 standards gate 阻断。
+
 ## 黑盒半自动入口
 
 1. 人类唯一必填输入：`开始任务：<一句话目标>`。
@@ -23,6 +39,15 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 6. 人类仅在关键节点批准：`批准 Gate 0`、`批准 Gate 2`、`批准 Gate 3`、`批准发布`。
 7. AI 必须每阶段输出固定卡片：`阶段目标`、`AI 已完成`、`硬门禁状态`、`你只需做一件事`、`下一步`。
 8. 除关键批准外，AI 自动推进角色链并自检，失败时进入 Observe/Repair 并给出可执行修复动作。
+
+## 交互与反馈约束（强制）
+
+1. 除关键决策外，优先用“提案 + 默认推进”替代“是否继续”式请示。
+2. 每轮响应必须至少给出一个“可评价对象”，例如：判断、方案、最小样例、结构草案、差异对比、局部实现。
+3. 低风险、低成本、可回退的内容默认直接推进；高风险、不可逆、范围扩大的内容才停下来确认。
+4. 每轮必须显式暴露不确定性：已知事实、当前假设、假设风险、较稳妥路径。
+5. 每轮只处理一类相近问题，不把结构、逻辑、风格、实现混在一轮大改。
+6. 每次任务结束除说明“下一步做什么”外，还要沉淀至少一条可复用经验。
 
 ## Skill 调用提醒（强制）
 
@@ -38,11 +63,23 @@ Plan -> Edit -> Run tools -> Observe -> Repair -> Update docs/status -> Repeat
 3. 必须运行并报告测试结果，不接受“我觉得可以”。
 4. 任何改动必须更新对应文档与发布说明。
 5. 执行命令、依赖安装、权限变更必须进入 approval。
+6. 角色交接必须同时引用当前/下一角色的 standards，并写明证据状态与偏差状态。
 6. 每个新 `SPEC_ID` 必须绑定独立文档：
    - `docs/specs/<SPEC_ID>.md`
    - `docs/design/<SPEC_ID>-design.md`
    - `docs/plans/<SPEC_ID>-plan.md`
 7. 修改 `docs/prd/`、`docs/design/`、`docs/adr/`、`docs/specs/` 时，必须补齐结构化引用块 `## 引用与依据`，且至少包含一条 `primary` 或 `internal` 来源。
+8. 任何例外都必须记录 `EXCEPTION` 文档并给出 `FOLLOWUP_DEADLINE`。
+9. 每次任务结束都必须告诉用户“下一步做什么”。
+
+## NORMS / Standards / Prompts
+
+1. `docs/NORMS.md` 是最短真值，优先于长文档说明。
+2. `docs/standards/*.md` 定义 discovery/design/planning/coding/testing/security/observability/release/documentation 的长期标准。
+3. `docs/prompts/*.md` 定义角色提示资产，用于稳定角色行为而不是临场发挥。
+4. `docs/governance/ROLE_STANDARD_MATRIX.md` 与 `docs/governance/TASK_TYPE_STANDARD_PROFILES.md` 定义角色和任务类型的 standards 绑定规则。
+4. 当实现与标准冲突时，必须记录 exception 或 ADR，而不是直接绕过。
+5. `ROLE_HANDOFF` 不只检查文件存在；还会检查固定章节、角色 prompt 引用，以及当前角色必须交出的主产物链接。
 
 ## Codex 运行时配置约束
 
