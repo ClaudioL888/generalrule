@@ -1,6 +1,6 @@
 interface:
   display_name: Vibe Governance
-  short_description: 执行任务级治理循环并串联任务包与本地门禁。
+  short_description: Run the task-level governance loop and connect the task pack with local gates.
 policy:
   allow_implicit_invocation: true
 dependencies:

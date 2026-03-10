@@ -4,11 +4,11 @@ owner_role: Release-Ops
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "季度战略复盘"
+  - "Quarterly strategy review"
 acceptance_metrics:
-  - "本周告警闭环率"
+  - "Weekly alert closure rate"
 risks:
-  - "维护记录缺失"
+  - "Maintenance records are missing"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
@@ -17,8 +17,8 @@ last_updated: "{{YYYY-MM-DD}}"
 # Weekly Maintenance
 
 - Week: {{YYYY-WW}}
-- Error budget状态：{{obs_a}}
-- 关键性能趋势：{{obs_b}}
-- 安全事件：{{security_1}}
-- 成本异常：{{ops_impact}}
-- 下周行动：{{next_action}}
+- Error budget status: {{obs_a}}
+- Key performance trend: {{obs_b}}
+- Security incidents: {{security_1}}
+- Cost anomalies: {{ops_impact}}
+- Next week action: {{next_action}}

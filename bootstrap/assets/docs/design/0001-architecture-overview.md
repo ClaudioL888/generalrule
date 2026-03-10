@@ -14,67 +14,67 @@ approvals_required:
 last_updated: "{{YYYY-MM-DD}}"
 ---
 
-# Design Doc 模板
+# Design Doc Template
 
-## 1. 背景与目标
+## 1. Context and Goals
 
-- 背景：{{context}}
-- 设计目标：{{design_goal}}
-- 设计非目标：{{design_non_goal}}
+- Context: {{context}}
+- Design goal: {{design_goal}}
+- Design non-goal: {{design_non_goal}}
 
-## 2. 技术选型决策表（必填）
+## 2. Technical Choice Decision Table (Required)
 
-| 维度 | 方案 A | 方案 B | 选择 | 理由 |
+| Dimension | Option A | Option B | Choice | Reason |
 | --- | --- | --- | --- | --- |
-| 框架 | {{stack_a}} | {{stack_b}} | {{chosen_stack}} | {{tradeoff_reason}} |
-| 数据层 | {{data_a}} | {{data_b}} | {{chosen_data}} | {{decision_tradeoff}} |
-| 可观测 | {{obs_a}} | {{obs_b}} | {{chosen_obs}} | {{ops_reason}} |
+| Framework | {{stack_a}} | {{stack_b}} | {{chosen_stack}} | {{tradeoff_reason}} |
+| Data layer | {{data_a}} | {{data_b}} | {{chosen_data}} | {{decision_tradeoff}} |
+| Observability | {{obs_a}} | {{obs_b}} | {{chosen_obs}} | {{ops_reason}} |
 
-## 3. 架构与模块
+## 3. Architecture and Modules
 
-- 架构图：{{architecture_diagram_link}}
-- 核心模块：{{core_components}}
-- 数据流：{{data_flow}}
+- Architecture diagram: {{architecture_diagram_link}}
+- Core modules: {{core_components}}
+- Data flow: {{data_flow}}
 
-## 4. 接口与契约
+## 4. Interfaces and Contracts
 
-- API/事件：{{api_contract}}
-- 输入输出：{{io_schema}}
-- 版本兼容策略：{{compat_strategy}}
+- API/events: {{api_contract}}
+- Inputs/outputs: {{io_schema}}
+- Compatibility strategy: {{compat_strategy}}
 
-## 5. 数据模型
+## 5. Data Model
 
-- 实体定义：{{entity_definitions}}
-- 索引与约束：{{constraints}}
-- 迁移策略：{{migration_strategy}}
+- Entity definitions: {{entity_definitions}}
+- Indexes and constraints: {{constraints}}
+- Migration strategy: {{migration_strategy}}
 
-## 6. 边界情况与失败模式（必填）
+## 6. Edge Cases and Failure Modes (Required)
 
-- 边界情况：{{edge_case_1}}
-- 错误处理：{{error_handling}}
-- 降级策略：{{degrade_strategy}}
-- 回滚策略：{{rollback_strategy}}
+- Edge cases: {{edge_case_1}}
+- Error handling: {{error_handling}}
+- Degradation strategy: {{degrade_strategy}}
+- Rollback strategy: {{rollback_strategy}}
 
-## 7. 可观测性与安全边界
+## 7. Observability and Security Boundaries
 
-- 指标/日志/追踪：{{observability_plan}}
-- 告警阈值：{{alert_thresholds}}
-- 权限与密钥边界：{{security_boundary}}
+- Metrics/logs/traces: {{observability_plan}}
+- Alert thresholds: {{alert_thresholds}}
+- Permission and secret boundaries: {{security_boundary}}
 
-## 8. 测试策略对齐
+## 8. Testing Strategy Alignment
 
-- 单测重点：{{unit_focus}}
-- 集成测试重点：{{integration_focus}}
-- E2E 范围：{{e2e_scope}}
+- Unit focus: {{unit_focus}}
+- Integration focus: {{integration_focus}}
+- E2E scope: {{e2e_scope}}
 
-## 9. 验收清单
+## 9. Acceptance Checklist
 
-- [ ] 选型有对比与取舍说明
-- [ ] 边界情况与错误处理完整
-- [ ] 可观测性与安全边界明确
-- [ ] Founder 批准
+- [ ] Choices include comparison and tradeoff notes
+- [ ] Edge cases and error handling are complete
+- [ ] Observability and security boundaries are clear
+- [ ] Founder approved
 
-## 10. 引用与依据
+## 10. References and Evidence
 
 - SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
 - SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

@@ -124,34 +124,34 @@ cat > docs/status/handoffs/current.md <<'MD'
 - NEXT_ROLE: QA
 
 ## Inputs
-- 当前角色提示资产：docs/prompts/dev.md
-- 下一角色提示资产：docs/prompts/qa.md
+- Current role prompt asset: docs/prompts/dev.md
+- Next role prompt asset: docs/prompts/qa.md
 
 ## Outputs
-- 主产物链接：docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
-- 辅助产物链接：docs/status/current-task.md
-- 产物摘要：implemented
-- 测试证据：unit=pass;integration=pass;e2e=pass
-- 风险摘要：low
+- Primary artifact link: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
+- Secondary artifact link: docs/status/current-task.md
+- Artifact summary: implemented
+- Test Evidence: unit=pass;integration=pass;e2e=pass
+- Risk Summary: low
 
 ## Applicable Standards
-- 当前角色标准：docs/standards/coding-standards.md,docs/standards/documentation-standards.md
-- 下一角色标准：docs/standards/testing-standards.md,docs/standards/documentation-standards.md
-- 偏差说明：none
+- Current role standards: docs/standards/coding-standards.md,docs/standards/documentation-standards.md
+- Next role standards: docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- Deviation note: none
 
 ## Evidence Summary
-- 主证据：docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
-- 次证据：docs/status/current-task.md
-- 测试证据：unit=pass;integration=pass;e2e=pass
-- 风险证据：low
-- 文档同步证据：docs/status/current-task.md
+- Primary evidence: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
+- Secondary evidence: docs/status/current-task.md
+- Test Evidence: unit=pass;integration=pass;e2e=pass
+- Risk evidence: low
+- Documentation sync evidence: docs/status/current-task.md
 
 ## Definition of Done
-- [ ] 验收条件达成：yes
+- [ ] Acceptance criteria met: yes
 
 ## Handoff To
-- 交接对象：QA
-- 下一动作：run regression checks
+- Recipient: QA
+- Next action: run regression checks
 MD
 
 if CHANGED_FILES="$changed_files" LOCAL_MODE=1 "$SCRIPT"; then
@@ -210,34 +210,34 @@ cat > docs/status/handoffs/current.md <<'MD'
 - NEXT_ROLE: Planner
 
 ## Inputs
-- 当前角色提示资产：docs/prompts/architect.md
-- 下一角色提示资产：docs/prompts/planner.md
+- Current role prompt asset: docs/prompts/architect.md
+- Next role prompt asset: docs/prompts/planner.md
 
 ## Outputs
-- 主产物链接：docs/design/SPEC-0002-arch-design.md
-- 辅助产物链接：docs/adr/0001-initial-decision.md
-- 产物摘要：design ready
-- 测试证据：N/A pre-implementation
-- 风险摘要：low
+- Primary artifact link: docs/design/SPEC-0002-arch-design.md
+- Secondary artifact link: docs/adr/0001-initial-decision.md
+- Artifact summary: design ready
+- Test Evidence: N/A pre-implementation
+- Risk Summary: low
 
 ## Applicable Standards
-- 当前角色标准：docs/standards/security-standards.md,docs/standards/observability-standards.md
-- 下一角色标准：docs/standards/planning-standards.md,docs/standards/testing-standards.md
-- 偏差说明：none
+- Current role standards: docs/standards/security-standards.md,docs/standards/observability-standards.md
+- Next role standards: docs/standards/planning-standards.md,docs/standards/testing-standards.md
+- Deviation note: none
 
 ## Evidence Summary
-- 主证据：docs/design/SPEC-0002-arch-design.md
-- 次证据：docs/adr/0001-initial-decision.md
-- 测试证据：N/A pre-implementation
-- 风险证据：low
-- 文档同步证据：docs/status/current-task.md
+- Primary evidence: docs/design/SPEC-0002-arch-design.md
+- Secondary evidence: docs/adr/0001-initial-decision.md
+- Test Evidence: N/A pre-implementation
+- Risk evidence: low
+- Documentation sync evidence: docs/status/current-task.md
 
 ## Definition of Done
-- [ ] 验收条件达成：yes
+- [ ] Acceptance criteria met: yes
 
 ## Handoff To
-- 交接对象：Planner
-- 下一动作：prepare plan
+- Recipient: Planner
+- Next action: prepare plan
 MD
 if CHANGED_FILES="$changed_files" LOCAL_MODE=1 "$SCRIPT"; then
   echo "expected failure when Architect handoff misses design-standards"
@@ -289,34 +289,34 @@ cat > docs/status/handoffs/current.md <<'MD'
 - NEXT_ROLE: Release-Ops
 
 ## Inputs
-- 当前角色提示资产：docs/prompts/reviewer.md
-- 下一角色提示资产：docs/prompts/release-ops.md
+- Current role prompt asset: docs/prompts/reviewer.md
+- Next role prompt asset: docs/prompts/release-ops.md
 
 ## Outputs
-- 主产物链接：docs/status/current-task.md
-- 辅助产物链接：docs/release/CHANGELOG.md
-- 产物摘要：review complete
-- 测试证据：unit=pass
-- 风险摘要：medium
+- Primary artifact link: docs/status/current-task.md
+- Secondary artifact link: docs/release/CHANGELOG.md
+- Artifact summary: review complete
+- Test Evidence: unit=pass
+- Risk Summary: medium
 
 ## Applicable Standards
-- 当前角色标准：docs/standards/documentation-standards.md
-- 下一角色标准：docs/standards/release-standards.md,docs/standards/observability-standards.md,docs/standards/security-standards.md
-- 偏差说明：none
+- Current role standards: docs/standards/documentation-standards.md
+- Next role standards: docs/standards/release-standards.md,docs/standards/observability-standards.md,docs/standards/security-standards.md
+- Deviation note: none
 
 ## Evidence Summary
-- 主证据：docs/status/current-task.md
-- 次证据：docs/release/CHANGELOG.md
-- 测试证据：unit=pass
-- 风险证据：medium
-- 文档同步证据：docs/status/current-task.md
+- Primary evidence: docs/status/current-task.md
+- Secondary evidence: docs/release/CHANGELOG.md
+- Test Evidence: unit=pass
+- Risk evidence: medium
+- Documentation sync evidence: docs/status/current-task.md
 
 ## Definition of Done
-- [ ] 风险已说明：yes
+- [ ] Risk documented: yes
 
 ## Handoff To
-- 交接对象：Release-Ops
-- 下一动作：prepare release
+- Recipient: Release-Ops
+- Next action: prepare release
 MD
 reviewer_out="$tmp_dir/reviewer.out"
 CHANGED_FILES="$changed_files" LOCAL_MODE=1 STANDARDS_ENFORCEMENT=mixed "$SCRIPT" >"$reviewer_out" 2>&1
@@ -375,34 +375,34 @@ cat > docs/status/handoffs/current.md <<'MD'
 - NEXT_ROLE: Release-Ops
 
 ## Inputs
-- 当前角色提示资产：docs/prompts/reviewer.md
-- 下一角色提示资产：docs/prompts/release-ops.md
+- Current role prompt asset: docs/prompts/reviewer.md
+- Next role prompt asset: docs/prompts/release-ops.md
 
 ## Outputs
-- 主产物链接：docs/status/current-task.md
-- 辅助产物链接：docs/release/CHANGELOG.md
-- 产物摘要：review complete
-- 测试证据：unit=pass
-- 风险摘要：medium
+- Primary artifact link: docs/status/current-task.md
+- Secondary artifact link: docs/release/CHANGELOG.md
+- Artifact summary: review complete
+- Test Evidence: unit=pass
+- Risk Summary: medium
 
 ## Applicable Standards
-- 当前角色标准：docs/standards/documentation-standards.md,docs/standards/security-standards.md
-- 下一角色标准：docs/standards/release-standards.md,docs/standards/observability-standards.md,docs/standards/security-standards.md
-- 偏差说明：security note deferred to release checklist
+- Current role standards: docs/standards/documentation-standards.md,docs/standards/security-standards.md
+- Next role standards: docs/standards/release-standards.md,docs/standards/observability-standards.md,docs/standards/security-standards.md
+- Deviation note: security note deferred to release checklist
 
 ## Evidence Summary
-- 主证据：docs/status/current-task.md
-- 次证据：docs/release/CHANGELOG.md
-- 测试证据：unit=pass
-- 风险证据：medium
-- 文档同步证据：docs/status/current-task.md
+- Primary evidence: docs/status/current-task.md
+- Secondary evidence: docs/release/CHANGELOG.md
+- Test Evidence: unit=pass
+- Risk evidence: medium
+- Documentation sync evidence: docs/status/current-task.md
 
 ## Definition of Done
-- [ ] 风险已说明：yes
+- [ ] Risk documented: yes
 
 ## Handoff To
-- 交接对象：Release-Ops
-- 下一动作：prepare release
+- Recipient: Release-Ops
+- Next action: prepare release
 MD
 CHANGED_FILES="$changed_files" LOCAL_MODE=1 "$SCRIPT"
 

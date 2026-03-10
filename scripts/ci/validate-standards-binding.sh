@@ -115,24 +115,24 @@ validate_handoff_fields() {
   section_required "$handoff_file" "## Applicable Standards"
   section_required "$handoff_file" "## Evidence Summary"
 
-  current_line="$(line_value '当前角色标准' "$handoff_file")"
-  next_line="$(line_value '下一角色标准' "$handoff_file")"
-  deviation_line="$(line_value '偏差说明' "$handoff_file")"
-  primary_evidence="$(line_value '主证据' "$handoff_file")"
-  secondary_evidence="$(line_value '次证据' "$handoff_file")"
-  test_evidence="$(line_value '测试证据' "$handoff_file")"
-  risk_evidence="$(line_value '风险证据' "$handoff_file")"
-  docs_sync_evidence="$(line_value '文档同步证据' "$handoff_file")"
+  current_line="$(line_value 'Current role standards' "$handoff_file")"
+  next_line="$(line_value 'Next role standards' "$handoff_file")"
+  deviation_line="$(line_value 'Deviation note' "$handoff_file")"
+  primary_evidence="$(line_value 'Primary evidence' "$handoff_file")"
+  secondary_evidence="$(line_value 'Secondary evidence' "$handoff_file")"
+  test_evidence="$(line_value 'Test Evidence' "$handoff_file")"
+  risk_evidence="$(line_value 'Risk evidence' "$handoff_file")"
+  docs_sync_evidence="$(line_value 'Documentation sync evidence' "$handoff_file")"
 
   for pair in \
-    "handoff 当前角色标准:$current_line" \
-    "handoff 下一角色标准:$next_line" \
-    "handoff 偏差说明:$deviation_line" \
-    "handoff 主证据:$primary_evidence" \
-    "handoff 次证据:$secondary_evidence" \
-    "handoff 测试证据:$test_evidence" \
-    "handoff 风险证据:$risk_evidence" \
-    "handoff 文档同步证据:$docs_sync_evidence"; do
+    "handoff Current role standards:$current_line" \
+    "handoff Next role standards:$next_line" \
+    "handoff Deviation note:$deviation_line" \
+    "handoff Primary evidence:$primary_evidence" \
+    "handoff Secondary evidence:$secondary_evidence" \
+    "handoff Test Evidence:$test_evidence" \
+    "handoff Risk evidence:$risk_evidence" \
+    "handoff Documentation sync evidence:$docs_sync_evidence"; do
     local name="${pair%%:*}"
     local value="${pair#*:}"
     if [[ -z "$value" ]]; then
@@ -140,8 +140,8 @@ validate_handoff_fields() {
     fi
   done
 
-  [[ "$current_line" == "$current_standards" ]] || issue "$severity" "handoff 当前角色标准 must equal CURRENT_ROLE_STANDARDS"
-  [[ "$next_line" == "$next_standards" ]] || issue "$severity" "handoff 下一角色标准 must equal NEXT_ROLE_STANDARDS"
+  [[ "$current_line" == "$current_standards" ]] || issue "$severity" "handoff Current role standards must equal CURRENT_ROLE_STANDARDS"
+  [[ "$next_line" == "$next_standards" ]] || issue "$severity" "handoff Next role standards must equal NEXT_ROLE_STANDARDS"
 
   while IFS= read -r standard_path; do
     [[ -n "$standard_path" ]] || continue
@@ -284,17 +284,17 @@ fi
 
 case "$deviation_status" in
   none)
-    deviation_line="$(line_value '偏差说明' "$handoff_link")"
-    [[ "$deviation_line" == 'none' ]] || issue "$severity" 'DEVIATION_STATUS=none requires handoff 偏差说明：none'
+    deviation_line="$(line_value 'Deviation note' "$handoff_link")"
+    [[ "$deviation_line" == 'none' ]] || issue "$severity" 'DEVIATION_STATUS=none requires handoff Deviation note: none'
     ;;
   documented)
     value_is_na "$exception_link" && fail 'DEVIATION_STATUS=documented requires EXCEPTION_LINK to be set'
     if [[ "$exception_link" == docs/* && ! -f "$exception_link" ]]; then
       fail "DEVIATION_STATUS=documented requires EXCEPTION_LINK file: $exception_link"
     fi
-    deviation_line="$(line_value '偏差说明' "$handoff_link")"
+    deviation_line="$(line_value 'Deviation note' "$handoff_link")"
     if value_is_na "$deviation_line" || value_is_placeholder "$deviation_line"; then
-      fail 'DEVIATION_STATUS=documented requires non-empty handoff 偏差说明'
+      fail 'DEVIATION_STATUS=documented requires a non-empty handoff Deviation note'
     fi
     ;;
   required)

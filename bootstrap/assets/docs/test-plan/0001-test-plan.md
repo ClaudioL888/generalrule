@@ -4,45 +4,45 @@ owner_role: QA
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "仅做冒烟测试"
+  - "Smoke testing only"
 acceptance_metrics:
-  - "回归缺陷检出率"
+  - "Regression defect detection rate"
 risks:
-  - "测试覆盖失衡"
+  - "Unbalanced test coverage"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
 ---
 
-# Test Plan 模板
+# Test Plan Template
 
-## 1. 测试目标
+## 1. Testing Goal
 
 {{test_goal}}
 
-## 2. 测试金字塔分配
+## 2. Test Pyramid Allocation
 
-- Unit: {{unit_scope}}（建议占比 >= 70%）
-- Integration: {{integration_scope}}（建议占比 <= 20%）
-- E2E: {{e2e_scope}}（建议占比 <= 10%）
+- Unit: {{unit_scope}} (recommended share >= 70%)
+- Integration: {{integration_scope}} (recommended share <= 20%)
+- E2E: {{e2e_scope}} (recommended share <= 10%)
 
-## 3. 覆盖矩阵
+## 3. Coverage Matrix
 
-| 场景 | 层级 | 用例 | 通过标准 |
+| Scenario | Layer | Case | Pass Criteria |
 | --- | --- | --- | --- |
-| 核心路径 | Unit | {{case_1}} | {{pass_criteria_1}} |
-| 跨模块流程 | Integration | {{case_2}} | {{pass_criteria_2}} |
-| 用户关键旅程 | E2E | {{case_3}} | {{pass_criteria_3}} |
+| Core path | Unit | {{case_1}} | {{pass_criteria_1}} |
+| Cross-module flow | Integration | {{case_2}} | {{pass_criteria_2}} |
+| Critical user journey | E2E | {{case_3}} | {{pass_criteria_3}} |
 
-## 4. 边界与异常场景
+## 4. Boundary and Error Scenarios
 
-- 边界：{{edge_case_1}}
-- 异常：{{error_case_1}}
-- 回归重点：{{regression_focus}}
+- Boundary: {{edge_case_1}}
+- Error: {{error_case_1}}
+- Regression focus: {{regression_focus}}
 
-## 5. 结果报告模板
+## 5. Result Report Template
 
-- 执行时间：{{execution_time}}
-- 执行命令：{{commands}}
-- 结果摘要：{{result_summary}}
-- 风险结论：{{risk_summary}}
+- Execution time: {{execution_time}}
+- Commands: {{commands}}
+- Result summary: {{result_summary}}
+- Risk conclusion: {{risk_summary}}

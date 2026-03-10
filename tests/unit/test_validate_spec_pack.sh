@@ -31,19 +31,19 @@ MD
 cat > "$tmp_dir/work/docs/specs/SPEC-0001-core-flow.md" <<'MD'
 # Feature Spec
 
-## 1. 目标与非目标
+## 1. Goals and Non-Goals
 x
-## 2. 用户故事
+## 2. User Stories
 x
-## 3. API 变更
+## 3. API Changes
 x
-## 4. 前端变更
+## 4. Frontend Changes
 x
-## 5. 验收标准
+## 5. Acceptance Criteria
 x
-## 6. 风险
+## 6. Risks
 x
-## 7. 回滚方案
+## 7. Rollback Plan
 x
 MD
 
@@ -84,7 +84,7 @@ fi
 cat > docs/specs/SPEC-0001-core-flow.md <<'MD'
 # Feature Spec
 
-## 1. 目标与非目标
+## 1. Goals and Non-Goals
 x
 MD
 if CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_ok" "$SCRIPT"; then
@@ -95,19 +95,19 @@ fi
 cat > docs/specs/SPEC-0001-core-flow.md <<'MD'
 # Feature Spec
 
-## 1. 目标与非目标
+## 1. Goals and Non-Goals
 x
-## 2. 用户故事
+## 2. User Stories
 x
-## 3. API 变更
+## 3. API Changes
 x
-## 4. 前端变更
+## 4. Frontend Changes
 x
-## 5. 验收标准
+## 5. Acceptance Criteria
 x
-## 6. 风险
+## 6. Risks
 x
-## 7. 回滚方案
+## 7. Rollback Plan
 x
 MD
 

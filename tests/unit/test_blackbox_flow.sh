@@ -51,7 +51,7 @@ chmod +x "$work_dir/.codex/bin/spec-workflow.sh"
 pushd "$work_dir" >/dev/null
 
 PATH="$mock_bin:/usr/local/bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh start \
-  --goal "做一个让新用户10分钟内完成首次发布的流程" \
+  --goal "Create a path that lets new users finish their first release within 10 minutes" \
   --task-type feature \
   --work-type full \
   --spec-id SPEC-0099-blackbox > "$tmp_dir/start.out"
@@ -194,15 +194,15 @@ dev_handoff="$(sed -n -E 's/^-[[:space:]]*HANDOFF_LINK:[[:space:]]*(.*)$/\1/p' d
   echo "missing dev handoff after Gate 2 approval"
   exit 1
 }
-sed -i.bak -E 's/^(.*测试证据：).*$/\1 unit=pass;integration=pass;e2e=pass/' "$dev_handoff"
+sed -i.bak -E 's/^(.*Test Evidence:).*$/\1 unit=pass;integration=pass;e2e=pass/' "$dev_handoff"
 rm -f "$dev_handoff.bak"
-sed -i.bak -E 's|^(.*主证据：).*$|\1 docs/contracts/SPEC-0099-blackbox-api-frontend-map.md|' "$dev_handoff"
+sed -i.bak -E 's|^(.*Primary evidence:).*$|\1 docs/contracts/SPEC-0099-blackbox-api-frontend-map.md|' "$dev_handoff"
 rm -f "$dev_handoff.bak"
-sed -i.bak -E 's|^(.*次证据：).*$|\1 docs/status/current-task.md|' "$dev_handoff"
+sed -i.bak -E 's|^(.*Secondary evidence:).*$|\1 docs/status/current-task.md|' "$dev_handoff"
 rm -f "$dev_handoff.bak"
-sed -i.bak -E 's/^(.*风险证据：).*$/\1 low/' "$dev_handoff"
+sed -i.bak -E 's/^(.*Risk evidence:).*$/\1 low/' "$dev_handoff"
 rm -f "$dev_handoff.bak"
-sed -i.bak -E 's|^(.*文档同步证据：).*$|\1 docs/status/current-task.md|' "$dev_handoff"
+sed -i.bak -E 's|^(.*Documentation sync evidence:).*$|\1 docs/status/current-task.md|' "$dev_handoff"
 rm -f "$dev_handoff.bak"
 sed -i.bak -E 's/^- TEST_RESULT:.*$/- TEST_RESULT: unit=pass;integration=pass;e2e=pass/' docs/status/current-task.md
 rm -f docs/status/current-task.md.bak
@@ -227,22 +227,22 @@ release_handoff="$(sed -n -E 's/^-[[:space:]]*HANDOFF_LINK:[[:space:]]*(.*)$/\1/
   echo "missing release handoff before release approval"
   exit 1
 }
-sed -i.bak -E 's|^(.*主证据：).*$|\1 docs/release/CHANGELOG.md|' "$release_handoff"
+sed -i.bak -E 's|^(.*Primary evidence:).*$|\1 docs/release/CHANGELOG.md|' "$release_handoff"
 rm -f "$release_handoff.bak"
-sed -i.bak -E 's|^(.*次证据：).*$|\1 docs/release/RELEASE_NOTES.md|' "$release_handoff"
+sed -i.bak -E 's|^(.*Secondary evidence:).*$|\1 docs/release/RELEASE_NOTES.md|' "$release_handoff"
 rm -f "$release_handoff.bak"
-sed -i.bak -E 's/^(.*测试证据：).*$/\1 release-check=pass/' "$release_handoff"
+sed -i.bak -E 's/^(.*Test Evidence:).*$/\1 release-check=pass/' "$release_handoff"
 rm -f "$release_handoff.bak"
-sed -i.bak -E 's/^(.*风险证据：).*$/\1 low/' "$release_handoff"
+sed -i.bak -E 's/^(.*Risk evidence:).*$/\1 low/' "$release_handoff"
 rm -f "$release_handoff.bak"
-sed -i.bak -E 's|^(.*文档同步证据：).*$|\1 docs/status/current-task.md|' "$release_handoff"
+sed -i.bak -E 's|^(.*Documentation sync evidence:).*$|\1 docs/status/current-task.md|' "$release_handoff"
 rm -f "$release_handoff.bak"
 sed -i.bak -E 's/^- ROLE_DOD_STATUS:.*$/- ROLE_DOD_STATUS: met/' docs/status/current-task.md
 rm -f docs/status/current-task.md.bak
 sed -i.bak -E 's/^- EVIDENCE_STATUS:.*$/- EVIDENCE_STATUS: complete/' docs/status/current-task.md
 rm -f docs/status/current-task.md.bak
 
-PATH="$mock_bin:/usr/local/bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "发布"
+PATH="$mock_bin:/usr/local/bin:/usr/bin:/bin" bash .agents/skills/vibe-governance/scripts/run-blackbox-flow.sh approve --gate "release"
 grep -q '^-[[:space:]]*STATUS:[[:space:]]*released$' docs/status/blackbox-session.md || {
   echo "session should be released after release approval"
   exit 1

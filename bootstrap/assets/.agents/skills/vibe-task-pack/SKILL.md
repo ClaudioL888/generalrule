@@ -1,19 +1,19 @@
 ---
 name: vibe-task-pack
-description: 为单个任务创建或更新 Spec/Design/Plan/API-Frontend 映射/角色交接与 current-task 关键字段。
+description: Create or update the Spec/Design/Plan/API-Frontend mapping/role handoff and key current-task fields for a single task.
 ---
 
 # Vibe Task Pack Skill
 
 ## Use When
 
-- 新功能或新任务开始前
-- 当前任务缺少 spec/design/plan/map/handoff 文档
-- 需要修正 current-task 中任务标识与角色信息
+- Before starting a new feature or task
+- The current task is missing spec/design/plan/map/handoff documents
+- You need to correct task identity or role information in `current-task`
 
 ## Do Not Use When
 
-- 仅执行门禁，不需要更新任务包
+- You are only running gates and do not need to update the task pack
 
 ## Required Inputs
 
@@ -25,14 +25,10 @@ description: 为单个任务创建或更新 Spec/Design/Plan/API-Frontend 映射
 ## Commands
 
 ```bash
-bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh \
-  --spec-id SPEC-0001-core-flow \
-  --task-type feature \
-  --current-role Dev \
-  --next-role QA
+bash .agents/skills/vibe-task-pack/scripts/new-task-pack.sh   --spec-id SPEC-0001-core-flow   --task-type feature   --current-role Dev   --next-role QA
 ```
 
-脚本会同时生成：
+The script creates these artifacts together:
 
 - `docs/specs/<SPEC_ID>.md`
 - `docs/design/<SPEC_ID>-design.md`

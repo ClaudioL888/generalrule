@@ -1,6 +1,6 @@
 interface:
   display_name: Vibe Quality Gates
-  short_description: 执行本地门禁链并汇总失败原因。
+  short_description: Run the local gate chain and summarize failures.
 policy:
   allow_implicit_invocation: false
 dependencies:

@@ -87,6 +87,11 @@ validate_current_task_file() {
     "CURRENT_GATE"
     "CURRENT_ROLE"
     "NEXT_ROLE"
+    "STANDARDS_PROFILE"
+    "CURRENT_ROLE_STANDARDS"
+    "NEXT_ROLE_STANDARDS"
+    "ROLE_DOD_STATUS"
+    "EVIDENCE_STATUS"
     "DESIGN_LINK"
     "PLAN_LINK"
     "HANDOFF_LINK"
@@ -95,9 +100,12 @@ validate_current_task_file() {
     "SPEC_QUALITY_STATUS"
     "SPEC_WORKFLOW_STATUS"
     "SPEC_WORKFLOW_LINK"
+    "REWORK_RISK"
     "API_SURFACE_CHANGED"
     "FRONTEND_SURFACE_CHANGED"
     "CONTRACT_SYNC_STATUS"
+    "BRAINSTORMING_STATUS"
+    "BRAINSTORMING_LINK"
     "TEST_COMMANDS"
     "TEST_RESULT"
     "UPDATED_AT"
@@ -111,8 +119,9 @@ validate_current_task_file() {
     value_required "current-task $key" "$val"
   done
 
-  local task_type
+  local task_type work_type
   task_type="$(extract_meta "TASK_TYPE" "$task_file")"
+  work_type="$(extract_meta "WORK_TYPE" "$task_file")"
   case "$task_type" in
     feature|bugfix|refactor|ops|content)
       ;;
@@ -122,6 +131,7 @@ validate_current_task_file() {
   esac
 
   local api_surface_changed frontend_surface_changed contract_sync_status handoff_link design_link plan_link design_sync_status plan_sync_status
+  local standards_profile current_role_standards next_role_standards role_dod_status evidence_status deviation_status
   api_surface_changed="$(extract_meta "API_SURFACE_CHANGED" "$task_file")"
   frontend_surface_changed="$(extract_meta "FRONTEND_SURFACE_CHANGED" "$task_file")"
   contract_sync_status="$(extract_meta "CONTRACT_SYNC_STATUS" "$task_file")"
@@ -130,6 +140,12 @@ validate_current_task_file() {
   plan_link="$(extract_meta "PLAN_LINK" "$task_file")"
   design_sync_status="$(extract_meta "DESIGN_SYNC_STATUS" "$task_file")"
   plan_sync_status="$(extract_meta "PLAN_SYNC_STATUS" "$task_file")"
+  standards_profile="$(extract_meta "STANDARDS_PROFILE" "$task_file")"
+  current_role_standards="$(extract_meta "CURRENT_ROLE_STANDARDS" "$task_file")"
+  next_role_standards="$(extract_meta "NEXT_ROLE_STANDARDS" "$task_file")"
+  role_dod_status="$(extract_meta "ROLE_DOD_STATUS" "$task_file")"
+  evidence_status="$(extract_meta "EVIDENCE_STATUS" "$task_file")"
+  deviation_status="$(extract_meta "DEVIATION_STATUS" "$task_file")"
 
   case "$api_surface_changed" in
     yes|no)
@@ -171,10 +187,40 @@ validate_current_task_file() {
       ;;
   esac
 
-  local spec_quality_status spec_workflow_status spec_workflow_link
+  [[ "$standards_profile" == "${task_type}:${work_type}" ]] || fail "current-task STANDARDS_PROFILE must equal ${task_type}:${work_type}"
+  [[ -n "$current_role_standards" ]] || fail "current-task CURRENT_ROLE_STANDARDS must be non-empty"
+  [[ -n "$next_role_standards" ]] || fail "current-task NEXT_ROLE_STANDARDS must be non-empty"
+
+  case "$role_dod_status" in
+    pending|met)
+      ;;
+    *)
+      fail "current-task ROLE_DOD_STATUS must be pending or met"
+      ;;
+  esac
+
+  case "$evidence_status" in
+    pending|complete)
+      ;;
+    *)
+      fail "current-task EVIDENCE_STATUS must be pending or complete"
+      ;;
+  esac
+
+  case "$deviation_status" in
+    none|documented|required)
+      ;;
+    *)
+      fail "current-task DEVIATION_STATUS must be none, documented, or required"
+      ;;
+  esac
+
+  local spec_quality_status spec_workflow_status spec_workflow_link brainstorming_status brainstorming_link
   spec_quality_status="$(extract_meta "SPEC_QUALITY_STATUS" "$task_file")"
   spec_workflow_status="$(extract_meta "SPEC_WORKFLOW_STATUS" "$task_file")"
   spec_workflow_link="$(extract_meta "SPEC_WORKFLOW_LINK" "$task_file")"
+  brainstorming_status="$(extract_meta "BRAINSTORMING_STATUS" "$task_file")"
+  brainstorming_link="$(extract_meta "BRAINSTORMING_LINK" "$task_file")"
 
   case "$spec_quality_status" in
     approved|degraded|pending)
@@ -192,10 +238,62 @@ validate_current_task_file() {
       ;;
   esac
 
+  case "$brainstorming_status" in
+    done|pending)
+      ;;
+    *)
+      fail "current-task BRAINSTORMING_STATUS must be done or pending"
+      ;;
+  esac
+
   [[ -f "$design_link" ]] || fail "current-task DESIGN_LINK file missing: $design_link"
   [[ -f "$plan_link" ]] || fail "current-task PLAN_LINK file missing: $plan_link"
   [[ -f "$handoff_link" ]] || fail "current-task HANDOFF_LINK file missing: $handoff_link"
   [[ -f "$spec_workflow_link" ]] || fail "current-task SPEC_WORKFLOW_LINK file missing: $spec_workflow_link"
+  [[ -f "$brainstorming_link" ]] || fail "current-task BRAINSTORMING_LINK file missing: $brainstorming_link"
+
+  local exception_status exception_link rework_risk metrics_impact
+  exception_status="$(extract_meta "EXCEPTION_STATUS" "$task_file")"
+  exception_link="$(extract_meta "EXCEPTION_LINK" "$task_file")"
+  rework_risk="$(extract_meta "REWORK_RISK" "$task_file")"
+  metrics_impact="$(extract_meta "METRICS_IMPACT" "$task_file")"
+
+  case "$exception_status" in
+    none|required|approved)
+      ;;
+    *)
+      fail "current-task EXCEPTION_STATUS must be none, required, or approved"
+      ;;
+  esac
+
+  case "$rework_risk" in
+    low|medium|high)
+      ;;
+    *)
+      fail "current-task REWORK_RISK must be low, medium, or high"
+      ;;
+  esac
+
+  case "$metrics_impact" in
+    none|engineering|product|both)
+      ;;
+    *)
+      fail "current-task METRICS_IMPACT must be none, engineering, product, or both"
+      ;;
+  esac
+
+  if [[ "$exception_status" == "none" ]]; then
+    case "${exception_link:-}" in
+      ""|N/A|none|None)
+        ;;
+      *)
+        [[ -f "$exception_link" ]] || fail "current-task EXCEPTION_LINK file missing: $exception_link"
+        ;;
+    esac
+  else
+    value_required "current-task EXCEPTION_LINK" "$exception_link"
+    [[ -f "$exception_link" ]] || fail "current-task EXCEPTION_LINK file missing: $exception_link"
+  fi
 }
 
 resolve_current_task_file() {
@@ -235,6 +333,10 @@ fi
 
 NORMALIZED_CHANGED_FILES="$(normalize_changed_files)"
 CURRENT_TASK_FILE_EFFECTIVE="$(resolve_current_task_file)"
+
+if has_changed_file "$CURRENT_TASK_FILE_EFFECTIVE"; then
+  validate_current_task_file "$CURRENT_TASK_FILE_EFFECTIVE"
+fi
 
 if has_changed_prefix "src/"; then
   has_changed_file "docs/release/CHANGELOG.md" || fail "src changes require docs/release/CHANGELOG.md update"

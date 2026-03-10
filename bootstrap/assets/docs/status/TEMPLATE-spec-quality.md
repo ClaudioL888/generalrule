@@ -4,11 +4,11 @@ owner_role: Architect
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "替代完整 PRD/Design/Plan"
+  - "Replace the full PRD/Design/Plan set"
 acceptance_metrics:
-  - "Spec 关键歧义已收敛"
+  - "Key spec ambiguities are converged"
 risks:
-  - "Spec 质量审查缺失导致实现跑偏"
+  - "Missing spec quality review causes implementation drift"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
@@ -16,25 +16,25 @@ last_updated: "{{YYYY-MM-DD}}"
 
 # Spec Quality Review {{spec_id}}
 
-## 1. 审查上下文
+## 1. Review Context
 
 - SPEC_ID: {{spec_id}}
-- 审查方式：{{spec_workflow_method}}
-- 审查结论：{{spec_quality_status}}
-- MCP 状态：{{spec_workflow_status}}
+- Review method: {{spec_workflow_method}}
+- Review conclusion: {{spec_quality_status}}
+- MCP status: {{spec_workflow_status}}
 
-## 2. 关键发现
+## 2. Key Findings
 
-- 歧义点：{{spec_gap_1}}
-- 缺失项：{{spec_gap_2}}
-- 契约风险：{{spec_gap_3}}
+- Ambiguity: {{spec_gap_1}}
+- Missing item: {{spec_gap_2}}
+- Contract risk: {{spec_gap_3}}
 
-## 3. 处置结论
+## 3. Decision
 
-- 建议动作：{{spec_quality_action}}
-- 是否允许进入 Gate 0 / Gate 2：{{spec_quality_gate_decision}}
-- 降级原因（如有）：{{spec_workflow_fallback_reason}}
+- Recommended action: {{spec_quality_action}}
+- Allowed to enter Gate 0 / Gate 2: {{spec_quality_gate_decision}}
+- Downgrade reason (if any): {{spec_workflow_fallback_reason}}
 
-## 4. 证据与引用
+## 4. Evidence and References
 
 - SOURCE: {{spec_workflow_link_source}} | TYPE: internal | NOTE: spec quality review trace

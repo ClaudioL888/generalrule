@@ -1,0 +1,37 @@
+# Current Task
+
+- TASK_ID: T3
+- SPEC_ID: SPEC-20260310-english-localization
+- TASK_TYPE: refactor
+- ROLE: Dev
+- WORK_TYPE: full
+- CURRENT_GATE: Gate 4
+- CURRENT_ROLE: Dev
+- NEXT_ROLE: QA
+- STANDARDS_PROFILE: refactor:full
+- CURRENT_ROLE_STANDARDS: docs/standards/coding-standards.md,docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- NEXT_ROLE_STANDARDS: docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- ROLE_DOD_STATUS: met
+- EVIDENCE_STATUS: complete
+- DEVIATION_STATUS: none
+- DESIGN_LINK: docs/design/SPEC-20260310-english-localization-design.md
+- PLAN_LINK: docs/plans/SPEC-20260310-english-localization-plan.md
+- HANDOFF_LINK: docs/status/handoffs/spec-20260310-english-localization-dev-to-qa.md
+- DESIGN_SYNC_STATUS: synced
+- PLAN_SYNC_STATUS: synced
+- SPEC_QUALITY_STATUS: approved
+- SPEC_WORKFLOW_STATUS: unavailable
+- SPEC_WORKFLOW_LINK: docs/status/spec-quality/spec-20260310-english-localization.md
+- API_SURFACE_CHANGED: no
+- FRONTEND_SURFACE_CHANGED: no
+- CONTRACT_SYNC_STATUS: synced
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
+- BRAINSTORMING_STATUS: done
+- BRAINSTORMING_LINK: docs/status/brainstorming/spec-20260310-english-localization.md
+- TEST_COMMANDS: git ls-files | xargs rg -n "[\p{Han}]"; tests/unit/test_usage_doc.sh; tests/unit/test_validate_spec_pack.sh; tests/unit/test_validate_citation_quality.sh; tests/unit/test_validate_role_flow.sh; tests/unit/test_validate_api_frontend_sync.sh; tests/unit/test_validate_standards_binding.sh; tests/unit/test_skill_scripts.sh; tests/unit/test_init_project.sh; for t in tests/unit/*.sh; do bash "$t"; done
+- TEST_RESULT: chinese_audit=pass;tests_unit=pass;targeted_validators=pass
+- UPDATED_AT: 2026-03-10T12:31:34Z
+- NEXT_ACTION: review branch codex/english-localization and open a PR if needed

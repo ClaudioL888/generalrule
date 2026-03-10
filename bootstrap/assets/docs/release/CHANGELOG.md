@@ -4,17 +4,17 @@ owner_role: Release-Ops
 status: active
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "营销文案"
+  - "Marketing copy"
 acceptance_metrics:
-  - "变更可追溯率"
+  - "Change traceability"
 risks:
-  - "遗漏破坏性变更"
+  - "Breaking changes omitted"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
 ---
 
-# CHANGELOG 模板
+# CHANGELOG Template
 
 ## [{{version}}] - {{release_date}}
 

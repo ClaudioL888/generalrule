@@ -200,11 +200,11 @@ import json
 import sys
 data = json.loads(sys.argv[1])
 if data.get("ok"):
-    print("上游 spec-workflow 可连通，但其公开 tool/prompt 主要提供 workflow 指南、状态和审批，不直接输出 spec 质量评分。最终 approved/degraded 仍由本仓库治理流程决定。")
+    print("The upstream spec-workflow is reachable, but its public tools and prompts mainly provide workflow guidance, status, and approvals rather than a direct spec-quality score. The final approved/degraded decision is still owned by this repository's governance flow.")
 else:
     err = data.get("error", "unknown error")
     stage = data.get("stage", "unknown stage")
-    print(f"spec-workflow {stage} 失败: {err}")
+    print(f"spec-workflow {stage} failed: {err}")
 PY
 )"
 
@@ -217,11 +217,11 @@ owner_role: Architect
 status: draft
 linked_goal_id: "${SPEC_ID}"
 non_goals:
-  - "替代完整 PRD/Design/Plan"
+  - "Replace the full PRD/Design/Plan set"
 acceptance_metrics:
-  - "Spec 关键歧义已收敛"
+  - "Key spec ambiguities are converged"
 risks:
-  - "Spec 质量审查缺失导致实现跑偏"
+  - "Missing spec quality review causes implementation drift"
 approvals_required:
   - founder
 last_updated: "${LAST_UPDATED}"
@@ -229,27 +229,27 @@ last_updated: "${LAST_UPDATED}"
 
 # Spec Quality Review ${SPEC_ID}
 
-## 1. 审查上下文
+## 1. Review Context
 
 - SPEC_ID: ${SPEC_ID}
-- 审查方式：spec-workflow runtime review
-- 审查结论：待由治理流程填写 approved 或 degraded
-- MCP 状态：${SPEC_WORKFLOW_STATUS}
+- Review method: spec-workflow runtime review
+- Review conclusion: to be filled by the governance flow as approved or degraded
+- MCP status: ${SPEC_WORKFLOW_STATUS}
 - Server: ${SERVER_NAME}@${SERVER_VERSION}
 
-## 2. 上游能力摘要
+## 2. Upstream Capability Summary
 
 - Tools: ${TOOLS_SUMMARY}
 - Prompts: ${PROMPTS_SUMMARY}
-- Guide 摘要：${GUIDE_SUMMARY}
+- Guide summary: ${GUIDE_SUMMARY}
 
-## 3. 处置结论
+## 3. Decision
 
-- 建议动作：结合 brainstorming / design / plan 手动判定 spec 是否可进入下一 Gate
-- 是否允许进入 Gate 0 / Gate 2：待由治理流程填写
-- 降级原因（如有）：${FALLBACK_REASON}
+- Recommended action: judge manually, using brainstorming/design/plan, whether the spec can enter the next gate
+- Allowed to enter Gate 0 / Gate 2: to be filled by the governance flow
+- Downgrade reason (if any): ${FALLBACK_REASON}
 
-## 4. 证据与引用
+## 4. Evidence and References
 
 - SOURCE: ${NOTE_FILE} | TYPE: internal | NOTE: spec-workflow runtime review trace
 EOF

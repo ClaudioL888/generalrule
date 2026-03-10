@@ -24,14 +24,14 @@ cat > "$seed_ok" <<'SEED'
 - goal_id: goal-mvp-0001
 - work_type: full
 - phase: MVP
-- problem_statement: 用户无法快速完成首次关键动作
-- target_persona: 独立开发者
-- core_use_case: 10分钟内完成首次发布
+- problem_statement: Users cannot complete the first key action quickly
+- target_persona: Indie developers
+- core_use_case: Complete the first release within 10 minutes
 - spec_id: SPEC-0001-core-flow
 - task_type: feature
-- task_1: 建立最小可运行路径
-- acceptance_1: 核心流程一次通过
-- test_point_1: 核心命令无错误
+- task_1: Create the minimum viable path
+- acceptance_1: Core flow passes in one attempt
+- test_point_1: Core commands run without errors
 - role: Dev
 - current_role: Dev
 - next_role: QA
@@ -52,6 +52,7 @@ output_dir="$tmp_dir/project"
 required_files=(
   ".codex/config.toml"
   ".codex/rules/default.rules"
+  ".pre-commit-config.yaml"
   ".agents/skills/vibe-governance/SKILL.md"
   ".agents/skills/vibe-governance/agents/openai.yaml"
   ".agents/skills/vibe-governance/scripts/run-full-loop.sh"
@@ -63,11 +64,35 @@ required_files=(
   ".agents/skills/vibe-quality-gates/agents/openai.yaml"
   ".agents/skills/vibe-quality-gates/scripts/run-local-gates.sh"
   "AGENTS.md"
+  "docs/NORMS.md"
   "docs/prd/0001-problem-statement.md"
   "docs/design/0001-architecture-overview.md"
   "docs/adr/0001-initial-decision.md"
   "docs/governance/BRANCH_PROTECTION.md"
+  "docs/governance/EXCEPTIONS.md"
   "docs/governance/ROLE_ROUTING.md"
+  "docs/governance/ROLE_STANDARD_MATRIX.md"
+  "docs/governance/TASK_TYPE_STANDARD_PROFILES.md"
+  "docs/standards/coding-standards.md"
+  "docs/standards/discovery-standards.md"
+  "docs/standards/design-standards.md"
+  "docs/standards/planning-standards.md"
+  "docs/standards/release-standards.md"
+  "docs/standards/documentation-standards.md"
+  "docs/standards/testing-standards.md"
+  "docs/standards/security-standards.md"
+  "docs/standards/observability-standards.md"
+  "docs/prompts/README.md"
+  "docs/prompts/founder.md"
+  "docs/prompts/pm.md"
+  "docs/prompts/architect.md"
+  "docs/prompts/planner.md"
+  "docs/prompts/dev.md"
+  "docs/prompts/qa.md"
+  "docs/prompts/reviewer.md"
+  "docs/prompts/release-ops.md"
+  "docs/prompts/growth.md"
+  "docs/prompts/content-growth.md"
   "docs/plans/0001-implementation-plan.md"
   "docs/test-plan/0001-test-plan.md"
   "docs/specs/TEMPLATE-feature-spec.md"
@@ -78,8 +103,11 @@ required_files=(
   "docs/runbooks/backup-restore.md"
   "docs/runbooks/oncall-checklist.md"
   "docs/metrics/TEMPLATE-dora-aarrr.md"
+  "docs/metrics/ENGINEERING_METRICS.md"
   "docs/status/TEMPLATE-weekly-maintenance.md"
   "docs/status/TEMPLATE-monthly-maintenance.md"
+  "docs/status/TEMPLATE-metrics-weekly.md"
+  "docs/status/TEMPLATE-exception-log.md"
   "docs/status/TEMPLATE-role-handoff.md"
   "docs/status/TEMPLATE-blackbox-session.md"
   "docs/status/TEMPLATE-brainstorming.md"
@@ -94,14 +122,19 @@ required_files=(
   "scripts/ci/validate-spec-quality.sh"
   "scripts/ci/validate-citation-quality.sh"
   "scripts/ci/validate-role-flow.sh"
+  "scripts/ci/validate-standards-binding.sh"
   "scripts/ci/validate-api-frontend-sync.sh"
+  "scripts/ci/validate-exception-gate.sh"
   "scripts/ci/validate-permissions-gate.sh"
   "scripts/ci/validate-security-gate.sh"
   "scripts/ci/validate-release-readiness.sh"
   "scripts/ci/validate-observability-gate.sh"
   "scripts/ci/validate-governance.sh"
   "scripts/ci/validate-doc-links.sh"
+  "scripts/ci/collect-metrics.sh"
+  "scripts/lib/standards-binding.sh"
   "scripts/dev/install-hooks.sh"
+  "scripts/dev/install-pre-commit.sh"
   "scripts/dev/install-spec-workflow.sh"
   "scripts/dev/run-spec-workflow-review.sh"
   ".github/PULL_REQUEST_TEMPLATE.md"
@@ -124,14 +157,18 @@ for script_path in \
   "scripts/ci/validate-spec-quality.sh" \
   "scripts/ci/validate-citation-quality.sh" \
   "scripts/ci/validate-role-flow.sh" \
+  "scripts/ci/validate-standards-binding.sh" \
   "scripts/ci/validate-api-frontend-sync.sh" \
+  "scripts/ci/validate-exception-gate.sh" \
   "scripts/ci/validate-permissions-gate.sh" \
   "scripts/ci/validate-security-gate.sh" \
   "scripts/ci/validate-release-readiness.sh" \
   "scripts/ci/validate-observability-gate.sh" \
   "scripts/ci/validate-governance.sh" \
   "scripts/ci/validate-doc-links.sh" \
+  "scripts/ci/collect-metrics.sh" \
   "scripts/dev/install-hooks.sh" \
+  "scripts/dev/install-pre-commit.sh" \
   "scripts/dev/install-spec-workflow.sh" \
   "scripts/dev/run-spec-workflow-review.sh" \
   ".agents/skills/vibe-governance/scripts/run-full-loop.sh" \
@@ -150,9 +187,10 @@ if [[ ! -x "$output_dir/.githooks/pre-push" ]]; then
 fi
 
 for key in \
-  TASK_ID SPEC_ID TASK_TYPE ROLE WORK_TYPE CURRENT_GATE CURRENT_ROLE NEXT_ROLE HANDOFF_LINK \
+  TASK_ID SPEC_ID TASK_TYPE ROLE WORK_TYPE CURRENT_GATE CURRENT_ROLE NEXT_ROLE STANDARDS_PROFILE CURRENT_ROLE_STANDARDS NEXT_ROLE_STANDARDS ROLE_DOD_STATUS EVIDENCE_STATUS DEVIATION_STATUS HANDOFF_LINK \
   DESIGN_LINK PLAN_LINK DESIGN_SYNC_STATUS PLAN_SYNC_STATUS SPEC_QUALITY_STATUS SPEC_WORKFLOW_STATUS SPEC_WORKFLOW_LINK \
-  API_SURFACE_CHANGED FRONTEND_SURFACE_CHANGED CONTRACT_SYNC_STATUS BRAINSTORMING_STATUS BRAINSTORMING_LINK \
+  API_SURFACE_CHANGED FRONTEND_SURFACE_CHANGED CONTRACT_SYNC_STATUS EXCEPTION_STATUS EXCEPTION_LINK REWORK_RISK METRICS_IMPACT \
+  BRAINSTORMING_STATUS BRAINSTORMING_LINK \
   TEST_COMMANDS TEST_RESULT UPDATED_AT NEXT_ACTION; do
   grep -q "^- $key: " "$output_dir/docs/status/current-task.md" || {
     echo "missing key in current-task.md: $key"
@@ -193,30 +231,95 @@ sed -i.bak -E 's/^- DESIGN_SYNC_STATUS:.*$/- DESIGN_SYNC_STATUS: synced/' "$outp
 rm -f "$output_dir/docs/status/current-task.md.bak"
 sed -i.bak -E 's/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/' "$output_dir/docs/status/current-task.md"
 rm -f "$output_dir/docs/status/current-task.md.bak"
+sed -i.bak -E 's|^- STANDARDS_PROFILE:.*$|- STANDARDS_PROFILE: feature:full|' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
+sed -i.bak -E 's|^- CURRENT_ROLE_STANDARDS:.*$|- CURRENT_ROLE_STANDARDS: docs/standards/coding-standards.md,docs/standards/testing-standards.md,docs/standards/documentation-standards.md|' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
+sed -i.bak -E 's|^- NEXT_ROLE_STANDARDS:.*$|- NEXT_ROLE_STANDARDS: docs/standards/testing-standards.md,docs/standards/documentation-standards.md|' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
 sed -i.bak -E 's/^- SPEC_QUALITY_STATUS:.*$/- SPEC_QUALITY_STATUS: approved/' "$output_dir/docs/status/current-task.md"
 rm -f "$output_dir/docs/status/current-task.md.bak"
 sed -i.bak -E 's/^- SPEC_WORKFLOW_STATUS:.*$/- SPEC_WORKFLOW_STATUS: unavailable/' "$output_dir/docs/status/current-task.md"
 rm -f "$output_dir/docs/status/current-task.md.bak"
+sed -i.bak -E 's/^- ROLE_DOD_STATUS:.*$/- ROLE_DOD_STATUS: met/' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
+sed -i.bak -E 's/^- EVIDENCE_STATUS:.*$/- EVIDENCE_STATUS: complete/' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
 mkdir -p "$output_dir/docs/status/spec-quality"
-cat > "$output_dir/docs/status/spec-quality/spec-0001-core-flow.md" <<'MD'
+cat > "$output_dir/docs/status/spec-quality/SPEC-0001-core-flow.md" <<'MD'
 # Spec Quality Review SPEC-0001-core-flow
 
-## 1. 审查上下文
+## 1. Review Context
 - SPEC_ID: SPEC-0001-core-flow
-- 审查方式：manual fallback
-- 审查结论：approved
-- MCP 状态：unavailable
+- Review method: manual fallback
+- Review conclusion: approved
+- MCP status: unavailable
 
-## 2. 关键发现
-- 歧义点：none
-- 缺失项：none
-- 契约风险：low
+## 2. Key Findings
+- Ambiguity: none
+- Missing item: none
+- Contract risk: low
 
-## 3. 处置结论
-- 建议动作：proceed
-- 是否允许进入 Gate 0 / Gate 2：yes
-- 降级原因（如有）：spec-workflow MCP unavailable in test environment
+## 3. Decision
+- Recommended action: proceed
+- Allowed to enter Gate 0 / Gate 2: yes
+- Downgrade reason (if any): spec-workflow MCP unavailable in test environment
 MD
+mkdir -p "$output_dir/docs/status/brainstorming"
+cat > "$output_dir/docs/status/brainstorming/SPEC-0001-core-flow.md" <<'MD'
+# Brainstorming SPEC-0001-core-flow
+
+## Goals and Non-Goals
+- Goal: Clarify MVP scope
+- Non-goal: Cover every advanced feature at once
+MD
+mkdir -p "$output_dir/docs/status/handoffs"
+cat > "$output_dir/docs/status/handoffs/spec-0001-core-flow-dev-to-qa.md" <<'MD'
+# Role Handoff SPEC-0001-core-flow
+- TASK_TYPE: feature
+- CURRENT_ROLE: Dev
+- NEXT_ROLE: QA
+
+## Inputs
+
+- Current role prompt asset: docs/prompts/dev.md
+- Next role prompt asset: docs/prompts/qa.md
+- Current constraints: single task only
+
+## Outputs
+
+- Primary artifact link: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
+- Secondary artifact link: docs/status/current-task.md
+- Artifact summary: implemented core path
+- Test Evidence: unit=pass;integration=pass;e2e=pass
+- Risk Summary: low
+
+## Applicable Standards
+
+- Current role standards: docs/standards/coding-standards.md,docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- Next role standards: docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- Deviation note: none
+
+## Evidence Summary
+
+- Primary evidence: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
+- Secondary evidence: docs/status/current-task.md
+- Test Evidence: unit=pass;integration=pass;e2e=pass
+- Risk evidence: low
+- Documentation sync evidence: docs/status/current-task.md
+
+## Definition of Done
+
+- [ ] Acceptance criteria met: yes
+- [ ] Test points covered: yes
+
+## Handoff To
+
+- Recipient: QA
+- Next action: run regression checks
+MD
+sed -i.bak -E 's|^- HANDOFF_LINK:.*$|- HANDOFF_LINK: docs/status/handoffs/spec-0001-core-flow-dev-to-qa.md|' "$output_dir/docs/status/current-task.md"
+rm -f "$output_dir/docs/status/current-task.md.bak"
 
 pr_file="$tmp_dir/pr.md"
 cat > "$pr_file" <<'PR'
@@ -228,10 +331,18 @@ cat > "$pr_file" <<'PR'
 - PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - SPEC_LINK: docs/specs/SPEC-0001-core-flow.md
 - API_FRONTEND_MAP_LINK: docs/contracts/SPEC-0001-core-flow-api-frontend-map.md
-- ROLE_HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
+- ROLE_HANDOFF_LINK: docs/status/handoffs/spec-0001-core-flow-dev-to-qa.md
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- STANDARDS_PROFILE: feature:full
+- ROLE_DOD_STATUS: met
+- EVIDENCE_STATUS: complete
+- DEVIATION_STATUS: none
 - CONTRACT_SYNC_STATUS: synced
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
 - TASK_STATE_LINK: docs/status/current-task.md
 - TEST_RESULTS: unit=pass;integration=pass;e2e=pass
 - APPROVAL_EXECUTION: approved
@@ -242,7 +353,7 @@ cat > "$pr_file" <<'PR'
 - RELEASE_REVIEW: approved
 PR
 
-changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/TEMPLATE-role-handoff.md\ndocs/specs/SPEC-0001-core-flow.md\ndocs/contracts/SPEC-0001-core-flow-api-frontend-map.md\ndocs/prd/0001-problem-statement.md\ndocs/design/SPEC-0001-core-flow-design.md\ndocs/plans/SPEC-0001-core-flow-plan.md'
+changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/handoffs/spec-0001-core-flow-dev-to-qa.md\ndocs/specs/SPEC-0001-core-flow.md\ndocs/contracts/SPEC-0001-core-flow-api-frontend-map.md\ndocs/prd/0001-problem-statement.md\ndocs/design/SPEC-0001-core-flow-design.md\ndocs/plans/SPEC-0001-core-flow-plan.md'
 (
   cd "$output_dir"
   mock_codex_bin="$tmp_dir/mock-codex"
@@ -265,7 +376,9 @@ MOCK
   CHANGED_FILES="$changed_files" bash scripts/ci/validate-spec-quality.sh
   CHANGED_FILES="$changed_files" bash scripts/ci/validate-citation-quality.sh
   CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-role-flow.sh
+  CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-standards-binding.sh
   CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-api-frontend-sync.sh
+  CHANGED_FILES="$changed_files" PR_BODY_FILE="$pr_file" bash scripts/ci/validate-exception-gate.sh
   PR_BODY_FILE="$pr_file" bash scripts/ci/validate-permissions-gate.sh
   CHANGED_FILES="$changed_files" bash scripts/ci/validate-security-gate.sh
   CHANGED_FILES="$changed_files" bash scripts/ci/validate-release-readiness.sh

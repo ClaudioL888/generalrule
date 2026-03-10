@@ -2,29 +2,30 @@
 
 ## Summary
 
-- 变更内容：{{change_summary}}
-- 关联目标：{{linked_goal}}
+- Change summary: {{change_summary}}
+- Linked goal: {{linked_goal}}
 
 ## Scope Check
 
-- [ ] 本 PR 只覆盖一个计划项
-- [ ] 未进行跨任务顺手重构
+- [ ] This PR covers only one plan item
+- [ ] No side refactors were slipped in across tasks
 
 ## Required Evidence
 
-- [ ] 已执行 tests/build/lint 并附结果摘要
-- [ ] 已更新 docs/status
-- [ ] 已更新 docs/status/current-task.md 且字段完整
-- [ ] 已更新 docs/specs 对应 SPEC 文档
-- [ ] 已更新 spec quality review 文档或记录降级原因
-- [ ] 已更新 docs/design 对应 Design 文档
-- [ ] 已更新 docs/plans 对应 Plan 文档
-- [ ] 已更新 docs/contracts API/前端映射文档
-- [ ] 已更新角色交接文档（handoff）
-- [ ] 已更新 docs/release/CHANGELOG.md
-- [ ] 已更新 docs/release/RELEASE_NOTES.md
+- [ ] Tests/build/lint were run and the result summary is attached
+- [ ] `docs/status` was updated
+- [ ] `docs/status/current-task.md` was updated with complete fields
+- [ ] The corresponding SPEC doc under `docs/specs` was updated
+- [ ] The spec quality review doc was updated or the downgrade reason was recorded
+- [ ] The corresponding Design doc under `docs/design` was updated
+- [ ] The corresponding Plan doc under `docs/plans` was updated
+- [ ] The API/frontend mapping doc under `docs/contracts` was updated
+- [ ] The role handoff doc was updated
+- [ ] The exception doc was updated or `EXCEPTION_STATUS=none` is explicit
+- [ ] `docs/release/CHANGELOG.md` was updated
+- [ ] `docs/release/RELEASE_NOTES.md` was updated
 
-## Governance Metadata (必填，CI 解析)
+## Governance Metadata (Required, parsed by CI)
 
 - WORK_TYPE: full
 - TASK_TYPE: feature
@@ -39,7 +40,15 @@
 - ROLE_HANDOFF_LINK: docs/status/handoffs/SPEC-0001-core-flow-dev-to-qa.md
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- STANDARDS_PROFILE: feature:full
+- ROLE_DOD_STATUS: met
+- EVIDENCE_STATUS: complete
+- DEVIATION_STATUS: none
 - CONTRACT_SYNC_STATUS: synced
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
 - MINI_PLAN_LINK: N/A
 - INCIDENT_LINK: N/A
 - FAST_TRACK_FOLLOWUP_LINK: N/A
@@ -60,5 +69,5 @@
 
 ## Risk and Rollback
 
-- 风险：{{risk_summary}}
-- 回滚方案：{{rollback_summary}}
+- Risk: {{risk_summary}}
+- Rollback plan: {{rollback_summary}}

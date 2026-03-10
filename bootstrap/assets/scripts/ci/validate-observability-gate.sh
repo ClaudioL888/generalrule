@@ -25,11 +25,16 @@ if [[ ! -f "docs/metrics/TEMPLATE-dora-aarrr.md" ]]; then
   issues+=("missing docs/metrics/TEMPLATE-dora-aarrr.md")
 fi
 
+if [[ ! -f "docs/metrics/ENGINEERING_METRICS.md" ]]; then
+  issues+=("missing docs/metrics/ENGINEERING_METRICS.md")
+fi
+
 if [[ ! -d "docs/status" ]]; then
   issues+=("missing docs/status directory")
 else
   weekly_count="$(find docs/status -maxdepth 1 -type f -name '*weekly*.md' ! -name 'TEMPLATE-*' | wc -l | tr -d ' ')"
   monthly_count="$(find docs/status -maxdepth 1 -type f -name '*monthly*.md' ! -name 'TEMPLATE-*' | wc -l | tr -d ' ')"
+  metrics_weekly_count="$(find docs/status -maxdepth 1 -type f -name '*metrics-weekly*.md' ! -name 'TEMPLATE-*' | wc -l | tr -d ' ')"
 
   if [[ "$weekly_count" == "0" ]]; then
     issues+=("no weekly maintenance record found in docs/status")
@@ -37,6 +42,10 @@ else
 
   if [[ "$monthly_count" == "0" ]]; then
     issues+=("no monthly maintenance record found in docs/status")
+  fi
+
+  if [[ "$metrics_weekly_count" == "0" ]]; then
+    issues+=("no weekly metrics record found in docs/status")
   fi
 fi
 

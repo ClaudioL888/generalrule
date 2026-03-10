@@ -1,10 +1,10 @@
 # Generalrule Baseline
 
-这个仓库是“官方路径基线 + 一键初始化器”，用于把治理规范嫁接到任意新项目。
+This repository is the "official path baseline + one-command initializer" used to graft governance standards onto any new project.
 
-详细使用说明见：[docs/USAGE.md](./docs/USAGE.md)。
+See the detailed usage guide in [docs/USAGE.md](./docs/USAGE.md).
 
-## 任务级强约束流程
+## Task-Level Constrained Flow
 
 ```mermaid
 flowchart LR
@@ -17,14 +17,14 @@ flowchart LR
   G --> A
 ```
 
-## 仓库职责
+## Repository Responsibilities
 
-1. 维护官方路径运行时配置（`.codex/`）。
-2. 维护初始化资产源（`bootstrap/assets/`）。
-3. 通过 `scripts/init-project.sh` 根据 seed 生成目标项目骨架。
-4. 通过 `tests/unit/*` 保证基线与生成流程不退化。
+1. Maintain the official runtime configuration under `.codex/`.
+2. Maintain the initializer asset source in `bootstrap/assets/`.
+3. Generate the target project skeleton from seed data with `scripts/init-project.sh`.
+4. Prevent regressions in the baseline and generation flow through `tests/unit/*`.
 
-## 基线真值（本仓库）
+## Baseline Source of Truth in This Repository
 
 - `.codex/config.toml`
 - `.codex/rules/default.rules`
@@ -37,46 +37,42 @@ flowchart LR
 - `bootstrap/assets/`
 - `scripts/init-project.sh`
 
-## Skills 使用
+## Skill Usage
 
-默认行为：
+Default behavior:
 
-- `vibe-governance` 会作为主流程自动触发（隐式）
-- 在需求确认与技术选型阶段，默认先调用 `brainstorming` skill 辅助收敛
+- `vibe-governance` is triggered as the main workflow implicitly.
+- During requirement confirmation and technical selection, the `brainstorming` skill is called first by default to converge on the approach.
 
-显式触发（按需）：
+Explicit triggers when needed:
 
-- `$vibe-governance`（可手动强制进入主流程）
+- `$vibe-governance`
 - `$vibe-task-pack`
 - `$vibe-quality-gates`
 
-## 规范层级
+## Governance Layers
 
-1. `docs/NORMS.md`：最短硬规则真值
-2. `docs/standards/*`：discovery/design/planning/coding/testing/security/observability/release/documentation 长期标准
-3. `docs/prompts/*`：角色提示资产
-4. `spec/design/plan/contract/current-task/handoff`：任务级真值
-5. `scripts/ci/* + CI`：最终硬门禁
+1. `docs/NORMS.md`: the shortest hard-rule source of truth
+2. `docs/standards/*`: long-term standards for discovery, design, planning, coding, testing, security, observability, release, and documentation
+3. `docs/prompts/*`: reusable role prompt assets
+4. `spec/design/plan/contract/current-task/handoff`: task-level truth
+5. `scripts/ci/* + CI`: final hard gates
 
-其中 `handoff` 现在是细粒度校验对象：必须包含固定章节、当前/下一角色 prompt 路径、当前/下一角色 standards、当前角色应交付的主产物链接，以及证据摘要。
+`handoff` is now validated at a finer granularity: it must include fixed sections, the current/next role prompt paths, the current/next role standards, the primary artifact link the current role must deliver, and an evidence summary.
 
-## 生成新项目
-
-```bash
-bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.template.md
-```
-
-正式 `full` 项目建议启用 strict seed：
+## Generate a New Project
 
 ```bash
-STRICT_SEED=1 bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.template.md
+bash scripts/init-project.sh   --output /absolute/path/to/new-project   --seed ./seed.template.md
 ```
 
-## 生成后新增的关键资产
+For production `full` projects, strict seed mode is recommended:
+
+```bash
+STRICT_SEED=1 bash scripts/init-project.sh   --output /absolute/path/to/new-project   --seed ./seed.template.md
+```
+
+## Key Assets Added After Generation
 
 - `docs/NORMS.md`
 - `docs/standards/coding-standards.md`
@@ -100,14 +96,14 @@ STRICT_SEED=1 bash scripts/init-project.sh \
 - `scripts/ci/validate-exception-gate.sh`
 - `scripts/ci/collect-metrics.sh`
 
-## 官方 Codex 配置
+## Official Codex Configuration
 
-当前仓库已按官方方式启用项目级配置：
+This repository already enables project-level configuration in the official way:
 
 - `.codex/config.toml`
 - `.codex/rules/default.rules`
 
-其中 `.codex/config.toml` 默认声明项目级 `spec-workflow` MCP：
+`.codex/config.toml` declares the project-level `spec-workflow` MCP by default:
 
 - `[mcp_servers.spec-workflow]`
 - `command = "bash"`
@@ -115,12 +111,12 @@ STRICT_SEED=1 bash scripts/init-project.sh \
 - `env = { SPEC_WORKFLOW_HOME = ".spec-workflow-mcp" }`
 - `startup_timeout_sec = 180`
 
-## 生产级加固能力
+## Production-Grade Hardening
 
-当前基线已内置分级门禁策略：
+The current baseline includes layered gate strategies:
 
-- 硬阻断：权限、安全、发布、exception、契约一致性
-- 分级阻断：`standards-binding` 默认 `strict`，所有角色缺标准绑定或缺证据都会阻断；需要降级时显式设 `STANDARDS_ENFORCEMENT=mixed|warn`
-- 软阻断（告警）：观测与维护记录
-- 文档依据硬阻断：spec/design/adr/prd 的 citation quality
-- 更早阻断：`pre-push + pre-commit + CI`
+- Hard blocks: permissions, security, release, exception handling, contract consistency
+- Tiered blocking: `standards-binding` defaults to `strict`; any role missing standards binding or evidence is blocked unless `STANDARDS_ENFORCEMENT=mixed|warn` is set explicitly
+- Soft blocks: observability and maintenance records
+- Documentation hard block: citation quality for spec/design/adr/prd
+- Earlier blocking: `pre-push + pre-commit + CI`

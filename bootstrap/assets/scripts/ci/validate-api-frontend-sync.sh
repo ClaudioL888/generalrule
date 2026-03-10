@@ -150,7 +150,7 @@ if [[ "$src_changed" == "1" || "$api_surface_changed" == "yes" || "$frontend_sur
   has_changed_file "$map_file" || fail "API_FRONTEND_MAP_LINK must be updated: $map_file"
 
   grep -Fq "## Mapping Table" "$map_file" || fail "map file missing Mapping Table section"
-  grep -Fq "| Endpoint / Event | DTO / Schema | Frontend 页面/组件 | 状态管理 | 测试点 | 备注 |" "$map_file" || fail "map file missing required mapping table header"
+  grep -Fq "| Endpoint / Event | DTO / Schema | Frontend Page / Component | State Management | Test Point | Notes |" "$map_file" || fail "map file missing required mapping table header"
 fi
 
 if [[ "$frontend_surface_changed" == "yes" && "$api_surface_changed" == "no" ]]; then

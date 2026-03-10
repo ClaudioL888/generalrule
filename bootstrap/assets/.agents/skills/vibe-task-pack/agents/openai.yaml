@@ -1,6 +1,6 @@
 interface:
   display_name: Vibe Task Pack
-  short_description: 生成任务级 spec/map/handoff 文档并更新 current-task。
+  short_description: Generate task-level spec/map/handoff docs and update current-task.
 policy:
   allow_implicit_invocation: false
 dependencies:

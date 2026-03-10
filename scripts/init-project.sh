@@ -245,7 +245,11 @@ fi
 
 cp -R "$ASSETS_DIR"/. "$OUTPUT_DIR"/
 
-placeholder_keys="$(grep -Rho '{{[a-z0-9_]\+}}' "$OUTPUT_DIR" 2>/dev/null | sed -E 's/\{\{|\}\}//g' | sort -u || true)"
+if command -v rg >/dev/null 2>&1; then
+  placeholder_keys="$(rg -o --no-filename '\{\{[a-z0-9_]+\}\}' "$OUTPUT_DIR" 2>/dev/null | sed -E 's/\{\{|\}\}//g' | sort -u || true)"
+else
+  placeholder_keys="$(grep -Rho '{{[a-z0-9_]\+}}' "$OUTPUT_DIR" 2>/dev/null | sed -E 's/\{\{|\}\}//g' | sort -u || true)"
+fi
 
 if [[ -n "$placeholder_keys" ]]; then
   while IFS= read -r key; do
@@ -258,11 +262,19 @@ if [[ -n "$placeholder_keys" ]]; then
     fi
 
     escaped_value="$(printf '%s' "$value" | sed -e 's/[\\|&]/\\\\&/g')"
-    while IFS= read -r -d '' file; do
-      tmp_file="${file}.tmp.$$"
-      sed "s|{{${key}}}|${escaped_value}|g" "$file" > "$tmp_file"
-      mv "$tmp_file" "$file"
-    done < <(find "$OUTPUT_DIR" -type f -print0)
+    if command -v rg >/dev/null 2>&1; then
+      while IFS= read -r -d '' file; do
+        tmp_file="${file}.tmp.$$"
+        sed "s|{{${key}}}|${escaped_value}|g" "$file" > "$tmp_file"
+        mv "$tmp_file" "$file"
+      done < <(rg -l -0 --fixed-strings "{{${key}}}" "$OUTPUT_DIR" 2>/dev/null || true)
+    else
+      while IFS= read -r -d '' file; do
+        tmp_file="${file}.tmp.$$"
+        sed "s|{{${key}}}|${escaped_value}|g" "$file" > "$tmp_file"
+        mv "$tmp_file" "$file"
+      done < <(grep -RIlZ "{{${key}}}" "$OUTPUT_DIR" 2>/dev/null || true)
+    fi
   done <<< "$placeholder_keys"
 fi
 

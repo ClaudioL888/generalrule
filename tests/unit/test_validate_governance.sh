@@ -47,7 +47,7 @@ if CHANGED_FILES="src/app.ts" PR_BODY_FILE="$pr_file_full" "$SCRIPT"; then
   exit 1
 fi
 
-mkdir -p "$tmp_dir/work/docs/prd" "$tmp_dir/work/docs/design" "$tmp_dir/work/docs/plans" "$tmp_dir/work/docs/release" "$tmp_dir/work/docs/status/spec-quality"
+mkdir -p "$tmp_dir/work/docs/prd" "$tmp_dir/work/docs/design" "$tmp_dir/work/docs/plans" "$tmp_dir/work/docs/release" "$tmp_dir/work/docs/status/spec-quality" "$tmp_dir/work/docs/status/brainstorming"
 cat > "$tmp_dir/work/docs/prd/0001-problem-statement.md" <<'MD'
 # PRD
 MD
@@ -69,6 +69,9 @@ MD
 cat > "$tmp_dir/work/docs/status/spec-quality/spec-0001-core-flow.md" <<'MD'
 # Spec Quality Review SPEC-0001-core-flow
 MD
+cat > "$tmp_dir/work/docs/status/brainstorming/spec-0001-core-flow.md" <<'MD'
+# Brainstorming SPEC-0001-core-flow
+MD
 
 changed_files=$'src/app.ts\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md\ndocs/status/current-task.md\ndocs/status/TEMPLATE-role-handoff.md\ndocs/prd/0001-problem-statement.md\ndocs/design/SPEC-0001-core-flow-design.md\ndocs/plans/SPEC-0001-core-flow-plan.md'
 
@@ -83,6 +86,12 @@ cat > docs/status/current-task.md <<'MD'
 - CURRENT_GATE: Gate 4
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- STANDARDS_PROFILE: feature:full
+- CURRENT_ROLE_STANDARDS: docs/standards/coding-standards.md,docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- NEXT_ROLE_STANDARDS: docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- ROLE_DOD_STATUS: met
+- EVIDENCE_STATUS: complete
+- DEVIATION_STATUS: none
 - DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
 - PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
@@ -91,9 +100,15 @@ cat > docs/status/current-task.md <<'MD'
 - SPEC_QUALITY_STATUS: approved
 - SPEC_WORKFLOW_STATUS: unavailable
 - SPEC_WORKFLOW_LINK: docs/status/spec-quality/spec-0001-core-flow.md
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced
+- BRAINSTORMING_STATUS: done
+- BRAINSTORMING_LINK: docs/status/brainstorming/spec-0001-core-flow.md
 - TEST_COMMANDS: npm test && npm run lint
 - TEST_RESULT: unit=pass;integration=pass;e2e=pass
 - UPDATED_AT: 2026-03-03T00:00:00Z
@@ -121,6 +136,12 @@ cat > docs/status/current-task.md <<'MD'
 - CURRENT_GATE: Gate 4
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- STANDARDS_PROFILE: feature:full
+- CURRENT_ROLE_STANDARDS: docs/standards/coding-standards.md,docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- NEXT_ROLE_STANDARDS: docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- ROLE_DOD_STATUS: met
+- EVIDENCE_STATUS: complete
+- DEVIATION_STATUS: none
 - DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
 - PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
@@ -129,9 +150,15 @@ cat > docs/status/current-task.md <<'MD'
 - SPEC_QUALITY_STATUS: approved
 - SPEC_WORKFLOW_STATUS: unavailable
 - SPEC_WORKFLOW_LINK: docs/status/spec-quality/spec-0001-core-flow.md
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced
+- BRAINSTORMING_STATUS: done
+- BRAINSTORMING_LINK: docs/status/brainstorming/spec-0001-core-flow.md
 - TEST_COMMANDS: npm test
 - UPDATED_AT: 2026-03-03T00:00:00Z
 - NEXT_ACTION: handoff to QA
@@ -152,6 +179,12 @@ cat > docs/status/current-task.md <<'MD'
 - CURRENT_GATE: Gate 4
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- STANDARDS_PROFILE: feature:full
+- CURRENT_ROLE_STANDARDS: docs/standards/coding-standards.md,docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- NEXT_ROLE_STANDARDS: docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- ROLE_DOD_STATUS: met
+- EVIDENCE_STATUS: complete
+- DEVIATION_STATUS: none
 - DESIGN_LINK: docs/design/SPEC-0001-core-flow-design.md
 - PLAN_LINK: docs/plans/SPEC-0001-core-flow-plan.md
 - HANDOFF_LINK: docs/status/TEMPLATE-role-handoff.md
@@ -160,9 +193,15 @@ cat > docs/status/current-task.md <<'MD'
 - SPEC_QUALITY_STATUS: approved
 - SPEC_WORKFLOW_STATUS: unavailable
 - SPEC_WORKFLOW_LINK: docs/status/spec-quality/spec-0001-core-flow.md
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: synced
+- BRAINSTORMING_STATUS: done
+- BRAINSTORMING_LINK: docs/status/brainstorming/spec-0001-core-flow.md
 - TEST_COMMANDS: npm test && npm run lint
 - TEST_RESULT: unit=pass;integration=pass;e2e=pass
 - UPDATED_AT: 2026-03-03T00:00:00Z

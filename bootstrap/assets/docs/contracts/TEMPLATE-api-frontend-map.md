@@ -4,11 +4,11 @@ owner_role: Architect
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "跨模块隐式改造"
+  - "Implicit cross-module rewrites"
 acceptance_metrics:
-  - "API/前端映射完整率"
+  - "API/frontend mapping completeness"
 risks:
-  - "契约漂移"
+  - "Contract drift"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
@@ -25,11 +25,11 @@ last_updated: "{{YYYY-MM-DD}}"
 
 ## Mapping Table
 
-| Endpoint / Event | DTO / Schema | Frontend 页面/组件 | 状态管理 | 测试点 | 备注 |
+| Endpoint / Event | DTO / Schema | Frontend Page / Component | State Management | Test Point | Notes |
 | --- | --- | --- | --- | --- | --- |
 | {{api_contract}} | {{io_schema}} | {{core_use_case}} | {{state_strategy}} | {{test_point_1}} | {{decision_tradeoff}} |
 
-## 审查结论
+## Review Conclusion
 
 - REVIEW_OWNER: {{contract_review_owner}}
 - RESULT: `synced | pending`

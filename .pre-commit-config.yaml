@@ -1,0 +1,19 @@
+repos:
+  - repo: local
+    hooks:
+      - id: bash-syntax
+        name: bash syntax
+        entry: bash -c 'for f in "$@"; do bash -n "$f"; done' --
+        language: system
+        files: \.sh$
+      - id: doc-links
+        name: doc links
+        entry: bash bootstrap/assets/scripts/ci/validate-doc-links.sh
+        language: system
+        pass_filenames: false
+      - id: current-task-schema
+        name: current task schema
+        entry: bash -c 'if [ -f bootstrap/assets/docs/status/current-task.md ]; then CHANGED_FILES="docs/status/current-task.md" LOCAL_MODE=1 bash bootstrap/assets/scripts/ci/validate-governance.sh; fi'
+        language: system
+        pass_filenames: false
+        files: ^bootstrap/assets/docs/status/current-task.md$

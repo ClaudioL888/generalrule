@@ -1,25 +1,25 @@
-# Seed 输入模板（官方路径基线）
+# Seed Input Template (Official Path Baseline)
 
-> 用途：给 `scripts/init-project.sh` 读取，生成目标项目的官方路径骨架。
-> 规则：只解析 `START_SEED_KV` 与 `END_SEED_KV` 之间的键值。
+> Purpose: read by `scripts/init-project.sh` to generate the official path skeleton for a target project.
+> Rule: only key-value pairs between `START_SEED_KV` and `END_SEED_KV` are parsed.
 
-## 1. 机器可解析键值（分层契约）
+## 1. Machine-Readable Keys (Layered Contract)
 
-### L1_BASE_REQUIRED（所有 work_type 必填）
+### L1_BASE_REQUIRED (Required for all work types)
 
 <!-- START_SEED_KV -->
 - project_code: your-project-code
 - goal_id: goal-mvp-0001
 - work_type: full
 - phase: MVP
-- problem_statement: 描述当前最核心的问题
-- target_persona: 目标用户画像
-- core_use_case: 用户完成核心价值的场景
+- problem_statement: Describe the most important current problem
+- target_persona: Target user persona
+- core_use_case: The scenario in which the user receives the core value
 - spec_id: SPEC-0001-core-flow
 - task_type: feature
-- task_1: 第一个可执行任务
-- acceptance_1: 第一个任务的验收条件
-- test_point_1: 第一个任务的测试点
+- task_1: The first executable task
+- acceptance_1: The acceptance criteria for the first task
+- test_point_1: The test point for the first task
 - role: Dev
 - current_role: Dev
 - next_role: QA
@@ -32,12 +32,12 @@
 - test_result: unit=pass;integration=pass;e2e=pass
 - next_action: handoff to QA
 
-### L2_FULL_REQUIRED（仅 work_type=full 时启用）
-# 兼容模式（默认）：缺失会告警，但不阻断
-# 严格模式（STRICT_SEED=1 或 --strict-seed）：缺失即失败
+### L2_FULL_REQUIRED (Enabled only when `work_type=full`)
+# Compatibility mode (default): missing keys warn but do not block
+# Strict mode (`STRICT_SEED=1` or `--strict-seed`): missing keys fail immediately
 - chosen_stack: typescript-node-postgresql
 - api_contract: OpenAPI 3.1 + versioned REST
-- entity_definitions: user/order/session 三个核心实体
+- entity_definitions: three core entities: user/order/session
 - io_schema: zod request/response schema
 - api_change_policy: backward-compatible first + deprecation window
 - frontend_binding_policy: generated types + contract tests
@@ -50,41 +50,41 @@
 - rollback_strategy: blue-green rollback within 10min
 - rollback_summary: db migration backward-compatible + feature flag fallback
 
-### L3_OPTIONAL（缺失会填充 TODO(key)）
-- project_name: 可读项目名（不填默认使用 project_code）
-- non_goal_1: 本阶段不做事项
-- value_proposition: 价值主张
-- business_constraints: 业务约束
-- compliance_constraints: 合规约束
-- external_dependencies: 外部依赖
-- risk_1: 主要风险
-- mitigation_1: 风险缓解
+### L3_OPTIONAL (Missing keys fall back to `TODO(key)`)
+- project_name: Human-readable project name (defaults to `project_code` when omitted)
+- non_goal_1: Work that is explicitly out of scope for this phase
+- value_proposition: Value proposition
+- business_constraints: Business constraints
+- compliance_constraints: Compliance constraints
+- external_dependencies: External dependencies
+- risk_1: Primary risk
+- mitigation_1: Risk mitigation
 <!-- END_SEED_KV -->
 
-## 2. 分层校验规则
+## 2. Layered Validation Rules
 
-- `L1_BASE_REQUIRED`：始终必填，缺失直接失败。
-- `L2_FULL_REQUIRED`：
-  - 默认兼容模式：`work_type=full` 且缺失时仅告警。
-  - 严格模式：`work_type=full` 且缺失时失败，报错 `missing full-strict seed key: <key>`。
-- `L3_OPTIONAL`：缺失不会失败，生成器用 `TODO(key)` 回填。
+- `L1_BASE_REQUIRED`: always required; missing keys fail immediately.
+- `L2_FULL_REQUIRED`:
+  - default compatibility mode: for `work_type=full`, missing keys only warn.
+  - strict mode: for `work_type=full`, missing keys fail with `missing full-strict seed key: <key>`.
+- `L3_OPTIONAL`: missing keys do not fail; the generator fills them with `TODO(key)`.
 
-严格模式开启方式（二选一）：
+Strict mode can be enabled in either of these ways:
 
 - `STRICT_SEED=1 bash scripts/init-project.sh ...`
 - `bash scripts/init-project.sh ... --strict-seed`
 
-## 3. L1 必填字段表
+## 3. L1 Required Field List
 
 - `project_code`
 - `goal_id`
-- `work_type`（`full|mini|fast-track`）
+- `work_type` (`full|mini|fast-track`)
 - `phase`
 - `problem_statement`
 - `target_persona`
 - `core_use_case`
 - `spec_id`
-- `task_type`（`feature|bugfix|refactor|ops|content`）
+- `task_type` (`feature|bugfix|refactor|ops|content`)
 - `task_1`
 - `acceptance_1`
 - `test_point_1`
@@ -100,7 +100,7 @@
 - `test_result`
 - `next_action`
 
-## 4. L2（full + strict）必填字段表
+## 4. L2 Required Field List (`full` + strict)
 
 - `chosen_stack`
 - `api_contract`
@@ -117,11 +117,14 @@
 - `rollback_strategy`
 - `rollback_summary`
 
-## 5. 生成映射表
+## 5. Generation Mapping
 
-- `.codex/config.toml` <- 基线固定内容
-- `.codex/rules/default.rules` <- 基线固定内容
+- `.codex/config.toml` <- fixed baseline content
+- `.codex/rules/default.rules` <- fixed baseline content
 - `AGENTS.md` <- `project_name`, `goal_id`
+- `docs/NORMS.md` <- fixed baseline content
+- `docs/standards/*.md` <- fixed baseline content
+- `docs/prompts/*.md` <- fixed baseline content
 - `docs/prd/0001-problem-statement.md` <- `goal_id`, `problem_statement`, `target_persona`, `core_use_case`
 - `docs/design/0001-architecture-overview.md` <- `chosen_stack`, `api_contract`, `entity_definitions`, `io_schema`
 - `docs/adr/0001-initial-decision.md` <- `security_boundary`, `security_1`, `decision_*`
@@ -132,30 +135,26 @@
 - `docs/contracts/TEMPLATE-api-frontend-map.md` <- `spec_id`, `api_contract`, `io_schema`, `contract_sync_status`, `contract_review_owner`
 - `docs/status/TEMPLATE-role-handoff.md` <- `task_type`, `current_role`, `next_role`, `next_action`
 - `docs/status/current-task.md` <- `task_1`, `spec_id`, `task_type`, `role`, `current_role`, `next_role`, `handoff_link`, `api_surface_changed`, `frontend_surface_changed`, `contract_sync_status`, `work_type`, `current_gate`, `test_commands`, `test_result`, `next_action`
+- `docs/governance/EXCEPTIONS.md` <- fixed baseline content
+- `docs/metrics/ENGINEERING_METRICS.md` <- fixed baseline content
+- `.pre-commit-config.yaml` <- fixed baseline content
 
-## 6. 初始化命令示例
+## 6. Initialization Command Examples
 
-兼容模式（默认）：
+Compatibility mode (default):
 
 ```bash
-bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.template.md
+bash scripts/init-project.sh   --output /absolute/path/to/new-project   --seed ./seed.template.md
 ```
 
-严格模式（推荐用于正式 full 项目）：
+Strict mode (recommended for production `full` projects):
 
 ```bash
-STRICT_SEED=1 bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.template.md
+STRICT_SEED=1 bash scripts/init-project.sh   --output /absolute/path/to/new-project   --seed ./seed.template.md
 ```
 
-或：
+Or:
 
 ```bash
-bash scripts/init-project.sh \
-  --output /absolute/path/to/new-project \
-  --seed ./seed.template.md \
-  --strict-seed
+bash scripts/init-project.sh   --output /absolute/path/to/new-project   --seed ./seed.template.md   --strict-seed
 ```

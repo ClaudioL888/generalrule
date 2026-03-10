@@ -16,42 +16,42 @@ last_updated: "{{YYYY-MM-DD}}"
 
 # Feature Design {{spec_id}}
 
-## 1. 设计目标
+## 1. Design Goals
 
-- 目标：{{problem_statement}}
-- 非目标：{{non_goal_1}}
+- Goal: {{problem_statement}}
+- Non-goal: {{non_goal_1}}
 
-## 2. 技术方案
+## 2. Technical Approach
 
-- 选型：{{chosen_stack}}
-- 接口契约：{{api_contract}}
-- 输入输出模型：{{io_schema}}
+- Chosen stack: {{chosen_stack}}
+- Interface contract: {{api_contract}}
+- Input/output model: {{io_schema}}
 
-## 3. 数据与状态
+## 3. Data and State
 
-- 实体定义：{{entity_definitions}}
-- 状态流：{{state_strategy}}
-- 兼容策略：{{compat_strategy}}
+- Entity definitions: {{entity_definitions}}
+- State flow: {{state_strategy}}
+- Compatibility strategy: {{compat_strategy}}
 
-## 4. 安全与边界
+## 4. Security and Boundaries
 
-- 安全边界：{{security_boundary}}
-- 权限边界：{{authz_boundary}}
-- 数据访问边界：{{data_access_boundary}}
+- Security boundary: {{security_boundary}}
+- Authorization boundary: {{authz_boundary}}
+- Data-access boundary: {{data_access_boundary}}
 
-## 5. 可观测性
+## 5. Observability
 
-- 观测方案：{{observability_plan}}
-- 告警阈值：{{alert_thresholds}}
-- 关键指标：{{design_metric_1}}
+- Observability plan: {{observability_plan}}
+- Alert thresholds: {{alert_thresholds}}
+- Key metrics: {{design_metric_1}}
 
-## 6. 设计取舍
+## 6. Design Tradeoffs
 
-- 关键取舍：{{decision_tradeoff}}
-- 风险：{{risk_1}}
-- 缓解：{{mitigation_1}}
+- Key tradeoff: {{decision_tradeoff}}
+- Risk: {{risk_1}}
+- Mitigation: {{mitigation_1}}
 
-## 7. 引用与依据
+## 7. References and Evidence
 
 - SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
 - SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

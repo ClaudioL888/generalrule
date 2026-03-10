@@ -1,28 +1,28 @@
 # NORMS
 
-本文件是最短、最硬、最稳定的项目级规则摘要。
+This file is the shortest, hardest, and most stable summary of project-level rules.
 
 ## Hard Rules
 
-1. 无 `spec` 不改 `src/`。
-2. 大功能无 `design` 与 `plan` 不进入实现。
-3. 每次只推进一个计划项，不跨任务顺手重构。
-4. 所有实现必须附测试证据，不接受“我觉得可以”。
-5. API 或前端表面变化必须同步 `docs/contracts/`。
-6. 每轮循环必须更新 `docs/status/current-task.md`。
-7. 发布前必须同步 `CHANGELOG.md` 与 `RELEASE_NOTES.md`。
-8. `docs/prd/`、`docs/design/`、`docs/adr/`、`docs/specs/` 的变更必须带 `引用与依据`。
-9. 任何例外都必须记录 `EXCEPTION` 文档并附后续追补时间。
-10. 每次任务结束必须明确告诉用户“下一步做什么”。
-11. Gate 0 前必须完成 brainstorming 与 spec quality 审查。
-12. Gate 0 前必须同步 design；Gate 2 前必须同步 plan。
-13. 运行时约束不替代脚本与 CI 门禁；脚本与 CI 门禁才是最终真值。
-14. 角色交接必须同时引用 prompts、standards 与证据，不接受“只有流程没有标准”。
-15. 每轮响应必须提供一个“可评价对象”，不允许只输出程序性确认动作。
-16. 除关键决策外，优先用“提案 + 默认推进”替代“请确认是否继续”。
-17. 低风险、低成本、可回退的内容默认推进；高风险、不可逆、显著扩范围的内容必须确认。
-18. 任何不确定性都必须显式写出：已知事实、当前假设、假设风险、较稳妥路径。
-19. 每次任务结束除给出“下一步做什么”，还必须沉淀至少一条可复用经验或反模式。
+1. Do not modify `src/` without a `spec`.
+2. Do not enter implementation for major work without both `design` and `plan`.
+3. Advance only one plan item at a time. Do not slip in side refactors across tasks.
+4. Every implementation change must carry test evidence. "I think it works" is not acceptable.
+5. API or frontend surface changes must update `docs/contracts/`.
+6. Every loop must update `docs/status/current-task.md`.
+7. Sync `CHANGELOG.md` and `RELEASE_NOTES.md` before release.
+8. Changes under `docs/prd/`, `docs/design/`, `docs/adr/`, and `docs/specs/` must include a `References and Evidence` section.
+9. Every exception must be recorded in an `EXCEPTION` document with a follow-up deadline.
+10. Every task closure must tell the user exactly what to do next.
+11. Brainstorming and spec quality review must be complete before Gate 0.
+12. Design must be synced before Gate 0; plan must be synced before Gate 2.
+13. Runtime constraints do not replace script or CI gates; script and CI gates remain the final source of truth.
+14. Role handoffs must reference prompts, standards, and evidence. A flow without standards is not acceptable.
+15. Every response loop must provide an object the user can evaluate. Procedural confirmations alone are not allowed.
+16. Outside key decisions, prefer "proposal + default progress" over "please confirm whether to continue".
+17. Low-risk, low-cost, reversible work should advance by default. High-risk, irreversible, or scope-expanding work must be confirmed.
+18. Every uncertainty must be explicit: known facts, current assumptions, assumption risk, and the safer path.
+19. Every task closure must also record at least one reusable lesson or anti-pattern.
 
 ## Read Order
 

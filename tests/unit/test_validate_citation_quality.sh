@@ -20,7 +20,7 @@ mkdir -p "$tmp_dir/work/docs/specs" "$tmp_dir/work/docs/design" "$tmp_dir/work/d
 cat > "$tmp_dir/work/docs/specs/SPEC-0001-core-flow.md" <<'MD'
 # Feature Spec
 
-## 1. 目标与非目标
+## 1. Goals and Non-Goals
 x
 MD
 
@@ -34,10 +34,10 @@ fi
 cat > docs/specs/SPEC-0001-core-flow.md <<'MD'
 # Feature Spec
 
-## 1. 目标与非目标
+## 1. Goals and Non-Goals
 x
 
-## 引用与依据
+## References and Evidence
 
 - SOURCE: https://blog.example.com/post | TYPE: secondary | NOTE: market summary
 MD
@@ -50,10 +50,10 @@ fi
 cat > docs/specs/SPEC-0001-core-flow.md <<'MD'
 # Feature Spec
 
-## 1. 目标与非目标
+## 1. Goals and Non-Goals
 x
 
-## 引用与依据
+## References and Evidence
 
 - SOURCE: https://docs.example.com/spec | TYPE: primary | NOTE: official contract definition
 - SOURCE: docs/prd/0001-problem-statement.md | TYPE: internal | NOTE: approved product context

@@ -4,11 +4,11 @@ owner_role: Release-Ops
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "替代生产备份系统"
+  - "Replace the production backup system"
 acceptance_metrics:
-  - "恢复成功率"
+  - "Restore success rate"
 risks:
-  - "备份不可用"
+  - "Backups are unavailable"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
@@ -16,20 +16,20 @@ last_updated: "{{YYYY-MM-DD}}"
 
 # Backup & Restore
 
-## 1. 备份策略
+## 1. Backup Strategy
 
-- 备份频率：每日
-- 保存周期：30 天
-- 备份位置：主存储 + 异地副本
+- Backup frequency: daily
+- Retention: 30 days
+- Backup location: primary storage + remote copy
 
-## 2. 恢复步骤
+## 2. Restore Steps
 
-1. 选择最近可用备份
-2. 在隔离环境演练恢复
-3. 校验关键数据完整性
-4. 切换流量并观察
+1. Select the most recent usable backup
+2. Rehearse the restore in an isolated environment
+3. Verify the integrity of key data
+4. Switch traffic and observe
 
-## 3. 二级回退方案
+## 3. Secondary Fallback Plan
 
-- 若恢复失败，执行：{{rollback_summary}}
-- 若数据不一致，进入人工校正流程
+- If restore fails, execute: {{rollback_summary}}
+- If data is inconsistent, enter manual correction flow

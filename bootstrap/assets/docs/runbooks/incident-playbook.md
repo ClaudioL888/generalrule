@@ -4,11 +4,11 @@ owner_role: Release-Ops
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "事后归因争议"
+  - "Postmortem blame debates"
 acceptance_metrics:
-  - "事故响应时间"
+  - "Incident response time"
 risks:
-  - "告警噪音导致漏报"
+  - "Alert noise causes missed incidents"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
@@ -16,27 +16,27 @@ last_updated: "{{YYYY-MM-DD}}"
 
 # Incident Playbook
 
-## 1. 触发条件
+## 1. Trigger Conditions
 
-- 错误率超过阈值：{{alert_thresholds}}
-- 关键链路不可用
-- 成本异常飙升
+- Error rate exceeds threshold: {{alert_thresholds}}
+- A critical path is unavailable
+- Costs spike abnormally
 
-## 2. 响应分级
+## 2. Response Severity
 
-- P0：全站不可用/数据损坏风险
-- P1：核心功能不可用
-- P2：局部功能受影响
+- P0: site-wide outage or risk of data corruption
+- P1: core functionality unavailable
+- P2: partial functionality impacted
 
-## 3. 处置步骤
+## 3. Response Steps
 
-1. 确认告警真实性
-2. 建立 incident channel
-3. 指派 incident commander
-4. 执行降级/回滚：{{rollback_strategy}}
-5. 记录时间线与影响范围
+1. Confirm the alert is real
+2. Open an incident channel
+3. Assign an incident commander
+4. Execute degradation or rollback: {{rollback_strategy}}
+5. Record the timeline and impact scope
 
-## 4. 恢复与复盘
+## 4. Recovery and Retrospective
 
-- 恢复标准：核心指标恢复正常
-- 24h 内输出复盘与改进项
+- Recovery standard: core metrics return to normal
+- Publish the retrospective and improvement items within 24 hours

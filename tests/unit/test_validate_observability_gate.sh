@@ -28,11 +28,17 @@ fi
 cat > docs/metrics/TEMPLATE-dora-aarrr.md <<'MD'
 # DORA/AARRR
 MD
+cat > docs/metrics/ENGINEERING_METRICS.md <<'MD'
+# Engineering Metrics
+MD
 cat > docs/status/2026-03-weekly.md <<'MD'
 # Weekly
 MD
 cat > docs/status/2026-03-monthly.md <<'MD'
 # Monthly
+MD
+cat > docs/status/2026-03-metrics-weekly.md <<'MD'
+# Metrics Weekly
 MD
 
 OBS_ENFORCEMENT=strict "$SCRIPT"

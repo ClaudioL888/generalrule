@@ -66,7 +66,7 @@ extract_citation_block() {
 
   awk '
     BEGIN { in_section = 0 }
-    /^##[[:space:]]+([0-9]+\.[[:space:]]+)?引用与依据$/ {
+    /^##[[:space:]]+([0-9]+\.[[:space:]]+)?References and Evidence$/ {
       in_section = 1
       next
     }
@@ -89,7 +89,7 @@ validate_doc() {
 
   [[ -f "$file" ]] || fail "changed citation-scoped doc not found: $file"
 
-  grep -Eq '^##[[:space:]]+([0-9]+\.[[:space:]]+)?引用与依据$' "$file" || fail "$file must include section: ## 引用与依据"
+  grep -Eq '^##[[:space:]]+([0-9]+\.[[:space:]]+)?References and Evidence$' "$file" || fail "$file must include section: ## References and Evidence"
 
   citation_block="$(extract_citation_block "$file")"
   citation_lines="$(printf '%s\n' "$citation_block" | grep -E '^- SOURCE: ' || true)"

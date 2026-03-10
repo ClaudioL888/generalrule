@@ -7,22 +7,23 @@ Usage:
   run-blackbox-flow.sh start --goal <single-line-goal> [--task-type <feature|bugfix|refactor|ops|content>] [--work-type <full|mini|fast-track>] [--spec-id <SPEC-...>]
   run-blackbox-flow.sh brainstorm [--note <path>]
   run-blackbox-flow.sh spec-quality [--auto] [--status <approved|degraded>] [--workflow-status <passed|unavailable>] [--note <path>]
-  run-blackbox-flow.sh approve --gate <Gate 0|Gate 2|Gate 3|发布|release> [--decision <approved|rejected>]
+  run-blackbox-flow.sh approve --gate <Gate 0|Gate 2|Gate 3|release> [--decision <approved|rejected>]
   run-blackbox-flow.sh status
 
 Examples:
-  run-blackbox-flow.sh start --goal "做一个让新用户 10 分钟内完成首次发布的流程"
+  run-blackbox-flow.sh start --goal "Create a path that lets new users finish their first release within 10 minutes"
   run-blackbox-flow.sh brainstorm --note "docs/status/brainstorming/spec-20260305-core.md"
   run-blackbox-flow.sh spec-quality --auto --status approved --note "docs/status/spec-quality/spec-20260305-core.md"
   run-blackbox-flow.sh approve --gate "Gate 0"
   run-blackbox-flow.sh approve --gate "Gate 2"
   run-blackbox-flow.sh approve --gate "Gate 3"
-  run-blackbox-flow.sh approve --gate "发布"
+  run-blackbox-flow.sh approve --gate "release"
 USAGE
 }
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$ROOT_DIR"
+source scripts/lib/standards-binding.sh
 
 SESSION_FILE="${SESSION_FILE:-docs/status/blackbox-session.md}"
 CURRENT_TASK_FILE="${CURRENT_TASK_FILE:-docs/status/current-task.md}"
@@ -174,6 +175,64 @@ handoff_file_for() {
   printf 'docs/status/handoffs/%s-%s-to-%s.md\n' "$spec_slug" "$from_slug" "$to_slug"
 }
 
+role_prompt_path() {
+  local role="$1"
+  case "$role" in
+    Founder) printf 'docs/prompts/founder.md\n' ;;
+    PM) printf 'docs/prompts/pm.md\n' ;;
+    Architect) printf 'docs/prompts/architect.md\n' ;;
+    Planner) printf 'docs/prompts/planner.md\n' ;;
+    Dev) printf 'docs/prompts/dev.md\n' ;;
+    QA) printf 'docs/prompts/qa.md\n' ;;
+    Reviewer) printf 'docs/prompts/reviewer.md\n' ;;
+    Release-Ops) printf 'docs/prompts/release-ops.md\n' ;;
+    Growth) printf 'docs/prompts/growth.md\n' ;;
+    Content-Growth) printf 'docs/prompts/content-growth.md\n' ;;
+    *)
+      echo "unsupported role for prompt path: $role" >&2
+      exit 1
+      ;;
+  esac
+}
+
+role_primary_artifact() {
+  local role="$1"
+  local spec_id="$2"
+  local design_link="$3"
+  local plan_link="$4"
+  case "$role" in
+    Founder|PM) printf 'docs/specs/%s.md\n' "$spec_id" ;;
+    Architect) printf '%s\n' "$design_link" ;;
+    Planner) printf '%s\n' "$plan_link" ;;
+    Dev) printf 'docs/contracts/%s-api-frontend-map.md\n' "$spec_id" ;;
+    QA|Reviewer) printf 'docs/status/current-task.md\n' ;;
+    Release-Ops) printf 'docs/release/RELEASE_NOTES.md\n' ;;
+    Growth|Content-Growth) printf 'docs/metrics/ENGINEERING_METRICS.md\n' ;;
+    *)
+      echo "unsupported role for primary artifact: $role" >&2
+      exit 1
+      ;;
+  esac
+}
+
+role_secondary_artifact() {
+  local role="$1"
+  case "$role" in
+    Founder|PM) printf 'docs/prd/0001-problem-statement.md\n' ;;
+    Architect) printf 'docs/adr/0001-initial-decision.md\n' ;;
+    Planner) printf 'docs/test-plan/0001-test-plan.md\n' ;;
+    Dev) printf 'docs/status/current-task.md\n' ;;
+    QA) printf 'docs/test-plan/0001-test-plan.md\n' ;;
+    Reviewer) printf 'docs/release/CHANGELOG.md\n' ;;
+    Release-Ops) printf 'docs/release/CHANGELOG.md\n' ;;
+    Growth|Content-Growth) printf 'docs/release/RELEASE_NOTES.md\n' ;;
+    *)
+      echo "unsupported role for secondary artifact: $role" >&2
+      exit 1
+      ;;
+  esac
+}
+
 brainstorm_file_for() {
   local spec_id="$1"
   local spec_slug
@@ -200,12 +259,49 @@ plan_file_for() {
   printf 'docs/plans/%s-plan.md\n' "$spec_id"
 }
 
+role_standards_csv_for() {
+  local role="$1"
+  local task_type="$2"
+  role_standards_csv "$role" "$task_type"
+}
+
+standards_state_summary() {
+  local profile role_dod evidence deviation
+  if [[ -f "$CURRENT_TASK_FILE" ]]; then
+    profile="$(kv_get "$CURRENT_TASK_FILE" "STANDARDS_PROFILE")"
+    role_dod="$(kv_get "$CURRENT_TASK_FILE" "ROLE_DOD_STATUS")"
+    evidence="$(kv_get "$CURRENT_TASK_FILE" "EVIDENCE_STATUS")"
+    deviation="$(kv_get "$CURRENT_TASK_FILE" "DEVIATION_STATUS")"
+  elif [[ -f "$SESSION_FILE" ]]; then
+    profile="$(kv_get "$SESSION_FILE" "STANDARDS_PROFILE")"
+    role_dod="$(kv_get "$SESSION_FILE" "ROLE_DOD_STATUS")"
+    evidence="$(kv_get "$SESSION_FILE" "EVIDENCE_STATUS")"
+    deviation="$(kv_get "$SESSION_FILE" "DEVIATION_STATUS")"
+  fi
+
+  if [[ -z "$profile" && -z "$role_dod" && -z "$evidence" && -z "$deviation" ]]; then
+    return
+  fi
+
+  printf 'standards=%s; dod=%s; evidence=%s; deviation=%s\n' \
+    "${profile:-pending}" \
+    "${role_dod:-pending}" \
+    "${evidence:-pending}" \
+    "${deviation:-none}"
+}
+
 ensure_handoff_file() {
   local file="$1"
   local spec_id="$2"
   local task_type="$3"
   local current_role="$4"
   local next_role="$5"
+  local current_prompt
+  local next_prompt
+  local primary_artifact
+  local secondary_artifact
+  local current_standards
+  local next_standards
 
   mkdir -p "$(dirname "$file")"
   if [[ ! -f "$file" ]]; then
@@ -230,10 +326,30 @@ FALLBACK
     fi
   fi
 
+  current_prompt="$(role_prompt_path "$current_role")"
+  next_prompt="$(role_prompt_path "$next_role")"
+  primary_artifact="$(role_primary_artifact "$current_role" "$spec_id" "$(design_file_for "$spec_id")" "$(plan_file_for "$spec_id")")"
+  secondary_artifact="$(role_secondary_artifact "$current_role")"
+  current_standards="$(role_standards_csv_for "$current_role" "$task_type")"
+  next_standards="$(role_standards_csv_for "$next_role" "$task_type")"
+
   replace_token_file "$file" "spec_id" "$spec_id"
   replace_token_file "$file" "task_type" "$task_type"
   replace_token_file "$file" "current_role" "$current_role"
   replace_token_file "$file" "next_role" "$next_role"
+  replace_token_file "$file" "current_role_prompt" "$current_prompt"
+  replace_token_file "$file" "next_role_prompt" "$next_prompt"
+  replace_token_file "$file" "current_role_standards" "$current_standards"
+  replace_token_file "$file" "next_role_standards" "$next_standards"
+  replace_token_file "$file" "deviation_reason" "none"
+  replace_token_file "$file" "primary_artifact_link" "$primary_artifact"
+  replace_token_file "$file" "secondary_artifact_link" "$secondary_artifact"
+  replace_token_file "$file" "primary_evidence_link" "$primary_artifact"
+  replace_token_file "$file" "secondary_evidence_link" "$secondary_artifact"
+  replace_token_file "$file" "test_result" "pending"
+  replace_token_file "$file" "risk_1" "pending review"
+  replace_token_file "$file" "risk_evidence" "pending review"
+  replace_token_file "$file" "docs_sync_evidence" "docs/status/current-task.md"
 }
 
 ensure_session_file() {
@@ -254,6 +370,12 @@ ensure_session_file() {
 - CURRENT_GATE: Gate 0
 - CURRENT_ROLE: Founder
 - NEXT_ROLE: PM
+- STANDARDS_PROFILE: feature:full
+- CURRENT_ROLE_STANDARDS: docs/NORMS.md,docs/standards/discovery-standards.md,docs/standards/documentation-standards.md
+- NEXT_ROLE_STANDARDS: docs/standards/discovery-standards.md,docs/standards/documentation-standards.md
+- ROLE_DOD_STATUS: pending
+- EVIDENCE_STATUS: pending
+- DEVIATION_STATUS: none
 - DESIGN_LINK: docs/design/TODO-design.md
 - PLAN_LINK: docs/plans/TODO-plan.md
 - APPROVAL_GATE_0: pending
@@ -289,6 +411,12 @@ ensure_current_task_file() {
 - CURRENT_GATE: Gate 0
 - CURRENT_ROLE: Founder
 - NEXT_ROLE: PM
+- STANDARDS_PROFILE: feature:full
+- CURRENT_ROLE_STANDARDS: docs/NORMS.md,docs/standards/discovery-standards.md,docs/standards/documentation-standards.md
+- NEXT_ROLE_STANDARDS: docs/standards/discovery-standards.md,docs/standards/documentation-standards.md
+- ROLE_DOD_STATUS: pending
+- EVIDENCE_STATUS: pending
+- DEVIATION_STATUS: none
 - DESIGN_LINK: docs/design/TODO-design.md
 - PLAN_LINK: docs/plans/TODO-plan.md
 - HANDOFF_LINK: docs/status/handoffs/todo.md
@@ -297,6 +425,10 @@ ensure_current_task_file() {
 - SPEC_QUALITY_STATUS: pending
 - SPEC_WORKFLOW_STATUS: pending
 - SPEC_WORKFLOW_LINK: docs/status/spec-quality/todo.md
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
 - API_SURFACE_CHANGED: no
 - FRONTEND_SURFACE_CHANGED: no
 - CONTRACT_SYNC_STATUS: pending
@@ -322,22 +454,22 @@ ensure_brainstorm_file() {
       cat > "$file" <<'FALLBACK'
 # Brainstorming Brief
 
-## 目标与非目标
-- 目标：TODO
-- 非目标：TODO
+## Goals and Non-Goals
+- Goal: TODO
+- Non-goal: TODO
 
-## 用户与场景
-- 用户画像：TODO
-- 核心场景：TODO
+## Users and Scenarios
+- Target persona: TODO
+- Core scenario: TODO
 
-## 技术选型候选
-- 方案A：TODO
-- 方案B：TODO
-- 取舍：TODO
+## Technical Choice Candidates
+- Option A: TODO
+- Option B: TODO
+- Tradeoff: TODO
 
-## 风险与边界
-- 风险：TODO
-- 约束：TODO
+## Risks and Boundaries
+- Risk: TODO
+- Constraints: TODO
 FALLBACK
     fi
   fi
@@ -358,21 +490,21 @@ ensure_spec_quality_file() {
       cat > "$file" <<'FALLBACK'
 # Spec Quality Review TODO(spec_id)
 
-## 1. 审查上下文
+## 1. Review Context
 - SPEC_ID: TODO(spec_id)
-- 审查方式：TODO(method)
-- 审查结论：TODO(status)
-- MCP 状态：TODO(workflow_status)
+- Review method: TODO(method)
+- Review conclusion: TODO(status)
+- MCP status: TODO(workflow_status)
 
-## 2. 关键发现
-- 歧义点：TODO
-- 缺失项：TODO
-- 契约风险：TODO
+## 2. Key Findings
+- Ambiguity: TODO
+- Missing item: TODO
+- Contract risk: TODO
 
-## 3. 处置结论
-- 建议动作：TODO
-- 是否允许进入 Gate 0 / Gate 2：TODO
-- 降级原因（如有）：TODO
+## 3. Decision
+- Recommended action: TODO
+- Allowed to enter Gate 0 / Gate 2: TODO
+- Downgrade reason (if any): TODO
 FALLBACK
     fi
   fi
@@ -434,14 +566,20 @@ print_card() {
   local hard_gate="$3"
   local one_action="$4"
   local next_step="$5"
+  local standards_summary
+
+  standards_summary="$(standards_state_summary || true)"
+  if [[ -n "$standards_summary" ]]; then
+    done_summary="${done_summary}; ${standards_summary}"
+  fi
 
   cat <<CARD
 [blackbox-card]
-- 阶段目标: ${stage_goal}
-- AI 已完成: ${done_summary}
-- 硬门禁状态: ${hard_gate}
-- 你只需做一件事: ${one_action}
-- 下一步: ${next_step}
+- Phase Goal: ${stage_goal}
+- AI Completed: ${done_summary}
+- Hard Gate Status: ${hard_gate}
+- You Only Need To Do One Thing: ${one_action}
+- Next Step: ${next_step}
 CARD
 }
 
@@ -459,14 +597,15 @@ run_partial_gates() {
     fi
   fi
 
-  CHANGED_FILES="$changed_files" bash scripts/ci/check-codex-capabilities.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
-  CHANGED_FILES="$changed_files" bash scripts/ci/validate-spec-quality.sh
-  CHANGED_FILES="$changed_files" bash scripts/ci/validate-citation-quality.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-governance.sh
-  DOCS_ROOT=docs bash scripts/ci/validate-doc-links.sh
+  CHANGED_FILES="$changed_files" bash scripts/ci/check-codex-capabilities.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh || return 1
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-spec-quality.sh || return 1
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-citation-quality.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-standards-binding.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-governance.sh || return 1
+  DOCS_ROOT=docs bash scripts/ci/validate-doc-links.sh || return 1
 }
 
 run_release_gates() {
@@ -488,18 +627,19 @@ run_release_gates() {
     fi
   fi
 
-  CHANGED_FILES="$changed_files" bash scripts/ci/check-codex-capabilities.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
-  CHANGED_FILES="$changed_files" bash scripts/ci/validate-spec-quality.sh
-  CHANGED_FILES="$changed_files" bash scripts/ci/validate-citation-quality.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-permissions-gate.sh
-  CHANGED_FILES="$changed_files" bash scripts/ci/validate-security-gate.sh
-  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-governance.sh
-  CHANGED_FILES="$changed_files" bash scripts/ci/validate-release-readiness.sh
-  OBS_ENFORCEMENT=warn bash scripts/ci/validate-observability-gate.sh
-  DOCS_ROOT=docs bash scripts/ci/validate-doc-links.sh
+  CHANGED_FILES="$changed_files" bash scripts/ci/check-codex-capabilities.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh || return 1
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-spec-quality.sh || return 1
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-citation-quality.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-standards-binding.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-permissions-gate.sh || return 1
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-security-gate.sh || return 1
+  CHANGED_FILES="$changed_files" LOCAL_MODE=1 bash scripts/ci/validate-governance.sh || return 1
+  CHANGED_FILES="$changed_files" bash scripts/ci/validate-release-readiness.sh || return 1
+  OBS_ENFORCEMENT=warn bash scripts/ci/validate-observability-gate.sh || return 1
+  DOCS_ROOT=docs bash scripts/ci/validate-doc-links.sh || return 1
 }
 
 normalize_gate() {
@@ -507,16 +647,16 @@ normalize_gate() {
   local g
   g="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]' | sed -E 's/[[:space:]]+//g')"
   case "$g" in
-    gate0|0|批准gate0)
+    gate0|0|approvegate0)
       printf 'gate0\n'
       ;;
-    gate2|2|批准gate2)
+    gate2|2|approvegate2)
       printf 'gate2\n'
       ;;
-    gate3|3|批准gate3)
+    gate3|3|approvegate3)
       printf 'gate3\n'
       ;;
-    发布|release|gate6|6|批准发布)
+    release|gate6|6|approverelease)
       printf 'release\n'
       ;;
     *)
@@ -537,10 +677,16 @@ update_current_task_transition() {
   local handoff
   local design_link
   local plan_link
+  local standards_profile
+  local current_role_standards
+  local next_role_standards
 
   handoff="$(handoff_file_for "$spec_id" "$current_role" "$next_role")"
   design_link="$(design_file_for "$spec_id")"
   plan_link="$(plan_file_for "$spec_id")"
+  standards_profile="$(standards_profile_for "$task_type" "$work_type")"
+  current_role_standards="$(role_standards_csv_for "$current_role" "$task_type")"
+  next_role_standards="$(role_standards_csv_for "$next_role" "$task_type")"
   ensure_handoff_file "$handoff" "$spec_id" "$task_type" "$current_role" "$next_role"
 
   ensure_current_task_file
@@ -553,6 +699,12 @@ update_current_task_transition() {
   upsert_kv "$CURRENT_TASK_FILE" "CURRENT_GATE" "$current_gate"
   upsert_kv "$CURRENT_TASK_FILE" "CURRENT_ROLE" "$current_role"
   upsert_kv "$CURRENT_TASK_FILE" "NEXT_ROLE" "$next_role"
+  upsert_kv "$CURRENT_TASK_FILE" "STANDARDS_PROFILE" "$standards_profile"
+  upsert_kv "$CURRENT_TASK_FILE" "CURRENT_ROLE_STANDARDS" "$current_role_standards"
+  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ROLE_STANDARDS" "$next_role_standards"
+  upsert_kv "$CURRENT_TASK_FILE" "ROLE_DOD_STATUS" "pending"
+  upsert_kv "$CURRENT_TASK_FILE" "EVIDENCE_STATUS" "pending"
+  upsert_kv "$CURRENT_TASK_FILE" "DEVIATION_STATUS" "none"
   upsert_kv "$CURRENT_TASK_FILE" "DESIGN_LINK" "$design_link"
   upsert_kv "$CURRENT_TASK_FILE" "PLAN_LINK" "$plan_link"
   upsert_kv "$CURRENT_TASK_FILE" "HANDOFF_LINK" "$handoff"
@@ -589,6 +741,25 @@ update_current_task_transition() {
   if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK")" ]]; then
     upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK" "$(spec_quality_file_for "$spec_id")"
   fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "EXCEPTION_STATUS")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "EXCEPTION_STATUS" "none"
+  fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "EXCEPTION_LINK")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "EXCEPTION_LINK" "N/A"
+  fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "REWORK_RISK")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "REWORK_RISK" "medium"
+  fi
+  if [[ -z "$(kv_get "$CURRENT_TASK_FILE" "METRICS_IMPACT")" ]]; then
+    upsert_kv "$CURRENT_TASK_FILE" "METRICS_IMPACT" "engineering"
+  fi
+
+  upsert_kv "$SESSION_FILE" "STANDARDS_PROFILE" "$standards_profile"
+  upsert_kv "$SESSION_FILE" "CURRENT_ROLE_STANDARDS" "$current_role_standards"
+  upsert_kv "$SESSION_FILE" "NEXT_ROLE_STANDARDS" "$next_role_standards"
+  upsert_kv "$SESSION_FILE" "ROLE_DOD_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "EVIDENCE_STATUS" "pending"
+  upsert_kv "$SESSION_FILE" "DEVIATION_STATUS" "none"
 }
 
 run_task_pack() {
@@ -663,7 +834,7 @@ cmd_start() {
 
   ensure_session_file
   run_task_pack "$spec_id" "$task_type" "$current_role" "$next_role"
-  update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 0" "$current_role" "$next_role" "先完成 brainstorming，再更新 design 并标记 synced"
+  update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 0" "$current_role" "$next_role" "Complete brainstorming first, then update the design doc and mark it synced"
   set_brainstorm_pending "$spec_id" "$goal"
   set_spec_quality_pending "$spec_id"
 
@@ -690,15 +861,15 @@ cmd_start() {
   upsert_kv "$SESSION_FILE" "STATUS" "waiting_gate_0"
   upsert_kv "$SESSION_FILE" "LAST_ACTION" "start"
   upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
-  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "先运行 brainstorming，再完成 spec quality 审查，然后更新 design 并把 DESIGN_SYNC_STATUS 设为 synced"
+  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "Run brainstorming first, then complete spec quality review, update the design doc, and set DESIGN_SYNC_STATUS to synced"
   upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
 
   print_card \
-    "完成前期准备并绑定目标" \
-    "已初始化任务包，并创建 brainstorming brief 与 spec quality review（均需先完成）" \
-    "Gate 0 待批准" \
-    "先执行 brainstorming 标记完成" \
-    "完成 brainstorming 与 spec quality 后更新 design 文档并再批准 Gate 0"
+    "Complete setup and bind the goal" \
+    "Initialized the task pack and created the brainstorming brief plus spec quality review (both still need completion)" \
+    "Gate 0 pending approval" \
+    "Mark brainstorming complete first" \
+    "After brainstorming and spec quality are complete, update the design doc and then approve Gate 0"
 }
 
 cmd_brainstorm() {
@@ -743,7 +914,7 @@ cmd_brainstorm() {
 
   upsert_kv "$CURRENT_TASK_FILE" "BRAINSTORMING_STATUS" "done"
   upsert_kv "$CURRENT_TASK_FILE" "BRAINSTORMING_LINK" "$note_file"
-  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "批准 Gate 0"
+  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "Approve Gate 0"
   upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
 
   upsert_kv "$SESSION_FILE" "BRAINSTORMING_STATUS" "done"
@@ -752,11 +923,11 @@ cmd_brainstorm() {
   upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
 
   print_card \
-    "前期需求与选型准备" \
-    "已完成 brainstorming 标记并记录笔记路径" \
-    "待完成 spec quality 与 design 同步" \
-    "运行 spec-quality 记录审查结论" \
-    "spec quality 完成后更新 design 文档并再批准 Gate 0"
+    "Prepare requirements and technical selection" \
+    "Marked brainstorming complete and recorded the note path" \
+    "Spec quality and design sync still pending" \
+    "Run spec-quality to record the review conclusion" \
+    "After spec quality is complete, update the design doc and then approve Gate 0"
 }
 
 cmd_spec_quality() {
@@ -851,7 +1022,7 @@ cmd_spec_quality() {
   upsert_kv "$CURRENT_TASK_FILE" "SPEC_QUALITY_STATUS" "$status"
   upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_STATUS" "$workflow_status"
   upsert_kv "$CURRENT_TASK_FILE" "SPEC_WORKFLOW_LINK" "$note_file"
-  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "更新 design 文档并准备批准 Gate 0"
+  upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "Update the design doc and prepare for Gate 0 approval"
   upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
 
   upsert_kv "$SESSION_FILE" "SPEC_QUALITY_STATUS" "$status"
@@ -861,11 +1032,11 @@ cmd_spec_quality() {
   upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
 
   print_card \
-    "Spec 质量审查" \
-    "已记录 spec quality 结论：status=${status}; workflow=${workflow_status}${workflow_summary:+; summary=${workflow_summary}}" \
-    "模式=${mode}" \
-    "更新 design 文档并把 DESIGN_SYNC_STATUS 设为 synced" \
-    "design 同步后再批准 Gate 0"
+    "Spec quality review" \
+    "Recorded the spec quality conclusion: status=${status}; workflow=${workflow_status}${workflow_summary:+; summary=${workflow_summary}}" \
+    "mode=${mode}" \
+    "Update the design doc and set DESIGN_SYNC_STATUS to synced" \
+    "After design is synced, approve Gate 0"
 }
 
 cmd_approve() {
@@ -916,13 +1087,13 @@ cmd_approve() {
     upsert_kv "$SESSION_FILE" "STATUS" "blocked"
     upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:${norm_gate}:${decision}"
     upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
-    upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "等待 Founder 决策"
+    upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "Wait for Founder decision"
     print_card \
-      "关键 Gate 人工决策" \
-      "已记录拒绝结果：${norm_gate}" \
-      "阻断" \
-      "给出新取舍（缩范围/延期/fast-track）" \
-      "AI 等待你的决策后继续"
+      "Manual decision on a key gate" \
+      "Recorded rejection for ${norm_gate}" \
+      "blocked" \
+      "Provide a new tradeoff (reduce scope / delay / fast-track)" \
+      "AI waits for your decision before continuing"
     exit 1
   fi
 
@@ -978,7 +1149,7 @@ cmd_approve() {
       transition="$(transition_for_stage "$task_type" gate2)"
       current_role="${transition%%|*}"
       next_role="${transition##*|}"
-      update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 2" "$current_role" "$next_role" "更新 plan 文档并把 PLAN_SYNC_STATUS 设为 synced"
+      update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 2" "$current_role" "$next_role" "Update the plan doc and set PLAN_SYNC_STATUS to synced"
 
       upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 2"
       upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
@@ -990,11 +1161,11 @@ cmd_approve() {
       upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
 
       print_card \
-        "完成需求/设计草案并进入架构确认" \
-        "已记录 Gate 0 批准，AI 推进到 Gate 2" \
-        "Gate 2 待批准" \
-        "更新 plan 文档并把 PLAN_SYNC_STATUS 设为 synced" \
-        "plan 同步后再批准 Gate 2"
+        "Finish the requirement/design draft and move into architecture confirmation" \
+        "Recorded Gate 0 approval and advanced AI to Gate 2" \
+        "Gate 2 pending approval" \
+        "Update the plan doc and set PLAN_SYNC_STATUS to synced" \
+        "After the plan is synced, approve Gate 2"
       ;;
 
     gate2)
@@ -1034,7 +1205,8 @@ cmd_approve() {
       transition="$(transition_for_stage "$task_type" gate3)"
       current_role="${transition%%|*}"
       next_role="${transition##*|}"
-      update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 3" "$current_role" "$next_role" "等待批准 Gate 3"
+      update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 3" "$current_role" "$next_role" "Wait for Gate 3 approval"
+      upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "Complete the current role standards and evidence, then set ROLE_DOD_STATUS=met and EVIDENCE_STATUS=complete"
 
       upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 3"
       upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
@@ -1046,11 +1218,11 @@ cmd_approve() {
       upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
 
       print_card \
-        "完成任务拆解并准备进入实现" \
-        "已记录 Gate 2 批准，AI 已锁定单任务执行" \
-        "Gate 3 待批准" \
-        "批准 Gate 3" \
-        "AI 自动执行实现/测试/观察修复并准备发布检查"
+        "Finish task breakdown and prepare for implementation" \
+        "Recorded Gate 2 approval and locked AI into single-task execution" \
+        "Gate 3 pending approval" \
+        "Complete the current role standards and evidence, then approve Gate 3" \
+        "AI will run implementation, testing, observe/repair, and then prepare release checks"
       ;;
 
     gate3)
@@ -1060,7 +1232,7 @@ cmd_approve() {
         transition="$(transition_for_stage "$task_type" release)"
         current_role="${transition%%|*}"
         next_role="${transition##*|}"
-        update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 6" "$current_role" "$next_role" "等待批准发布"
+        update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 6" "$current_role" "$next_role" "Wait for release approval"
 
         upsert_kv "$SESSION_FILE" "CURRENT_GATE" "Gate 6"
         upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
@@ -1071,24 +1243,24 @@ cmd_approve() {
         upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
 
         print_card \
-          "实现阶段自检完成并进入发布候选" \
-          "已通过关键门禁（spec/role/contract/governance/doc）" \
-          "通过" \
-          "批准发布" \
-          "AI 执行全量门禁并给出发布后复盘"
+          "Implementation self-check is complete and the change is now a release candidate" \
+          "Passed key gates (spec/role/contract/governance/doc)" \
+          "pass" \
+          "Approve release" \
+          "AI runs the full gate chain and then produces the post-release retrospective"
       else
         upsert_kv "$SESSION_FILE" "STATUS" "repair_required"
         upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:gate3:repair-required"
         upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
-        upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "接受修复方案 A/B"
+        upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "Accept repair option A/B"
         upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
 
         print_card \
-          "实现阶段门禁自检" \
-          "发现阻断项，已进入 Observe/Repair" \
-          "失败（阻断）" \
-          "接受修复方案 A/B" \
-          "AI 修复后重跑门禁并再次请求 Gate 3"
+          "Implementation-stage gate self-check" \
+          "Found blockers and entered Observe/Repair" \
+          "failed (blocked)" \
+          "Accept repair option A/B" \
+          "AI repairs the issue, reruns the gates, and requests Gate 3 again"
         exit 1
       fi
       ;;
@@ -1100,7 +1272,7 @@ cmd_approve() {
         transition="$(transition_for_stage "$task_type" done)"
         current_role="${transition%%|*}"
         next_role="${transition##*|}"
-        update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 6" "$current_role" "$next_role" "进入增长复盘并回到下一轮发现"
+        update_current_task_transition "$spec_id" "$task_type" "$work_type" "Gate 6" "$current_role" "$next_role" "Enter growth retrospective and return to the next discovery loop"
 
         upsert_kv "$SESSION_FILE" "CURRENT_ROLE" "$current_role"
         upsert_kv "$SESSION_FILE" "NEXT_ROLE" "$next_role"
@@ -1110,24 +1282,24 @@ cmd_approve() {
         upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
 
         print_card \
-          "发布与闭环复盘" \
-          "已通过全量门禁并记录发布状态" \
-          "通过" \
-          "无（发布已完成）" \
-          "AI 输出 DORA/AARRR 复盘并建议下一轮任务"
+          "Release and close-the-loop retrospective" \
+          "Passed the full gate chain and recorded release state" \
+          "pass" \
+          "none (release complete)" \
+          "AI outputs the DORA/AARRR retrospective and suggests the next task"
       else
         upsert_kv "$SESSION_FILE" "STATUS" "repair_required"
         upsert_kv "$SESSION_FILE" "LAST_ACTION" "approve:release:repair-required"
         upsert_kv "$SESSION_FILE" "LAST_UPDATED" "$(now_utc)"
-        upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "接受修复方案 A/B"
+        upsert_kv "$CURRENT_TASK_FILE" "NEXT_ACTION" "Accept repair option A/B"
         upsert_kv "$CURRENT_TASK_FILE" "UPDATED_AT" "$(now_utc)"
 
         print_card \
-          "发布前全量门禁" \
-          "发现阻断项，发布被拒绝" \
-          "失败（阻断）" \
-          "接受修复方案 A/B" \
-          "AI 修复后重跑门禁并再次请求批准发布"
+          "Full pre-release gate chain" \
+          "Found blockers and rejected release" \
+          "failed (blocked)" \
+          "Accept repair option A/B" \
+          "AI repairs the issue, reruns the gates, and requests release approval again"
         exit 1
       fi
       ;;
@@ -1148,8 +1320,8 @@ cmd_status() {
   next_role="$(kv_get "$SESSION_FILE" "NEXT_ROLE")"
   status="$(kv_get "$SESSION_FILE" "STATUS")"
 
-  local one_action="查看 current-task 并继续"
-  local next_step="继续按状态推进"
+  local one_action="Review current-task and continue"
+  local next_step="Continue based on the current state"
   local brainstorming_status
   local design_sync_status
   local plan_sync_status
@@ -1164,49 +1336,49 @@ cmd_status() {
         spec_quality_status="$(kv_get "$SESSION_FILE" "SPEC_QUALITY_STATUS")"
         spec_workflow_status="$(kv_get "$SESSION_FILE" "SPEC_WORKFLOW_STATUS")"
         if [[ "$spec_quality_status" == "pending" || "$spec_workflow_status" == "pending" ]]; then
-          one_action="运行 spec-quality 记录审查结论"
-          next_step="spec quality 完成后再同步 design 并批准 Gate 0"
+          one_action="Run spec-quality to record the review conclusion"
+          next_step="After spec quality is complete, sync the design doc and approve Gate 0"
         elif [[ "$design_sync_status" == "synced" ]]; then
-          one_action="批准 Gate 0"
-          next_step="AI 推进 PM/Architect 草案"
+          one_action="Approve Gate 0"
+          next_step="AI advances the PM/Architect draft"
         else
-          one_action="更新 design 文档并把 DESIGN_SYNC_STATUS 设为 synced"
-          next_step="design 同步后再批准 Gate 0"
+          one_action="Update the design doc and set DESIGN_SYNC_STATUS to synced"
+          next_step="After design is synced, approve Gate 0"
         fi
       else
-        one_action="先运行 brainstorming 标记完成"
-        next_step="执行 run-blackbox-flow.sh brainstorm --note <path>"
+        one_action="Mark brainstorming complete first"
+        next_step="Run run-blackbox-flow.sh brainstorm --note <path>"
       fi
       ;;
     waiting_gate_2)
       if [[ "$plan_sync_status" == "synced" ]]; then
-        one_action="批准 Gate 2"
-        next_step="AI 推进 Planner 拆解"
+        one_action="Approve Gate 2"
+        next_step="AI advances Planner breakdown"
       else
-        one_action="更新 plan 文档并把 PLAN_SYNC_STATUS 设为 synced"
-        next_step="plan 同步后再批准 Gate 2"
+        one_action="Update the plan doc and set PLAN_SYNC_STATUS to synced"
+        next_step="After the plan is synced, approve Gate 2"
       fi
       ;;
     waiting_gate_3)
-      one_action="批准 Gate 3"
-      next_step="AI 进入实现/测试与自检"
+      one_action="Set ROLE_DOD_STATUS=met and EVIDENCE_STATUS=complete before approving Gate 3"
+      next_step="AI enters implementation, testing, and self-check"
       ;;
     waiting_release_approval)
-      one_action="批准发布"
-      next_step="AI 执行全量门禁并发布"
+      one_action="Approve release"
+      next_step="AI runs the full gate chain and releases"
       ;;
     repair_required)
-      one_action="接受修复方案 A/B"
-      next_step="AI 修复后重跑门禁"
+      one_action="Accept repair option A/B"
+      next_step="AI repairs the issue and reruns the gates"
       ;;
     released)
-      one_action="新建下一条一句话目标"
-      next_step="进入下一轮黑盒循环"
+      one_action="Create the next one-sentence goal"
+      next_step="Enter the next blackbox loop"
       ;;
   esac
 
   print_card \
-    "当前黑盒会话状态" \
+    "Current blackbox session state" \
     "goal=${goal}; task_type=${task_type}; work_type=${work_type}; gate=${current_gate}; role=${current_role}->${next_role}" \
     "$status" \
     "$one_action" \

@@ -21,13 +21,15 @@ grep -q '\[docs/USAGE.md\](\./docs/USAGE.md)' "$README_FILE" || {
 }
 
 required_sections=(
-  "## 1. 项目定位与适用场景"
-  "## 2. 前置条件"
-  "## 3. 快速开始（5 分钟）"
-  "## 5. 日常开发与门禁流程"
-  "### 5.1 Skill 驱动开发（推荐）"
-  "## 6. 常见失败与修复"
-  "## 7. 版本升级与回归验证"
+  "## 1. Positioning and Fit"
+  "## 2. Prerequisites"
+  "## 3. Quick Start (5 Minutes)"
+  "## 5. Daily Development and Gate Flow"
+  "### 5.1 Skill-Driven Development (Recommended)"
+  "### 5.2 Recommended Read Order"
+  "### 5.3 Metrics and Exceptions"
+  "## 6. Common Failures and Fixes"
+  "## 7. Version Upgrades and Regression Verification"
 )
 
 for section in "${required_sections[@]}"; do

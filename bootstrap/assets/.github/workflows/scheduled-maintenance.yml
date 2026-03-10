@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Collect weekly metrics snapshot
+        run: bash scripts/ci/collect-metrics.sh --stdout
+
       - name: Run observability gate (warn mode)
         env:
           OBS_ENFORCEMENT: warn

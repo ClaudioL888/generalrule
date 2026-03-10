@@ -20,11 +20,11 @@ mkdir -p "$tmp_dir/work/docs/status/spec-quality" "$tmp_dir/work/docs/specs"
 cat > "$tmp_dir/work/docs/status/spec-quality/spec-0001-core-flow.md" <<'MD'
 # Spec Quality Review SPEC-0001-core-flow
 
-## 1. 审查上下文
+## 1. Review Context
 - SPEC_ID: SPEC-0001-core-flow
-- 审查方式：manual fallback
-- 审查结论：approved
-- MCP 状态：unavailable
+- Review method: manual fallback
+- Review conclusion: approved
+- MCP status: unavailable
 MD
 
 pushd "$tmp_dir/work" >/dev/null

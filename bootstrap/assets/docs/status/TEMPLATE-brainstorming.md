@@ -4,48 +4,48 @@ owner_role: Founder
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "直接进入实现代码"
+  - "Jump straight into implementation"
 acceptance_metrics:
-  - "需求与选型输入完整"
+  - "Requirements and technical choice inputs are complete"
 risks:
-  - "前期结论不完整导致后续返工"
+  - "Incomplete early conclusions cause later rework"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
 ---
 
-# Brainstorming Brief 模板
+# Brainstorming Brief Template
 
-> 在 Gate 0 前完成，用于确认需求、约束、技术选型与取舍。
+> Complete this before Gate 0 to confirm requirements, constraints, technical choices, and tradeoffs.
 
 - SPEC_ID: {{spec_id}}
 - GOAL: {{project_goal}}
 
-## 1. 目标与非目标
+## 1. Goals and Non-Goals
 
-- 目标：
-- 非目标：
+- Goals:
+- Non-goals:
 
-## 2. 用户与场景
+## 2. Users and Scenarios
 
-- 目标用户：
-- 核心场景：
-- 痛点：
+- Target users:
+- Core scenarios:
+- Pain points:
 
-## 3. 技术选型候选
+## 3. Technical Choice Candidates
 
-- 方案A：
-- 方案B：
-- 关键取舍：
+- Option A:
+- Option B:
+- Key tradeoffs:
 
-## 4. 风险与边界
+## 4. Risks and Boundaries
 
-- 风险：
-- 约束：
-- 安全边界：
+- Risks:
+- Constraints:
+- Security boundaries:
 
-## 5. 决策结论（进入 Gate 0 前）
+## 5. Decision Summary (Before Gate 0)
 
-- 推荐方案：
-- 理由：
-- 待确认项：
+- Recommended option:
+- Reason:
+- Open questions:

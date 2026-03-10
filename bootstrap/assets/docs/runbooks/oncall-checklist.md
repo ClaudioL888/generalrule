@@ -4,11 +4,11 @@ owner_role: Release-Ops
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "替代值班系统"
+  - "Replace the paging system"
 acceptance_metrics:
-  - "交接完整率"
+  - "Handoff completeness"
 risks:
-  - "值班责任不清"
+  - "On-call ownership is unclear"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
@@ -16,15 +16,15 @@ last_updated: "{{YYYY-MM-DD}}"
 
 # On-Call Checklist
 
-## 每周值班前
+## Before the Weekly Shift
 
-- [ ] 告警渠道可用
-- [ ] 值班联系方式更新
-- [ ] 回滚权限可用
-- [ ] Runbook 可访问
+- [ ] Alert channels are reachable
+- [ ] On-call contact information is updated
+- [ ] Rollback permissions are available
+- [ ] Runbooks are accessible
 
-## 值班交接
+## Handoff Between Shifts
 
-- [ ] 未关闭告警清单
-- [ ] 当前风险项
-- [ ] 本周变更摘要
+- [ ] Open alert list
+- [ ] Current risk items
+- [ ] Summary of this week's changes

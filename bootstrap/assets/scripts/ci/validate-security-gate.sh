@@ -39,7 +39,7 @@ RUNBOOK_FILE="docs/runbooks/incident-playbook.md"
 RELEASE_NOTES_FILE="docs/release/RELEASE_NOTES.md"
 
 [[ -f "$ADR_FILE" ]] || fail "missing ADR file: $ADR_FILE"
-grep -Eq 'security_boundary|安全边界' "$ADR_FILE" || fail "ADR must describe security boundary (security_boundary)"
+grep -Eq 'security_boundary|Security Boundary' "$ADR_FILE" || fail "ADR must describe security boundary (security_boundary)"
 
 [[ -f "$RUNBOOK_FILE" ]] || fail "missing incident playbook: $RUNBOOK_FILE"
 

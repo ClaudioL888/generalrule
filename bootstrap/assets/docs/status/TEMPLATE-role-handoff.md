@@ -4,11 +4,11 @@ owner_role: Planner
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "跨任务顺手重构"
+  - "Cross-task side refactors"
 acceptance_metrics:
-  - "交接完整率"
+  - "Handoff completeness"
 risks:
-  - "交接信息遗漏"
+  - "Handoff information is missing"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
@@ -23,20 +23,39 @@ last_updated: "{{YYYY-MM-DD}}"
 ## Inputs
 
 - {{task_input}}
-- 当前约束：{{edit_boundary}}
+- Current constraints: {{edit_boundary}}
+- Current role prompt asset: {{current_role_prompt}}
+- Next role prompt asset: {{next_role_prompt}}
 
 ## Outputs
 
-- 产物链接：{{task_output_link}}
-- 测试证据：{{test_result}}
+- Primary artifact link: {{primary_artifact_link}}
+- Secondary artifact link: {{secondary_artifact_link}}
+- Artifact summary: {{task_output_link}}
+- Test Evidence: {{test_result}}
+- Risk Summary: {{risk_1}}
+
+## Applicable Standards
+
+- Current role standards: {{current_role_standards}}
+- Next role standards: {{next_role_standards}}
+- Deviation note: {{deviation_reason}}
+
+## Evidence Summary
+
+- Primary evidence: {{primary_evidence_link}}
+- Secondary evidence: {{secondary_evidence_link}}
+- Test Evidence: {{test_result}}
+- Risk evidence: {{risk_evidence}}
+- Documentation sync evidence: {{docs_sync_evidence}}
 
 ## Definition of Done
 
-- [ ] 验收条件达成：{{acceptance_1}}
-- [ ] 测试点覆盖：{{test_point_1}}
-- [ ] 文档已同步（spec/plan/status/release）
+- [ ] Acceptance criteria met: {{acceptance_1}}
+- [ ] Test points covered: {{test_point_1}}
+- [ ] Documentation synchronized (spec/plan/status/release)
 
 ## Handoff To
 
-- 交接对象：{{next_role}}
-- 下一动作：{{next_action}}
+- Recipient: {{next_role}}
+- Next action: {{next_action}}

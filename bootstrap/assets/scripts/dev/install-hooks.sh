@@ -19,4 +19,5 @@ chmod +x "$PRE_PUSH_HOOK"
 git -C "$REPO_ROOT" config core.hooksPath .githooks
 
 echo "hooks installed: core.hooksPath=.githooks"
+echo "next step: bash scripts/dev/install-pre-commit.sh"
 echo "restore default hooks path: git config --unset core.hooksPath"

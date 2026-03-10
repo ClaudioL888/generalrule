@@ -25,7 +25,7 @@ cat > "$tmp_dir/work/docs/contracts/SPEC-0001-core-flow-api-frontend-map.md" <<'
 
 ## Mapping Table
 
-| Endpoint / Event | DTO / Schema | Frontend 页面/组件 | 状态管理 | 测试点 | 备注 |
+| Endpoint / Event | DTO / Schema | Frontend Page / Component | State Management | Test Point | Notes |
 | --- | --- | --- | --- | --- | --- |
 | /v1/users | UserDTO | UserList | zustand | unit | synced |
 MD
@@ -62,7 +62,7 @@ cat > docs/contracts/SPEC-0001-core-flow-api-frontend-map.md <<'MD'
 
 ## Mapping Table
 
-| Endpoint / Event | DTO / Schema | Frontend 页面/组件 | 状态管理 | 测试点 | 备注 |
+| Endpoint / Event | DTO / Schema | Frontend Page / Component | State Management | Test Point | Notes |
 | --- | --- | --- | --- | --- | --- |
 | N/A | N/A | UserList | zustand | unit | frontend only |
 MD
@@ -86,7 +86,7 @@ cat > docs/contracts/SPEC-0001-core-flow-api-frontend-map.md <<'MD'
 
 ## Mapping Table
 
-| Endpoint / Event | DTO / Schema | Frontend 页面/组件 | 状态管理 | 测试点 | 备注 |
+| Endpoint / Event | DTO / Schema | Frontend Page / Component | State Management | Test Point | Notes |
 | --- | --- | --- | --- | --- | --- |
 | /v1/users | UserDTO | UserList | zustand | unit | synced |
 MD

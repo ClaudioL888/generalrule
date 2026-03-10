@@ -67,21 +67,25 @@ mkdir -p docs/status/spec-quality
 cat > docs/status/spec-quality/spec-0002-test.md <<'MD'
 # Spec Quality Review SPEC-0002-test
 
-## 1. 审查上下文
+## 1. Review Context
 - SPEC_ID: SPEC-0002-test
-- 审查方式：manual fallback
-- 审查结论：approved
-- MCP 状态：unavailable
+- Review method: manual fallback
+- Review conclusion: approved
+- MCP status: unavailable
 
-## 2. 关键发现
-- 歧义点：none
-- 缺失项：none
-- 契约风险：low
+## 2. Key Findings
+- Ambiguity: none
+- Missing item: none
+- Contract risk: low
 
-## 3. 处置结论
-- 建议动作：proceed
-- 是否允许进入 Gate 0 / Gate 2：yes
-- 降级原因（如有）：spec-workflow MCP unavailable in test environment
+## 3. Decision
+- Recommended action: proceed
+- Allowed to enter Gate 0 / Gate 2: yes
+- Downgrade reason (if any): spec-workflow MCP unavailable in test environment
+MD
+mkdir -p docs/status/brainstorming
+cat > docs/status/brainstorming/SPEC-0002-test.md <<'MD'
+# Brainstorming SPEC-0002-test
 MD
 sed -i.bak \
   -e 's|TODO(citation_source_1)|https://docs.example.com/spec|' \
@@ -108,6 +112,12 @@ cat > docs/status/current-task.md <<'MD'
 - CURRENT_GATE: Gate 6
 - CURRENT_ROLE: Dev
 - NEXT_ROLE: QA
+- STANDARDS_PROFILE: feature:full
+- CURRENT_ROLE_STANDARDS: docs/standards/coding-standards.md,docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- NEXT_ROLE_STANDARDS: docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- ROLE_DOD_STATUS: pending
+- EVIDENCE_STATUS: pending
+- DEVIATION_STATUS: none
 - DESIGN_LINK: docs/design/SPEC-0002-test-design.md
 - PLAN_LINK: docs/plans/SPEC-0002-test-plan.md
 - HANDOFF_LINK: docs/status/handoffs/spec-0002-test-dev-to-qa.md
@@ -119,24 +129,76 @@ cat > docs/status/current-task.md <<'MD'
 - API_SURFACE_CHANGED: yes
 - FRONTEND_SURFACE_CHANGED: yes
 - CONTRACT_SYNC_STATUS: pending
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
+- BRAINSTORMING_STATUS: done
+- BRAINSTORMING_LINK: docs/status/brainstorming/SPEC-0002-test.md
 - TEST_COMMANDS: npm test
 - TEST_RESULT: unit=pass;integration=pass;e2e=pass
 - UPDATED_AT: 2026-03-05T00:00:00Z
 - NEXT_ACTION: handoff to QA
 MD
 
-cp docs/status/TEMPLATE-role-handoff.md docs/status/handoffs/spec-0002-test-dev-to-qa.md
+cat > docs/status/handoffs/spec-0002-test-dev-to-qa.md <<'MD'
+# Role Handoff SPEC-0002-test
+- TASK_TYPE: feature
+- CURRENT_ROLE: Dev
+- NEXT_ROLE: QA
+
+## Inputs
+
+- Current role prompt asset: docs/prompts/dev.md
+- Next role prompt asset: docs/prompts/qa.md
+
+## Outputs
+
+- Primary artifact link: docs/contracts/SPEC-0002-test-api-frontend-map.md
+- Secondary artifact link: docs/status/current-task.md
+- Artifact summary: feature slice implemented
+- Test Evidence: unit=pass;integration=pass;e2e=pass
+- Risk Summary: low
+
+## Applicable Standards
+
+- Current role standards: docs/standards/coding-standards.md,docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- Next role standards: docs/standards/testing-standards.md,docs/standards/documentation-standards.md
+- Deviation note: none
+
+## Evidence Summary
+
+- Primary evidence: docs/contracts/SPEC-0002-test-api-frontend-map.md
+- Secondary evidence: docs/status/current-task.md
+- Test Evidence: unit=pass;integration=pass;e2e=pass
+- Risk evidence: low
+- Documentation sync evidence: docs/status/current-task.md
+
+## Definition of Done
+
+- [ ] Acceptance criteria met: yes
+- [ ] Test points covered: yes
+
+## Handoff To
+
+- Recipient: QA
+- Next action: run regression checks
+MD
 
 changed_files=$'src/app.ts\ndocs/specs/SPEC-0002-test.md\ndocs/contracts/SPEC-0002-test-api-frontend-map.md\ndocs/design/SPEC-0002-test-design.md\ndocs/plans/SPEC-0002-test-plan.md\ndocs/status/current-task.md\ndocs/status/handoffs/spec-0002-test-dev-to-qa.md\ndocs/release/CHANGELOG.md\ndocs/release/RELEASE_NOTES.md'
 
 if PATH="$mock_bin:/usr/bin:/bin" CHANGED_FILES="$changed_files" bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh; then
-  echo "expected failure when CONTRACT_SYNC_STATUS is pending"
+  echo "expected failure when standards and contract state are pending"
   exit 1
 fi
 
 sed -i.bak -E 's/^- CONTRACT_SYNC_STATUS:.*$/- CONTRACT_SYNC_STATUS: synced/' docs/status/current-task.md
 rm -f docs/status/current-task.md.bak
 sed -i.bak -E 's/^- PLAN_SYNC_STATUS:.*$/- PLAN_SYNC_STATUS: synced/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
+sed -i.bak -E 's/^- ROLE_DOD_STATUS:.*$/- ROLE_DOD_STATUS: met/' docs/status/current-task.md
+rm -f docs/status/current-task.md.bak
+sed -i.bak -E 's/^- EVIDENCE_STATUS:.*$/- EVIDENCE_STATUS: complete/' docs/status/current-task.md
 rm -f docs/status/current-task.md.bak
 
 PATH="$mock_bin:/usr/bin:/bin" CHANGED_FILES="$changed_files" bash .agents/skills/vibe-quality-gates/scripts/run-local-gates.sh

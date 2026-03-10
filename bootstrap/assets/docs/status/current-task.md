@@ -4,19 +4,19 @@ owner_role: Planner
 status: active
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "跨任务一次性汇总报告"
+  - "One-off summary reports across multiple tasks"
 acceptance_metrics:
-  - "每轮循环状态更新完整率"
+  - "Current loop status update completeness"
 risks:
-  - "任务状态过期导致执行偏差"
+  - "Stale task state causes execution drift"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
 ---
 
-# Current Task 模板
+# Current Task Template
 
-> 每次进入循环都要更新，尤其是 `UPDATED_AT` 和 `TEST_RESULT`。
+> Update this every time the loop advances, especially `UPDATED_AT`, `TEST_RESULT`, and `NEXT_ACTION`.
 
 - TASK_ID: {{task_1}}
 - SPEC_ID: {{spec_id}}
@@ -26,6 +26,12 @@ last_updated: "{{YYYY-MM-DD}}"
 - CURRENT_GATE: {{current_gate}}
 - CURRENT_ROLE: {{current_role}}
 - NEXT_ROLE: {{next_role}}
+- STANDARDS_PROFILE: {{task_type}}:{{work_type}}
+- CURRENT_ROLE_STANDARDS: {{current_role_standards}}
+- NEXT_ROLE_STANDARDS: {{next_role_standards}}
+- ROLE_DOD_STATUS: pending
+- EVIDENCE_STATUS: pending
+- DEVIATION_STATUS: none
 - DESIGN_LINK: docs/design/{{spec_id}}-design.md
 - PLAN_LINK: docs/plans/{{spec_id}}-plan.md
 - HANDOFF_LINK: {{handoff_link}}
@@ -37,6 +43,10 @@ last_updated: "{{YYYY-MM-DD}}"
 - API_SURFACE_CHANGED: {{api_surface_changed}}
 - FRONTEND_SURFACE_CHANGED: {{frontend_surface_changed}}
 - CONTRACT_SYNC_STATUS: {{contract_sync_status}}
+- EXCEPTION_STATUS: none
+- EXCEPTION_LINK: N/A
+- REWORK_RISK: medium
+- METRICS_IMPACT: engineering
 - BRAINSTORMING_STATUS: pending
 - BRAINSTORMING_LINK: docs/status/brainstorming/{{spec_id}}.md
 - TEST_COMMANDS: {{test_commands}}
@@ -44,28 +54,25 @@ last_updated: "{{YYYY-MM-DD}}"
 - UPDATED_AT: {{updated_at_iso8601}}
 - NEXT_ACTION: {{next_action}}
 
-## 填写说明
+## Field Notes
 
-1. `TASK_ID`：必须和计划文档中的任务 ID 一致。
-2. `SPEC_ID`：必须和 `docs/specs/<SPEC_ID>.md` 文件名一致。
-3. `TASK_TYPE`：`feature | bugfix | refactor | ops | content`。
-4. `ROLE`：当前执行角色（兼容字段，保留）。
-5. `WORK_TYPE`：`full | mini | fast-track`。
-6. `CURRENT_GATE`：当前门禁阶段（Gate 0-6）。
-7. `CURRENT_ROLE/NEXT_ROLE`：必须符合角色路由规则。
-8. `DESIGN_LINK`：本次任务绑定的设计文档路径，文件必须存在。
-9. `PLAN_LINK`：本次任务绑定的计划文档路径，文件必须存在。
-10. `HANDOFF_LINK`：交接文档路径，文件必须存在。
-11. `DESIGN_SYNC_STATUS`：`synced | pending`，Gate 0 前必须 `synced`。
-12. `PLAN_SYNC_STATUS`：`synced | pending`，Gate 2 前必须 `synced`。
-13. `SPEC_QUALITY_STATUS`：`approved | degraded | pending`。默认模式下 Gate 0 / Gate 2 前不得为 `pending`；严格模式下必须是 `approved`。
-14. `SPEC_WORKFLOW_STATUS`：`passed | unavailable | pending`。默认模式下 Gate 0 / Gate 2 前不得为 `pending`；严格模式下必须是 `passed`。
-15. `SPEC_WORKFLOW_LINK`：Spec 质量审查记录文档路径，必须存在；可记录 MCP 输出摘要或降级说明。
-16. `API_SURFACE_CHANGED/FRONTEND_SURFACE_CHANGED`：`yes | no`。
-17. `CONTRACT_SYNC_STATUS`：`synced | pending`，进入发布前必须 `synced`。
-18. `BRAINSTORMING_STATUS`：`pending | done`，Gate 0 前必须 `done`。
-19. `BRAINSTORMING_LINK`：brainstorming 记录文档路径，文件必须存在。
-20. `TEST_COMMANDS`：本轮执行过的测试命令。
-21. `TEST_RESULT`：必须是可读结果摘要（例如 `unit=pass;integration=pass;e2e=pass`）。
-22. `UPDATED_AT`：ISO8601 时间戳。
-23. `NEXT_ACTION`：下一步动作或交接对象。
+1. `TASK_ID` must match the task ID in the plan document.
+2. `SPEC_ID` must match the filename of `docs/specs/<SPEC_ID>.md`.
+3. `TASK_TYPE`: `feature | bugfix | refactor | ops | content`.
+4. `WORK_TYPE`: `full | mini | fast-track`.
+5. `DESIGN_SYNC_STATUS`: `synced | pending`; must be `synced` before Gate 0.
+6. `PLAN_SYNC_STATUS`: `synced | pending`; must be `synced` before Gate 2.
+7. `STANDARDS_PROFILE` must use the format `<task_type>:<work_type>`.
+8. `CURRENT_ROLE_STANDARDS` and `NEXT_ROLE_STANDARDS` are comma-separated relative paths and must match the role matrix.
+9. `ROLE_DOD_STATUS`: `pending | met`.
+10. `EVIDENCE_STATUS`: `pending | complete`.
+11. `DEVIATION_STATUS`: `none | documented | required`.
+12. `SPEC_QUALITY_STATUS`: `approved | degraded | pending`.
+13. `SPEC_WORKFLOW_STATUS`: `passed | unavailable | pending`.
+14. `CONTRACT_SYNC_STATUS`: `synced | pending`; it must be `synced` before release.
+15. `EXCEPTION_STATUS`: `none | required | approved`. `fast-track` may not use `none`.
+16. `EXCEPTION_LINK` is required when `EXCEPTION_STATUS != none` and must point to the exception document.
+17. `REWORK_RISK`: `low | medium | high`.
+18. `METRICS_IMPACT`: `none | engineering | product | both`.
+19. `BRAINSTORMING_STATUS`: `pending | done`; must be `done` before Gate 0.
+20. `NEXT_ACTION` must describe the one next action the user should take.

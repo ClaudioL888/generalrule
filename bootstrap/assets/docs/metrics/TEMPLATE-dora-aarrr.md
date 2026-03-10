@@ -4,11 +4,11 @@ owner_role: PM-Discovery
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "替代 BI 系统"
+  - "Replace the BI system"
 acceptance_metrics:
-  - "指标完整率"
+  - "Metric completeness"
 risks:
-  - "指标口径不一致"
+  - "Inconsistent metric definitions"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"

@@ -16,42 +16,42 @@ last_updated: "{{YYYY-MM-DD}}"
 
 # ADR {{adr_id}}: {{decision_title}}
 
-## 状态
+## Status
 
 `proposed | accepted | superseded | rejected`
 
-## 背景
+## Context
 
 {{decision_context}}
 
-## 决策
+## Decision
 
 {{decision}}
 
-## 安全边界
+## Security Boundary
 
 security_boundary: {{security_boundary}}
-- 认证与授权：{{authz_boundary}}
-- 数据分级与访问：{{data_access_boundary}}
-- 外部依赖与信任边界：{{third_party_boundary}}
+- Authentication and authorization: {{authz_boundary}}
+- Data classification and access: {{data_access_boundary}}
+- External dependencies and trust boundary: {{third_party_boundary}}
 
-## 备选方案
+## Alternatives Considered
 
 1. {{alternative_1}} - {{alternative_1_tradeoff}}
 2. {{alternative_2}} - {{alternative_2_tradeoff}}
 
-## 后果
+## Consequences
 
-- 正向影响：{{positive_consequence}}
-- 负向影响：{{negative_consequence}}
-- 运维影响：{{ops_impact}}
+- Positive impact: {{positive_consequence}}
+- Negative impact: {{negative_consequence}}
+- Operations impact: {{ops_impact}}
 
-## 复查计划（月度）
+## Review Plan (Monthly)
 
-- 复查日期：{{review_date}}
-- 复查结论：`继续 | 修正 | 废弃`
+- Review date: {{review_date}}
+- Review conclusion: `continue | revise | retire`
 
-## 引用与依据
+## References and Evidence
 
 - SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
 - SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

@@ -16,48 +16,48 @@ last_updated: "{{YYYY-MM-DD}}"
 
 # Feature Spec {{spec_id}}
 
-## 1. 目标与非目标
+## 1. Goals and Non-Goals
 
-- 目标：{{problem_statement}}
-- 非目标：{{non_goal_1}}
+- Goal: {{problem_statement}}
+- Non-goal: {{non_goal_1}}
 
-## 2. 用户故事
+## 2. User Stories
 
-- 目标用户：{{target_persona}}
-- 核心场景：{{core_use_case}}
-- 用户价值：{{value_proposition}}
+- Target persona: {{target_persona}}
+- Core scenario: {{core_use_case}}
+- User value: {{value_proposition}}
 
-## 3. API 变更
+## 3. API Changes
 
 - API_SURFACE_CHANGED: {{api_surface_changed}}
-- API 变更策略：{{api_change_policy}}
-- 契约版本策略：{{api_contract}}
+- API change policy: {{api_change_policy}}
+- Contract versioning strategy: {{api_contract}}
 
-## 4. 前端变更
+## 4. Frontend Changes
 
 - FRONTEND_SURFACE_CHANGED: {{frontend_surface_changed}}
-- 前端绑定策略：{{frontend_binding_policy}}
-- 页面/组件影响：{{feature_summary}}
+- Frontend binding strategy: {{frontend_binding_policy}}
+- Page/component impact: {{feature_summary}}
 
-## 5. 验收标准
+## 5. Acceptance Criteria
 
-- 验收条件：{{acceptance_1}}
-- 测试点：{{test_point_1}}
-- 指标：{{design_metric_1}}
+- Acceptance criteria: {{acceptance_1}}
+- Test point: {{test_point_1}}
+- Metric: {{design_metric_1}}
 
-## 6. 风险
+## 6. Risks
 
-- 关键风险：{{risk_1}}
-- 缓解动作：{{mitigation_1}}
+- Primary risk: {{risk_1}}
+- Mitigation action: {{mitigation_1}}
 
-## 7. 回滚方案
+## 7. Rollback Plan
 
-- 回滚策略：{{rollback_strategy}}
-- 回滚摘要：{{rollback_summary}}
-- 发布负责人：{{release_owner}}
-- 契约评审责任人：{{contract_review_owner}}
+- Rollback strategy: {{rollback_strategy}}
+- Rollback summary: {{rollback_summary}}
+- Release owner: {{release_owner}}
+- Contract review owner: {{contract_review_owner}}
 
-## 8. 引用与依据
+## 8. References and Evidence
 
 - SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
 - SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

@@ -14,33 +14,33 @@ approvals_required:
 last_updated: "{{YYYY-MM-DD}}"
 ---
 
-# PRD 模板
+# PRD Template
 
-## 1. 问题定义
+## 1. Problem Definition
 
-- 现状：{{current_state}}
-- 问题：{{problem_statement}}
-- 为什么是现在：{{why_now}}
+- Current state: {{current_state}}
+- Problem: {{problem_statement}}
+- Why now: {{why_now}}
 
-## 2. 用户画像
+## 2. Target Users
 
-- 目标用户：{{target_persona}}
-- 核心场景：{{core_use_case}}
-- 关键痛点：{{pain_points}}
+- Target persona: {{target_persona}}
+- Core scenario: {{core_use_case}}
+- Key pain points: {{pain_points}}
 
-## 3. 价值主张
+## 3. Value Proposition
 
-- 用户价值：{{value_proposition}}
-- 差异化：{{differentiation}}
+- User value: {{value_proposition}}
+- Differentiation: {{differentiation}}
 
-## 4. 目标与非目标
+## 4. Goals and Non-Goals
 
 - Goals:
   - {{goal_1}}
 - Non-goals:
   - {{non_goal_1}}
 
-## 5. 验收指标（AARRR）
+## 5. Acceptance Metrics (AARRR)
 
 - Acquisition: {{metric_acquisition}}
 - Activation: {{metric_activation}}
@@ -48,25 +48,25 @@ last_updated: "{{YYYY-MM-DD}}"
 - Revenue: {{metric_revenue}}
 - Referral: {{metric_referral}}
 
-## 6. 约束与依赖
+## 6. Constraints and Dependencies
 
-- 业务约束：{{business_constraints}}
-- 法规/合规：{{compliance_constraints}}
-- 外部依赖：{{external_dependencies}}
+- Business constraints: {{business_constraints}}
+- Compliance constraints: {{compliance_constraints}}
+- External dependencies: {{external_dependencies}}
 
-## 7. 风险与假设
+## 7. Risks and Assumptions
 
-- 假设：{{assumption_1}}
-- 风险：{{risk_1}}
-- 缓解：{{mitigation_1}}
+- Assumption: {{assumption_1}}
+- Risk: {{risk_1}}
+- Mitigation: {{mitigation_1}}
 
-## 8. 验收清单
+## 8. Acceptance Checklist
 
-- [ ] 指标可量化并可观测
-- [ ] 非目标明确
-- [ ] Founder 批准
+- [ ] Metrics are quantifiable and observable
+- [ ] Non-goals are clear
+- [ ] Founder approved
 
-## 9. 引用与依据
+## 9. References and Evidence
 
 - SOURCE: TODO(citation_source_1) | TYPE: primary | NOTE: TODO(citation_note_1)
 - SOURCE: TODO(citation_source_2) | TYPE: internal | NOTE: TODO(citation_note_2)

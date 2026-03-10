@@ -34,7 +34,9 @@ run_step "spec pack" env LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
 run_step "spec quality" bash scripts/ci/validate-spec-quality.sh
 run_step "citation quality" bash scripts/ci/validate-citation-quality.sh
 run_step "role flow" env LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
+run_step "standards binding" env LOCAL_MODE=1 bash scripts/ci/validate-standards-binding.sh
 run_step "api/frontend sync" env LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
+run_step "exception" env LOCAL_MODE=1 bash scripts/ci/validate-exception-gate.sh
 run_step "permissions" env LOCAL_MODE=1 bash scripts/ci/validate-permissions-gate.sh
 run_step "security" bash scripts/ci/validate-security-gate.sh
 run_step "governance" env LOCAL_MODE=1 bash scripts/ci/validate-governance.sh

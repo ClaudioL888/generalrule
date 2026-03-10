@@ -16,35 +16,35 @@ last_updated: "{{YYYY-MM-DD}}"
 
 # Feature Plan {{spec_id}}
 
-## 1. 计划目标
+## 1. Plan Goals
 
-- 目标：{{plan_goal}}
-- 范围：{{core_use_case}}
-- 当前阶段：{{work_type}}
+- Goal: {{plan_goal}}
+- Scope: {{core_use_case}}
+- Current phase: {{work_type}}
 
-## 2. 任务拆解
+## 2. Task Breakdown
 
-- 任务1：{{task_1}}
-- 任务2：{{task_2}}
+- Task 1: {{task_1}}
+- Task 2: {{task_2}}
 
-## 3. 验收条件
+## 3. Acceptance Criteria
 
-- 验收1：{{acceptance_1}}
-- 验收2：{{acceptance_2}}
+- Acceptance 1: {{acceptance_1}}
+- Acceptance 2: {{acceptance_2}}
 
-## 4. 测试点
+## 4. Test Points
 
-- 测试点1：{{test_point_1}}
-- 测试点2：{{test_point_2}}
+- Test point 1: {{test_point_1}}
+- Test point 2: {{test_point_2}}
 
-## 5. 执行约束
+## 5. Execution Constraints
 
-- 不跨任务顺手重构
-- 每次只推进一个计划项
-- 失败必须回到 Observe/Repair
+- Do not slip in cross-task refactors
+- Advance only one plan item at a time
+- Failures must return to Observe/Repair
 
-## 6. 风险与回退
+## 6. Risk and Rollback
 
-- 风险：{{risk_1}}
-- 缓解：{{mitigation_1}}
-- 回滚策略：{{rollback_strategy}}
+- Risk: {{risk_1}}
+- Mitigation: {{mitigation_1}}
+- Rollback strategy: {{rollback_strategy}}

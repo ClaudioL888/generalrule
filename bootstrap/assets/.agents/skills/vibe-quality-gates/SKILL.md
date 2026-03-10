@@ -1,18 +1,18 @@
 ---
 name: vibe-quality-gates
-description: 执行本地治理门禁链路并输出阻断项，确保提交前合规。
+description: Run the local governance gate chain and report blockers before submission.
 ---
 
 # Vibe Quality Gates Skill
 
 ## Use When
 
-- 提交前本地自检
-- 需要快速定位当前阻断项
+- You need local self-checks before submission
+- You need to find the current blockers quickly
 
 ## Do Not Use When
 
-- 任务包尚未建立（先运行 `vibe-task-pack`）
+- The task pack has not been created yet; run `vibe-task-pack` first
 
 ## Gate Order
 

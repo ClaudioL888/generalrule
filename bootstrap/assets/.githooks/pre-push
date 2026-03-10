@@ -20,7 +20,9 @@ LOCAL_MODE=1 bash scripts/ci/validate-spec-pack.sh
 LOCAL_MODE=1 bash scripts/ci/validate-spec-quality.sh
 LOCAL_MODE=1 bash scripts/ci/validate-citation-quality.sh
 LOCAL_MODE=1 bash scripts/ci/validate-role-flow.sh
+LOCAL_MODE=1 bash scripts/ci/validate-standards-binding.sh
 LOCAL_MODE=1 bash scripts/ci/validate-api-frontend-sync.sh
+LOCAL_MODE=1 bash scripts/ci/validate-exception-gate.sh
 LOCAL_MODE=1 bash scripts/ci/validate-governance.sh
 LOCAL_MODE=1 bash scripts/ci/validate-doc-links.sh
 

@@ -4,6 +4,7 @@ worktrees/
 node_modules/
 coverage/
 .cache/
+.pre-commit-cache/
 dist/
 out/
 .codex/vendor/

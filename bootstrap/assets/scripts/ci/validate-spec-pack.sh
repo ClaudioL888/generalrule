@@ -53,13 +53,13 @@ has_changed_prefix() {
 assert_spec_shape() {
   local spec_file="$1"
   local required_sections=(
-    "## 1. 目标与非目标"
-    "## 2. 用户故事"
-    "## 3. API 变更"
-    "## 4. 前端变更"
-    "## 5. 验收标准"
-    "## 6. 风险"
-    "## 7. 回滚方案"
+    "## 1. Goals and Non-Goals"
+    "## 2. User Stories"
+    "## 3. API Changes"
+    "## 4. Frontend Changes"
+    "## 5. Acceptance Criteria"
+    "## 6. Risks"
+    "## 7. Rollback Plan"
   )
 
   local section

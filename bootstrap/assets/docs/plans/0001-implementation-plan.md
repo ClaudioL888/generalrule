@@ -4,56 +4,56 @@ owner_role: Planner
 status: draft
 linked_goal_id: "{{goal_id}}"
 non_goals:
-  - "跨任务顺手重构"
+  - "Cross-task side refactors"
 acceptance_metrics:
-  - "任务按验收条件通过率"
+  - "Task pass rate against acceptance criteria"
 risks:
-  - "任务粒度过大"
+  - "Task granularity is too large"
 approvals_required:
   - founder
 last_updated: "{{YYYY-MM-DD}}"
 ---
 
-# 实施计划模板
+# Implementation Plan Template
 
-## 0. 计划类型
+## 0. Plan Type
 
 - WORK_TYPE: `full | mini | fast-track`
-- 原因：{{work_type_reason}}
+- Reason: {{work_type_reason}}
 
-## 1. 范围说明
+## 1. Scope
 
-- 本计划目标：{{plan_goal}}
-- 本计划不做：{{plan_non_goal}}
+- Plan goal: {{plan_goal}}
+- Out of scope for this plan: {{plan_non_goal}}
 
-## 2. 任务分解（强制：单任务进行中）
+## 2. Task Breakdown (Required: Single Task In Progress)
 
-| Task ID | 描述 | 状态 | 验收条件 | 测试点 | 负责人 |
+| Task ID | Description | Status | Acceptance Criteria | Test Point | Owner |
 | --- | --- | --- | --- | --- | --- |
 | T1 | {{task_1}} | todo | {{acceptance_1}} | {{test_point_1}} | Dev |
 | T2 | {{task_2}} | todo | {{acceptance_2}} | {{test_point_2}} | Dev |
 
-规则：同一时刻最多 1 个 `in-progress`。
+Rule: only one item may be `in-progress` at a time.
 
-## 3. 每任务执行模板（可复制）
+## 3. Per-Task Execution Template (Copy as Needed)
 
 ### Task {{task_id}}
 
-- 输入：{{task_input}}
-- 编辑边界：{{edit_boundary}}
-- 测试命令：{{test_command}}
-- 预期结果：{{expected_result}}
-- 文档更新：{{docs_update_path}}
-- 禁止项：跨任务重构
+- Inputs: {{task_input}}
+- Edit boundary: {{edit_boundary}}
+- Test command: {{test_command}}
+- Expected result: {{expected_result}}
+- Documentation updates: {{docs_update_path}}
+- Forbidden: cross-task refactors
 
-## 4. 风险与应对
+## 4. Risks and Response
 
-- 风险：{{risk_1}}
-- 触发条件：{{trigger_1}}
-- 应对动作：{{mitigation_1}}
+- Risk: {{risk_1}}
+- Trigger: {{trigger_1}}
+- Mitigation action: {{mitigation_1}}
 
-## 5. 完成标准
+## 5. Done Criteria
 
-- [ ] 所有任务有测试点与验收条件
-- [ ] 每个任务附测试结果
-- [ ] docs/status 与 docs/release 已同步更新
+- [ ] Every task has test points and acceptance criteria
+- [ ] Every task records test results
+- [ ] `docs/status` and `docs/release` are synchronized
