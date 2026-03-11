@@ -32,6 +32,6 @@
 - BRAINSTORMING_STATUS: done
 - BRAINSTORMING_LINK: docs/status/brainstorming/spec-20260310-english-localization.md
 - TEST_COMMANDS: git ls-files | xargs rg -n "[\p{Han}]"; tests/unit/test_usage_doc.sh; tests/unit/test_validate_spec_pack.sh; tests/unit/test_validate_citation_quality.sh; tests/unit/test_validate_role_flow.sh; tests/unit/test_validate_api_frontend_sync.sh; tests/unit/test_validate_standards_binding.sh; tests/unit/test_skill_scripts.sh; tests/unit/test_init_project.sh; for t in tests/unit/*.sh; do bash "$t"; done
-- TEST_RESULT: chinese_audit=pass;tests_unit=pass;targeted_validators=pass
-- UPDATED_AT: 2026-03-10T12:31:34Z
+- TEST_RESULT: chinese_audit=pass;collect_metrics=pass;pre_commit_config=pass;tests_unit=pass;targeted_validators=pass
+- UPDATED_AT: 2026-03-11T03:42:35Z
 - NEXT_ACTION: review branch codex/english-localization and open a PR if needed

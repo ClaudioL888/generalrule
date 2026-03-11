@@ -27,6 +27,13 @@ CI_FAILURE_RATE="0.2" "$SCRIPT" --output "$OUTPUT_FILE"
 [[ -f "$OUTPUT_FILE" ]] || { echo "missing metrics output"; exit 1; }
 grep -q '^# Weekly Metrics Snapshot' "$OUTPUT_FILE" || { echo "missing metrics title"; exit 1; }
 grep -q 'CI Failure Rate: 0.2' "$OUTPUT_FILE" || { echo "missing CI failure rate"; exit 1; }
+grep -q 'Do not replace the monthly review' "$OUTPUT_FILE" || { echo "missing English non-goal"; exit 1; }
+grep -q 'Update engineering metrics at least once per week' "$OUTPUT_FILE" || { echo "missing English acceptance metric"; exit 1; }
+grep -q 'Missing metrics can blur process improvement priorities' "$OUTPUT_FILE" || { echo "missing English risk note"; exit 1; }
+if rg -n "[\p{Han}]" "$OUTPUT_FILE" >/dev/null; then
+  echo "metrics report should not contain Chinese text"
+  exit 1
+fi
 
 "$SCRIPT" --stdout | grep -q '## DORA' || { echo "stdout report missing DORA section"; exit 1; }
 

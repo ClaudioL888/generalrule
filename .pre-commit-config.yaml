@@ -13,7 +13,7 @@ repos:
         pass_filenames: false
       - id: current-task-schema
         name: current task schema
-        entry: bash -c 'if [ -f bootstrap/assets/docs/status/current-task.md ]; then CHANGED_FILES="docs/status/current-task.md" LOCAL_MODE=1 bash bootstrap/assets/scripts/ci/validate-governance.sh; fi'
+        entry: bash -c 'if [ -f bootstrap/assets/docs/status/current-task.md ]; then CHANGED_FILES="bootstrap/assets/docs/status/current-task.md" LOCAL_MODE=1 bash bootstrap/assets/scripts/ci/validate-governance.sh; fi'
         language: system
         pass_filenames: false
         files: ^bootstrap/assets/docs/status/current-task.md$

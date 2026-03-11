@@ -16,7 +16,7 @@
 - Primary artifact link: docs/contracts/SPEC-20260310-english-localization-api-frontend-map.md
 - Secondary artifact link: docs/status/current-task.md
 - Artifact summary: root docs, bootstrap assets, validator literals, and tests are synchronized to English wording
-- Test Evidence: chinese_audit=pass;tests_unit=pass;targeted_validators=pass
+- Test Evidence: chinese_audit=pass;collect_metrics=pass;pre_commit_config=pass;tests_unit=pass;targeted_validators=pass
 - Risk Summary: low after full repository verification
 
 ## Applicable Standards
@@ -29,7 +29,7 @@
 
 - Primary evidence: docs/contracts/SPEC-20260310-english-localization-api-frontend-map.md
 - Secondary evidence: docs/status/current-task.md
-- Test Evidence: chinese_audit=pass;tests_unit=pass;targeted_validators=pass
+- Test Evidence: chinese_audit=pass;collect_metrics=pass;pre_commit_config=pass;tests_unit=pass;targeted_validators=pass
 - Risk evidence: docs/release/RELEASE_NOTES.md
 - Documentation sync evidence: docs/release/CHANGELOG.md
 

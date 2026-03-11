@@ -69,11 +69,11 @@ owner_role: Release-Ops
 status: draft
 linked_goal_id: manual
 non_goals:
-  - "替代月度复盘"
+  - "Do not replace the monthly review"
 acceptance_metrics:
-  - "每周至少更新一次工程指标"
+  - "Update engineering metrics at least once per week"
 risks:
-  - "指标缺失导致流程改进失焦"
+  - "Missing metrics can blur process improvement priorities"
 approvals_required:
   - founder
 last_updated: "$(date -u +%Y-%m-%d)"
